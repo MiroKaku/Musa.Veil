@@ -1666,6 +1666,85 @@ ZwCallEnclave(
     _Out_opt_ PVOID* ReturnValue
 );
 
+//
+// Only Kernel
+//
+
+#ifdef _KERNEL_MODE
+
+// Section
+
+NTSYSAPI
+NTSTATUS
+NTAPI
+MmCreateSection(
+    _Deref_out_ PVOID* SectionObject,
+    _In_ ACCESS_MASK DesiredAccess,
+    _In_opt_ POBJECT_ATTRIBUTES ObjectAttributes,
+    _In_ PLARGE_INTEGER InputMaximumSize,
+    _In_ ULONG SectionPageProtection,
+    _In_ ULONG AllocationAttributes,
+    _In_opt_ HANDLE FileHandle,
+    _In_opt_ PFILE_OBJECT FileObject
+);
+
+NTSYSAPI
+NTSTATUS
+NTAPI
+MmMapViewOfSection(
+    _In_ PVOID SectionToMap,
+    _In_ PEPROCESS Process,
+    __deref_inout_bcount(*CapturedViewSize) PVOID* CapturedBase,
+    _In_ ULONG_PTR ZeroBits,
+    _In_ SIZE_T CommitSize,
+    _Inout_ PLARGE_INTEGER SectionOffset,
+    _Inout_ PSIZE_T CapturedViewSize,
+    _In_ SECTION_INHERIT InheritDisposition,
+    _In_ ULONG AllocationType,
+    _In_ ULONG Win32Protect
+);
+
+NTSYSAPI
+NTSTATUS
+NTAPI
+MmUnmapViewOfSection(
+    _In_ PEPROCESS Process,
+    _In_ PVOID BaseAddress
+);
+
+NTSYSAPI
+BOOLEAN
+NTAPI
+MmForceSectionClosed(
+    _In_ PSECTION_OBJECT_POINTERS SectionObjectPointer,
+    _In_ BOOLEAN DelayClose
+);
+
+NTSYSAPI
+BOOLEAN
+NTAPI
+MmForceSectionClosedEx(
+    _In_ PSECTION_OBJECT_POINTERS SectionObjectPointer,
+    _In_ ULONG ForceCloseFlags
+);
+
+// Virtual Memory
+
+NTSYSAPI
+NTSTATUS
+NTAPI
+MmCopyVirtualMemory(
+    _In_ PEPROCESS   aFromProcess,
+    _In_ CONST PVOID aFromAddress,
+    _In_ PEPROCESS   aToProcess,
+    _Out_ PVOID      aToAddress,
+    _In_ SIZE_T      aBufferSize,
+    _In_ KPROCESSOR_MODE aPreviousMode,
+    _Out_ PSIZE_T    aNumberOfBytesCopied
+);
+
+
+#endif // _KERNEL_MODE
 
 VEIL_END()
 

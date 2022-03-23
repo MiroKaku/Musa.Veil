@@ -724,6 +724,366 @@ ZwSetInformationSymbolicLink(
     _In_ ULONG SymbolicLinkInformationLength
 );
 
+//
+// Only Kernel
+//
+
+#ifdef _KERNEL_MODE
+
+typedef struct _OBJECT_DUMP_CONTROL {
+    PVOID Stream;
+    ULONG Detail;
+} OB_DUMP_CONTROL, * POB_DUMP_CONTROL;
+
+typedef VOID(NTAPI * OB_DUMP_METHOD)(
+    _In_ PVOID Object,
+    _In_opt_ POB_DUMP_CONTROL Control
+    );
+
+typedef enum _OB_OPEN_REASON {
+    ObCreateHandle,
+    ObOpenHandle,
+    ObDuplicateHandle,
+    ObInheritHandle,
+    ObMaxOpenReason
+} OB_OPEN_REASON;
+
+typedef NTSTATUS(NTAPI * OB_OPEN_METHOD)(
+    _In_ OB_OPEN_REASON OpenReason,
+    _In_ KPROCESSOR_MODE PreviousMode,
+    _In_opt_ PEPROCESS Process,
+    _In_ PVOID Object,
+    _In_ ACCESS_MASK GrantedAccess,
+    _In_ ULONG HandleCount
+    );
+
+typedef BOOLEAN(NTAPI * OB_OKAYTOCLOSE_METHOD)(
+    _In_opt_ PEPROCESS Process,
+    _In_ PVOID Object,
+    _In_ HANDLE Handle,
+    _In_ KPROCESSOR_MODE PreviousMode
+    );
+
+typedef VOID(NTAPI *OB_CLOSE_METHOD)(
+    _In_opt_ PEPROCESS Process,
+    _In_ PVOID Object,
+    _In_ ULONG_PTR ProcessHandleCount,
+    _In_ ULONG_PTR SystemHandleCount
+    );
+
+typedef VOID(NTAPI*OB_DELETE_METHOD)(
+    _In_  PVOID Object
+    );
+
+typedef NTSTATUS(NTAPI*OB_PARSE_METHOD)(
+    _In_ PVOID ParseObject,
+    _In_ PVOID ObjectType,
+    _Inout_ PACCESS_STATE AccessState,
+    _In_ KPROCESSOR_MODE AccessMode,
+    _In_ ULONG Attributes,
+    _Inout_ PUNICODE_STRING CompleteName,
+    _Inout_ PUNICODE_STRING RemainingName,
+    _Inout_opt_ PVOID Context,
+    _In_opt_ PSECURITY_QUALITY_OF_SERVICE SecurityQos,
+    _Out_ PVOID* Object
+    );
+
+typedef struct _OB_EXTENDED_PARSE_PARAMETERS
+{
+    UINT16  Length;
+    ULONG32 RestrictedAccessMask;
+    struct _EJOB* Silo;
+} OB_EXTENDED_PARSE_PARAMETERS, * POB_EXTENDED_PARSE_PARAMETERS;
+
+typedef NTSTATUS(NTAPI* OB_PARSE_EX_METHOD)(
+    _In_ PVOID ParseObject,
+    _In_ PVOID ObjectType,
+    _Inout_ PACCESS_STATE AccessState,
+    _In_ KPROCESSOR_MODE AccessMode,
+    _In_ ULONG Attributes,
+    _Inout_ PUNICODE_STRING CompleteName,
+    _Inout_ PUNICODE_STRING RemainingName,
+    _Inout_opt_ PVOID Context,
+    _In_opt_ PSECURITY_QUALITY_OF_SERVICE SecurityQos,
+    POB_EXTENDED_PARSE_PARAMETERS ExtendedParameters,
+    _Out_ PVOID* Object
+    );
+
+typedef NTSTATUS(NTAPI*OB_SECURITY_METHOD)(
+    _In_ PVOID Object,
+    _In_ SECURITY_OPERATION_CODE OperationCode,
+    _In_ PSECURITY_INFORMATION SecurityInformation,
+    _Inout_ PSECURITY_DESCRIPTOR SecurityDescriptor,
+    _Inout_ PULONG CapturedLength,
+    _Inout_ PSECURITY_DESCRIPTOR* ObjectsSecurityDescriptor,
+    _In_ POOL_TYPE PoolType,
+    _In_ PGENERIC_MAPPING GenericMapping,
+    _In_ KPROCESSOR_MODE AccessMode
+    );
+
+typedef NTSTATUS(NTAPI*OB_QUERYNAME_METHOD)(
+    _In_ PVOID Object,
+    _In_ BOOLEAN HasObjectName,
+    _Out_ POBJECT_NAME_INFORMATION ObjectNameInfo,
+    _In_ ULONG Length,
+    _Out_ PULONG ReturnLength,
+    _In_ KPROCESSOR_MODE Mode
+    );
+
+typedef struct _OBJECT_TYPE_INITIALIZER
+{
+    UINT16 Length;
+    union
+    {
+        UINT16 ObjectTypeFlags;
+        struct
+        {
+            struct
+            {
+                UINT8 CaseInsensitive : 1;
+                UINT8 UnnamedObjectsOnly : 1;
+                UINT8 UseDefaultObject : 1;
+                UINT8 SecurityRequired : 1;
+                UINT8 MaintainHandleCount : 1;
+                UINT8 MaintainTypeList : 1;
+                UINT8 SupportsObjectCallbacks : 1;
+                UINT8 CacheAligned : 1;
+            };
+            struct
+            {
+                UINT8 UseExtendedParameters : 1;
+                UINT8 Reserved : 7;
+            };
+        };
+    };
+    ULONG32         ObjectTypeCode;
+    ULONG32         InvalidAttributes;
+    GENERIC_MAPPING GenericMapping;
+    ULONG32         ValidAccessMask;
+    ULONG32         RetainAccess;
+    POOL_TYPE       PoolType;
+    ULONG32         DefaultPagedPoolCharge;
+    ULONG32         DefaultNonPagedPoolCharge;
+    OB_DUMP_METHOD    DumpProcedure;
+    OB_OPEN_METHOD    OpenProcedure;
+    OB_CLOSE_METHOD   CloseProcedure;
+    OB_DELETE_METHOD  DeleteProcedure;
+    union
+    {
+        OB_PARSE_METHOD    ParseProcedure;
+        OB_PARSE_EX_METHOD ParseProcedureEx;
+    };
+    OB_SECURITY_METHOD    SecurityProcedure;
+    OB_QUERYNAME_METHOD   QueryNameProcedure;
+    OB_OKAYTOCLOSE_METHOD OkayToCloseProcedure;
+    ULONG32 WaitObjectFlagMask;
+    UINT16  WaitObjectFlagOffset;
+    UINT16  WaitObjectPointerOffset;
+} OBJECT_TYPE_INITIALIZER, * POBJECT_TYPE_INITIALIZER;
+
+#if (NTDDI_VERSION >= NTDDI_WIN8)
+#define SIZEOF_OBJECT_TYPE_INITIALIZER  (sizeof OBJECT_TYPE_INITIALIZER)
+#else
+#define SIZEOF_OBJECT_TYPE_INITIALIZER  (FIELD_OFFSET(OBJECT_TYPE_INITIALIZER, WaitObjectFlagMask))
+#endif
+
+NTKERNELAPI
+NTSTATUS
+NTAPI
+ObCreateObjectType(
+    _In_ PUNICODE_STRING            aTypeName,
+    _In_ POBJECT_TYPE_INITIALIZER   aObjectTypeInitializer,
+    _In_opt_ PSECURITY_DESCRIPTOR   aSecurityDescriptor,
+    _Out_ POBJECT_TYPE* aObjectType
+);
+
+NTKERNELAPI
+NTSTATUS
+NTAPI
+ObCreateObject(
+    _In_ KPROCESSOR_MODE ProbeMode,
+    _In_ POBJECT_TYPE    ObjectType,
+    _In_ POBJECT_ATTRIBUTES ObjectAttributes,
+    _In_ KPROCESSOR_MODE OwnershipMode,
+    _Inout_opt_  PVOID   ParseContext,
+    _In_ ULONG           ObjectBodySize,
+    _In_ ULONG           PagedPoolCharge,
+    _In_ ULONG           NonPagedPoolCharge,
+    _Out_ PVOID* Object
+);
+
+NTKERNELAPI
+NTSTATUS
+NTAPI
+ObInsertObject(
+    _In_ PVOID              Object,
+    _In_opt_ PACCESS_STATE  PassedAccessState,
+    _In_opt_ ACCESS_MASK    DesiredAccess,
+    _In_ ULONG              ObjectPointerBias,
+    _Out_opt_ PVOID* NewObject,
+    _Out_opt_ PHANDLE       Handle
+);
+
+NTKERNELAPI
+NTSTATUS
+NTAPI
+ObOpenObjectByName(
+    _In_ POBJECT_ATTRIBUTES ObjectAttributes,
+    _In_opt_ POBJECT_TYPE ObjectType,
+    _In_ KPROCESSOR_MODE AccessMode,
+    _Inout_opt_ PACCESS_STATE AccessState,
+    _In_opt_ ACCESS_MASK DesiredAccess,
+    _Inout_opt_ PVOID ParseContext,
+    _Out_ PHANDLE Handle
+);
+
+NTKERNELAPI
+NTSTATUS
+NTAPI
+ObOpenObjectByPointer(
+    _In_ PVOID              aObject,
+    _In_ ULONG              aHandleAttributes,
+    _Out_opt_ PACCESS_STATE  aPassedAccessState,
+    _In_ ACCESS_MASK        aDesiredAccess,
+    _In_opt_ POBJECT_TYPE   aObjectType,
+    _In_ KPROCESSOR_MODE    aAccessMode,
+    _Out_ PHANDLE           aHandle
+);
+
+#if (NTDDI_VERSION >= NTDDI_WIN7)
+NTKERNELAPI
+NTSTATUS
+ObOpenObjectByPointerWithTag(
+    _In_ PVOID Object,
+    _In_ ULONG HandleAttributes,
+    _In_opt_ PACCESS_STATE PassedAccessState,
+    _In_ ACCESS_MASK DesiredAccess,
+    _In_opt_ POBJECT_TYPE ObjectType,
+    _In_ KPROCESSOR_MODE AccessMode,
+    _In_ ULONG Tag,
+    _Out_ PHANDLE Handle
+);
+#endif
+
+NTKERNELAPI
+VOID
+NTAPI
+ObMakeTemporaryObject(
+    _In_ PVOID Object
+);
+
+NTSYSAPI
+BOOLEAN
+NTAPI
+ObFindHandleForObject(
+    _In_ PEPROCESS Process,
+    _In_ PVOID Object,
+    _In_opt_ POBJECT_TYPE ObjectType,
+    _In_opt_ POBJECT_HANDLE_INFORMATION MatchCriteria,
+    _Out_ PHANDLE Handle
+);
+
+#if (NTDDI_VERSION >= NTDDI_WIN8)
+
+NTKERNELAPI
+BOOLEAN
+FASTCALL
+ObReferenceObjectSafe(
+    _In_ PVOID Object
+);
+
+NTKERNELAPI
+BOOLEAN
+FASTCALL
+ObReferenceObjectSafeWithTag(
+    _In_ PVOID Object,
+    _In_ ULONG Tag
+);
+
+#endif // NTDDI_VERSION >= NTDDI_WIN8
+
+NTKERNELAPI
+NTSTATUS
+NTAPI
+ObReferenceObjectByName(
+    _In_ PUNICODE_STRING ObjectName,
+    _In_ ULONG Attributes,
+    _In_opt_ PACCESS_STATE AccessState,
+    _In_opt_ ACCESS_MASK DesiredAccess,
+    _In_ POBJECT_TYPE ObjectType,
+    _In_ KPROCESSOR_MODE AccessMode,
+    _Inout_opt_ PVOID ParseContext,
+    _Out_ PVOID* Object
+);
+
+NTKERNELAPI
+NTSTATUS
+ObQueryNameString(
+    _In_ PVOID Object,
+    _Out_writes_bytes_opt_(Length) POBJECT_NAME_INFORMATION ObjectNameInfo,
+    _In_ ULONG Length,
+    _Out_ PULONG ReturnLength
+);
+
+FORCEINLINE HANDLE ObMakeKernelHandle(HANDLE Handle)
+{
+#ifdef _X86_
+#define KERNEL_HANDLE_BIT (0x80000000)
+#else
+#define KERNEL_HANDLE_BIT (0xffffffff80000000)
+#endif
+
+    return ((HANDLE)((ULONG_PTR)(Handle) | KERNEL_HANDLE_BIT));
+}
+
+#if (NTDDI_VERSION >= NTDDI_VISTA)
+NTKERNELAPI
+BOOLEAN
+ObIsKernelHandle(
+    _In_ HANDLE Handle
+);
+#endif // NTDDI_VERSION >= NTDDI_VISTA
+
+typedef struct _OBJECT_HEADER_NAME_INFO
+{
+    struct _OBJECT_DIRECTORY* Directory;
+    UNICODE_STRING     Name;
+    LONG               ReferenceCount;
+#ifdef _WIN64
+    ULONG              Reserved;
+#endif
+} OBJECT_HEADER_NAME_INFO, * POBJECT_HEADER_NAME_INFO;
+
+NTKERNELAPI
+POBJECT_HEADER_NAME_INFO
+NTAPI
+ObQueryNameInfo(
+    _In_ PVOID Object
+);
+
+NTKERNELAPI
+POBJECT_TYPE
+NTAPI
+ObGetObjectType(
+    _In_ PVOID Object
+);
+
+NTKERNELAPI
+NTSTATUS
+NTAPI
+ObDuplicateObject(
+    _In_ PEPROCESS SourceProcess,
+    _In_ HANDLE SourceHandle,
+    _In_opt_ PEPROCESS TargetProcess,
+    _Out_opt_ PHANDLE TargetHandle,
+    _In_ ACCESS_MASK DesiredAccess,
+    _In_ ULONG HandleAttributes,
+    _In_ ULONG Options,
+    _In_ KPROCESSOR_MODE PreviousMode
+);
+
+#endif // _KERNEL_MODE
+
 VEIL_END()
 
 #if _MSC_VER >= 1200

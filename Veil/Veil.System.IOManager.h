@@ -3032,6 +3032,37 @@ typedef struct _MOUNTMGR_VOLUME_PATHS
      (s)->Length == 98 && \
      (s)->Buffer[1] == '?')
 
+//
+// Only Kernel
+//
+
+#ifdef _KERNEL_MODE
+
+// Object Type
+
+extern POBJECT_TYPE* IoAdapterObjectType;
+extern POBJECT_TYPE* IoDriverObjectType;
+
+// Driver
+
+_IRQL_requires_max_(PASSIVE_LEVEL)
+NTSYSAPI
+NTSTATUS
+NTAPI
+IoCreateDriver(
+    _In_opt_ PUNICODE_STRING DriverName,
+    _In_ PDRIVER_INITIALIZE InitializationFunction
+);
+
+_IRQL_requires_max_(PASSIVE_LEVEL)
+NTSYSAPI
+VOID
+NTAPI
+IoDeleteDriver(
+    _In_ PDRIVER_OBJECT DriverObject
+);
+
+#endif // _KERNEL_MODE
 
 VEIL_END()
 

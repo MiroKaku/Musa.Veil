@@ -1208,6 +1208,27 @@ ZwPrivilegedServiceAuditAlarm(
     _In_ BOOLEAN AccessGranted
 );
 
+//
+// Only Kernel
+//
+
+#ifdef _KERNEL_MODE
+
+// Dacl
+
+extern PACL SeSystemDefaultDacl;
+
+// Token 
+
+NTKERNELAPI
+SECURITY_IMPERSONATION_LEVEL
+NTAPI
+SeTokenImpersonationLevel(
+    __in PACCESS_TOKEN Token
+);
+
+#endif // _KERNEL_MODE
+
 
 VEIL_END()
 

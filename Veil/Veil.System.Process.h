@@ -3473,6 +3473,392 @@ ZwAllocateReserveObject(
 );
 #endif
 
+#ifdef _KERNEL_MODE
+
+// Process
+
+NTSYSAPI
+BOOLEAN
+NTAPI
+PsIsSystemProcess(
+    _In_ PEPROCESS Process
+);
+
+NTSYSAPI
+HANDLE NTAPI
+PsGetProcessInheritedFromUniqueProcessId(
+    _In_ PEPROCESS Process
+);
+
+NTSYSAPI
+ULONG NTAPI
+PsGetProcessSessionId(
+    _In_ PEPROCESS Process
+);
+
+// The difference is that Ex will return -1
+NTSYSAPI
+ULONG
+NTAPI
+PsGetProcessSessionIdEx(
+    _In_ PEPROCESS Process
+);
+
+NTSYSAPI
+ULONG
+NTAPI
+PsGetCurrentProcessSessionId(
+);
+
+NTSYSAPI
+BOOLEAN
+NTAPI
+PsGetProcessExitProcessCalled(
+    _In_ PEPROCESS Process
+);
+
+NTSYSAPI
+UCHAR*
+NTAPI
+PsGetProcessImageFileName(
+    _In_ PEPROCESS Process
+);
+
+#define PsGetCurrentProcessImageFileName() PsGetProcessImageFileName(PsGetCurrentProcess())
+
+NTSYSAPI
+PVOID
+NTAPI
+PsGetProcessSectionBaseAddress(
+    _In_ PEPROCESS Process
+);
+
+#define PsGetProcessPcb(Process) ((PKPROCESS)(Process))
+
+NTSYSAPI
+PPEB NTAPI
+PsGetProcessPeb(
+    _In_ PEPROCESS Process
+);
+
+NTSYSAPI
+VOID
+NTAPI
+PsSetProcessPriorityClass(
+    _Out_ PEPROCESS Process,
+    _In_ UCHAR PriorityClass
+);
+
+NTSYSAPI
+UCHAR
+NTAPI
+PsGetProcessPriorityClass(
+    _In_ PEPROCESS Process
+);
+
+NTSYSAPI
+VOID
+NTAPI
+PsSetProcessWindowStation(
+    _Out_ PEPROCESS Process,
+    _In_ HANDLE Win32WindowStation
+);
+
+NTSYSAPI
+HANDLE
+NTAPI
+PsGetProcessWin32WindowStation(
+    _In_ PEPROCESS Process
+);
+
+#define PsGetCurrentProcessWin32WindowStation() PsGetProcessWin32WindowStation(PsGetCurrentProcess())
+
+NTSYSAPI
+NTSTATUS
+NTAPI
+PsSetProcessWin32Process(
+    _In_ PEPROCESS Process,
+    _In_ PVOID Win32Process,
+    _In_ PVOID PrevWin32Process
+);
+
+NTSYSAPI
+PVOID
+NTAPI
+PsGetProcessWin32Process(
+    _In_ PEPROCESS Process
+);
+
+NTSYSAPI
+PVOID
+NTAPI
+PsGetCurrentProcessWin32Process(
+    VOID
+);
+
+#ifdef _WIN64
+NTSYSAPI
+struct _PEB32*
+NTAPI
+PsGetProcessWow64Process(
+    _In_ PEPROCESS Process
+);
+
+NTSYSAPI
+struct _PEB32*
+NTAPI
+PsGetCurrentProcessWow64Process(
+    VOID
+);
+#endif //_WIN64
+
+FORCEINLINE BOOLEAN NTAPI PsIs32bitProcess(
+    _In_ PEPROCESS Process
+)
+{
+#ifdef _WIN64
+    return !!PsGetProcessWow64Process(Process);
+#else
+    UNREFERENCED_PARAMETER(Process);
+    return FALSE;
+#endif
+}
+
+PVOID NTAPI
+PsGetProcessSecurityPort(
+    _In_ PEPROCESS Process
+);
+
+NTSTATUS NTAPI
+PsSuspendProcess(
+    _In_ PEPROCESS Process
+);
+
+NTSTATUS NTAPI
+PsResumeProcess(
+    _In_ PEPROCESS Process
+);
+
+// Job
+
+NTSYSAPI
+PEJOB
+NTAPI
+PsGetProcessJob(
+    _In_ PEPROCESS Process
+);
+
+NTSYSAPI
+PERESOURCE
+NTAPI
+PsGetJobLock(
+    _In_ PEJOB Job
+);
+
+NTSYSAPI
+ULONG
+NTAPI
+PsGetJobSessionId(
+    _In_ PEJOB Job
+);
+
+NTSYSAPI
+VOID
+NTAPI
+PsSetJobUIRestrictionsClass(
+    _Out_ struct _EJOB* Job,
+    _In_ ULONG UIRestrictionsClass
+);
+
+NTSYSAPI
+ULONG
+NTAPI
+PsGetJobUIRestrictionsClass(
+    _In_ PEJOB Job
+);
+
+// Debug
+
+NTSYSAPI
+PVOID
+NTAPI
+PsGetProcessDebugPort(
+    _In_ PEPROCESS Process
+);
+
+NTSYSAPI
+BOOLEAN
+NTAPI
+PsIsProcessBeingDebugged(
+    _In_ PEPROCESS Process
+);
+
+// File Object
+
+NTSYSAPI
+NTSTATUS
+NTAPI
+PsReferenceProcessFilePointer(
+    _In_ PEPROCESS Process,
+    _Out_ PFILE_OBJECT* pFilePointer
+);
+
+// Thread
+
+NTSYSAPI
+BOOLEAN
+NTAPI
+PsIsSystemThread(
+    _In_ PETHREAD Thread
+);
+
+NTSYSAPI
+BOOLEAN
+NTAPI
+PsIsThreadTerminating(
+    _In_ PETHREAD Thread
+);
+
+NTSYSAPI
+BOOLEAN
+NTAPI
+PsIsThreadImpersonating(
+    _In_ PETHREAD Thread
+);
+
+NTSYSAPI
+PVOID
+NTAPI
+PsGetCurrentThreadStackLimit(
+    VOID
+);
+
+NTSYSAPI
+PVOID
+NTAPI
+PsGetCurrentThreadStackBase(
+    VOID
+);
+
+NTSYSAPI
+KPROCESSOR_MODE
+NTAPI
+PsGetCurrentThreadPreviousMode(
+    VOID
+);
+
+NTSYSAPI
+PEPROCESS
+NTAPI
+PsGetThreadProcess(
+    _In_ PETHREAD Thread
+);
+
+NTSYSAPI
+PEPROCESS
+NTAPI
+PsGetCurrentThreadProcess(
+    VOID
+);
+
+NTSYSAPI
+HANDLE
+NTAPI
+PsGetCurrentThreadProcessId(
+    VOID
+);
+
+FORCEINLINE
+CLIENT_ID
+NTAPI
+PsGetThreadClientId(
+    _In_ PETHREAD Thread
+)
+{
+    CLIENT_ID ClientId = { PsGetThreadProcessId(Thread), PsGetThreadId(Thread) };
+    return ClientId;
+}
+
+NTSYSAPI
+ULONG
+NTAPI
+PsGetThreadSessionId(
+    _In_ PETHREAD Thread
+);
+
+NTSYSAPI
+NTSTATUS
+NTAPI
+PsSetContextThread(
+    _In_ PETHREAD Thread,
+    _In_ PCONTEXT ThreadContext,
+    _In_ KPROCESSOR_MODE Mode
+);
+
+NTSYSAPI
+NTSTATUS
+NTAPI
+PsGetContextThread(
+    _In_ PETHREAD Thread,
+    _Inout_ PCONTEXT ThreadContext,
+    _In_ KPROCESSOR_MODE Mode
+);
+
+NTSYSAPI
+VOID
+NTAPI
+PsSetThreadWin32Thread(
+    _Inout_ PETHREAD Thread,
+    _In_ PVOID Win32Thread,
+    _In_ PVOID PrevWin32Thread
+);
+
+NTSYSAPI
+PVOID
+NTAPI
+PsGetThreadWin32Thread(
+    _In_ PETHREAD Thread
+);
+
+NTSYSAPI
+PVOID
+NTAPI
+PsGetCurrentThreadWin32Thread(
+    VOID
+);
+
+NTSYSAPI
+PVOID
+NTAPI
+PsGetCurrentThreadWin32ThreadAndEnterCriticalRegion(
+    __out PHANDLE ProcessId
+);
+
+#define PsGetThreadTcb(Thread) ((PKTHREAD)(Thread))
+
+NTSYSAPI
+PVOID
+NTAPI
+PsGetThreadTeb(
+    _In_ PETHREAD Thread
+);
+
+NTSYSAPI
+CCHAR
+NTAPI
+PsGetThreadFreezeCount(
+    _In_ PETHREAD Thread
+);
+
+NTSYSAPI
+BOOLEAN
+NTAPI
+PsGetThreadHardErrorsAreDisabled(
+    _In_ PETHREAD Thread
+);
+
+#endif // _KERNEL_MODE
+
 VEIL_END()
 
 #if _MSC_VER >= 1200

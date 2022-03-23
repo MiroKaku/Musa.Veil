@@ -6373,6 +6373,120 @@ ZwDrawText(
 );
 #endif
 
+//
+// Executive
+//
+
+#ifdef _KERNEL_MODE
+
+// Exception
+
+NTSYSAPI
+int
+ExSystemExceptionFilter(
+    VOID
+);
+
+// Fast Mutex
+
+NTSYSAPI
+VOID
+FASTCALL
+ExEnterCriticalRegionAndAcquireFastMutexUnsafe(
+    _Inout_ PFAST_MUTEX FastMutex
+);
+
+// Push Lock
+
+NTSYSAPI
+VOID
+FASTCALL
+ExfAcquirePushLockExclusive(
+    _Inout_ PEX_PUSH_LOCK PushLock
+);
+
+NTSYSAPI
+VOID
+FASTCALL
+ExfReleasePushLockExclusive(
+    _Inout_ PEX_PUSH_LOCK PushLock
+);
+
+NTSYSAPI
+VOID
+FASTCALL
+ExfAcquirePushLockShared(
+    _Inout_ PEX_PUSH_LOCK PushLock
+);
+
+NTSYSAPI
+VOID
+FASTCALL
+ExfReleasePushLockShared(
+    _Inout_ PEX_PUSH_LOCK PushLock
+);
+
+NTSYSAPI
+BOOLEAN
+FASTCALL
+ExfTryAcquirePushLockShared(
+    _Inout_ PEX_PUSH_LOCK PushLock
+);
+
+NTSYSAPI
+VOID
+FASTCALL
+ExfTryToWakePushLock(
+    _Inout_ PEX_PUSH_LOCK PushLock
+);
+
+NTSYSAPI
+VOID
+FASTCALL
+ExfReleasePushLock(
+    _Inout_ PEX_PUSH_LOCK PushLock
+);
+
+// Cache Aware Push Lock
+
+#define EX_CACHE_LINE_SIZE          (128)
+#define EX_PUSH_LOCK_FANNED_COUNT   (PAGE_SIZE/EX_CACHE_LINE_SIZE)
+
+typedef struct EX_PUSH_LOCK_CACHE_AWARE
+{
+    PEX_PUSH_LOCK Locks[EX_PUSH_LOCK_FANNED_COUNT];
+}*PEX_PUSH_LOCK_CACHE_AWARE;
+
+NTSYSAPI
+PEX_PUSH_LOCK_CACHE_AWARE
+NTAPI
+ExAllocateCacheAwarePushLock(
+    VOID
+);
+
+NTSYSAPI
+VOID
+NTAPI
+ExFreeCacheAwarePushLock(
+    _Inout_ PEX_PUSH_LOCK_CACHE_AWARE PushLock
+);
+
+NTSYSAPI
+VOID
+NTAPI
+ExAcquireCacheAwarePushLockExclusive(
+    _Inout_ PEX_PUSH_LOCK_CACHE_AWARE CacheAwarePushLock
+);
+
+NTSYSAPI
+VOID
+NTAPI
+ExReleaseCacheAwarePushLockExclusive(
+    _Inout_ PEX_PUSH_LOCK_CACHE_AWARE CacheAwarePushLock
+);
+
+#endif // _KERNEL_MODE
+
 
 VEIL_END()
 

@@ -223,6 +223,136 @@ ZwYieldExecution(
     VOID
 );
 
+
+//
+// Only Kernel
+//
+
+#ifdef _KERNEL_MODE
+
+_IRQL_requires_max_(PASSIVE_LEVEL)
+NTSYSAPI
+BOOLEAN
+NTAPI
+KeAddSystemServiceTable(
+    _In_ PULONG_PTR Base,
+    _In_opt_ PULONG Count,
+    _In_ ULONG      Limit,
+    _In_ PUCHAR     Number,
+    _In_ ULONG      Index
+);
+
+// Thread 
+
+typedef enum _KAPC_ENVIRONMENT
+{
+    OriginalApcEnvironment,
+    AttachedApcEnvironment,
+    CurrentApcEnvironment,
+    InsertApcEnvironment
+} KAPC_ENVIRONMENT;
+
+typedef
+VOID
+(*PKNORMAL_ROUTINE) (
+    IN PVOID NormalContext,
+    IN PVOID SystemArgument1,
+    IN PVOID SystemArgument2
+    );
+
+typedef
+VOID
+(*PKKERNEL_ROUTINE) (
+    IN struct _KAPC* Apc,
+    IN OUT PKNORMAL_ROUTINE* NormalRoutine,
+    IN OUT PVOID* NormalContext,
+    IN OUT PVOID* SystemArgument1,
+    IN OUT PVOID* SystemArgument2
+    );
+
+typedef
+VOID
+(*PKRUNDOWN_ROUTINE) (
+    IN struct _KAPC* Apc
+    );
+
+typedef
+BOOLEAN
+(*PKSYNCHRONIZE_ROUTINE) (
+    IN PVOID SynchronizeContext
+    );
+
+typedef
+BOOLEAN
+(*PKTRANSFER_ROUTINE) (
+    VOID
+    );
+
+NTSYSAPI
+VOID
+NTAPI
+KeInitializeApc(
+    _Out_ PRKAPC aApc,
+    _In_ PRKTHREAD aThread,
+    _In_ KAPC_ENVIRONMENT aEnvironment,
+    _In_ PKKERNEL_ROUTINE aKernelRoutine,
+    _In_opt_ PKRUNDOWN_ROUTINE aRundownRoutine,
+    _In_opt_ PKNORMAL_ROUTINE aNormalRoutine,
+    _In_opt_ KPROCESSOR_MODE aProcessorMode,
+    _In_opt_ PVOID aNormalContext
+);
+
+NTSYSAPI
+BOOLEAN
+NTAPI
+KeInsertQueueApc(
+    _Inout_ PRKAPC aApc,
+    _In_opt_ PVOID aSystemArgument1,
+    _In_opt_ PVOID aSystemArgument2,
+    _In_ KPRIORITY aIncrement
+);
+
+NTSYSAPI
+BOOLEAN
+NTAPI
+KeRemoveQueueApc(
+    _In_ PKAPC Apc
+);
+
+NTSYSAPI
+BOOLEAN
+NTAPI
+KeTestAlertThread(
+    _In_ KPROCESSOR_MODE AlertMode
+);
+
+// Processor
+
+NTSYSAPI
+VOID
+NTAPI
+KeGenericCallDpc(
+    _In_ PKDEFERRED_ROUTINE Routine,
+    _In_ PVOID Context
+);
+
+NTSYSAPI
+VOID
+NTAPI
+KeSignalCallDpcDone(
+    _In_ PVOID SystemArgument1
+);
+
+NTSYSAPI
+LOGICAL
+NTAPI
+KeSignalCallDpcSynchronize(
+    _In_ PVOID SystemArgument2
+);
+
+
+#endif // _KERNEL_MODE
+
 VEIL_END()
 
 #if _MSC_VER >= 1200

@@ -9846,6 +9846,16 @@ RtlCheckSandboxedToken(
     _Out_ PBOOLEAN IsSandboxed
 );
 
+#ifdef _KERNEL_MODE
+NTSYSAPI
+BOOLEAN
+NTAPI
+RtlIsSandboxedToken(
+    _In_opt_ PSECURITY_SUBJECT_CONTEXT Context,
+    _In_ KPROCESSOR_MODE PreviousMode
+);
+#endif // _KERNEL_MODE
+
 // rev
 NTSYSAPI
 NTSTATUS
@@ -10488,6 +10498,23 @@ RtlUnsubscribeFromFeatureUsageNotifications(
 #endif // !_KERNEL_MODE
 #endif
 
+//
+// Only Kernel RTL
+//
+
+#ifdef _KERNEL_MODE
+
+// FsRtl
+
+FORCEINLINE
+VOID
+NTAPI
+FsRtlSetTopLevelIrpForModWriter()
+{
+    IoSetTopLevelIrp((PIRP)FSRTL_MOD_WRITE_TOP_LEVEL_IRP);
+}
+
+#endif // _KERNEL_MODE
 
 VEIL_END()
 
