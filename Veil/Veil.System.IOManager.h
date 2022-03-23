@@ -3038,11 +3038,6 @@ typedef struct _MOUNTMGR_VOLUME_PATHS
 
 #ifdef _KERNEL_MODE
 
-// Object Type
-
-extern POBJECT_TYPE* IoAdapterObjectType;
-extern POBJECT_TYPE* IoDriverObjectType;
-
 // Driver
 
 _IRQL_requires_max_(PASSIVE_LEVEL)

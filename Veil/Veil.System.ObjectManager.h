@@ -730,6 +730,37 @@ ZwSetInformationSymbolicLink(
 
 #ifdef _KERNEL_MODE
 
+// Object Type
+
+extern POBJECT_TYPE* CmKeyObjectType;
+extern POBJECT_TYPE* LpcPortObjectType;
+extern POBJECT_TYPE* SeTokenObjectType;
+extern POBJECT_TYPE* MmSectionObjectType;
+
+extern POBJECT_TYPE* ExActivationObjectType;
+extern POBJECT_TYPE* ExCompositionObjectType;
+extern POBJECT_TYPE* ExCoreMessagingObjectType;
+extern POBJECT_TYPE* ExDesktopObjectType;
+extern POBJECT_TYPE* ExEventObjectType;
+extern POBJECT_TYPE* ExRawInputManagerObjectType;
+extern POBJECT_TYPE* ExSemaphoreObjectType;
+extern POBJECT_TYPE* ExTimerObjectType;
+extern POBJECT_TYPE* ExWindowStationObjectType;
+
+extern POBJECT_TYPE* IoAdapterObjectType;
+extern POBJECT_TYPE* IoCompletionObjectType;
+extern POBJECT_TYPE* IoDeviceHandlerObjectType;
+extern POBJECT_TYPE* IoDeviceObjectType;
+extern POBJECT_TYPE* IoDriverObjectType;
+extern POBJECT_TYPE* IoFileObjectType;
+
+extern POBJECT_TYPE* TmEnlistmentObjectType;
+extern POBJECT_TYPE* TmResourceManagerObjectType;
+extern POBJECT_TYPE* TmTransactionManagerObjectType;
+extern POBJECT_TYPE* TmTransactionObjectType;
+
+// Function
+
 typedef struct _OBJECT_DUMP_CONTROL {
     PVOID Stream;
     ULONG Detail;
