@@ -1,0 +1,45 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.32228.343
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Veil.Test.UserMode", "Veil.Test.UserMode.vcxproj", "{5E94FD3F-3F19-4C3E-B7DE-43CB0877224F}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Veil.Test.Kernel", "Veil.Test.Kernel.vcxproj", "{D4C32B71-563D-41B9-906D-D9BA4DF46C7C}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x64 = Debug|x64
+		Debug|x86 = Debug|x86
+		Release|x64 = Release|x64
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{5E94FD3F-3F19-4C3E-B7DE-43CB0877224F}.Debug|x64.ActiveCfg = Debug|x64
+		{5E94FD3F-3F19-4C3E-B7DE-43CB0877224F}.Debug|x64.Build.0 = Debug|x64
+		{5E94FD3F-3F19-4C3E-B7DE-43CB0877224F}.Debug|x86.ActiveCfg = Debug|Win32
+		{5E94FD3F-3F19-4C3E-B7DE-43CB0877224F}.Debug|x86.Build.0 = Debug|Win32
+		{5E94FD3F-3F19-4C3E-B7DE-43CB0877224F}.Release|x64.ActiveCfg = Release|x64
+		{5E94FD3F-3F19-4C3E-B7DE-43CB0877224F}.Release|x64.Build.0 = Release|x64
+		{5E94FD3F-3F19-4C3E-B7DE-43CB0877224F}.Release|x86.ActiveCfg = Release|Win32
+		{5E94FD3F-3F19-4C3E-B7DE-43CB0877224F}.Release|x86.Build.0 = Release|Win32
+		{D4C32B71-563D-41B9-906D-D9BA4DF46C7C}.Debug|x64.ActiveCfg = Debug|x64
+		{D4C32B71-563D-41B9-906D-D9BA4DF46C7C}.Debug|x64.Build.0 = Debug|x64
+		{D4C32B71-563D-41B9-906D-D9BA4DF46C7C}.Debug|x64.Deploy.0 = Debug|x64
+		{D4C32B71-563D-41B9-906D-D9BA4DF46C7C}.Debug|x86.ActiveCfg = Debug|Win32
+		{D4C32B71-563D-41B9-906D-D9BA4DF46C7C}.Debug|x86.Build.0 = Debug|Win32
+		{D4C32B71-563D-41B9-906D-D9BA4DF46C7C}.Debug|x86.Deploy.0 = Debug|Win32
+		{D4C32B71-563D-41B9-906D-D9BA4DF46C7C}.Release|x64.ActiveCfg = Release|x64
+		{D4C32B71-563D-41B9-906D-D9BA4DF46C7C}.Release|x64.Build.0 = Release|x64
+		{D4C32B71-563D-41B9-906D-D9BA4DF46C7C}.Release|x64.Deploy.0 = Release|x64
+		{D4C32B71-563D-41B9-906D-D9BA4DF46C7C}.Release|x86.ActiveCfg = Release|Win32
+		{D4C32B71-563D-41B9-906D-D9BA4DF46C7C}.Release|x86.Build.0 = Release|Win32
+		{D4C32B71-563D-41B9-906D-D9BA4DF46C7C}.Release|x86.Deploy.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {D3989A88-8A9B-4341-A68A-5B8762A91497}
+	EndGlobalSection
+EndGlobal
