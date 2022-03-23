@@ -47,12 +47,44 @@
 
 VEIL_BEGIN()
 
+#ifdef _KERNEL_MODE
+#define PROCESS_TERMINATE                   0x0001
+#define PROCESS_CREATE_THREAD               0x0002
+#define PROCESS_SET_SESSIONID               0x0004
+#define PROCESS_VM_OPERATION                0x0008
+#define PROCESS_VM_READ                     0x0010
+#define PROCESS_VM_WRITE                    0x0020
+#define PROCESS_CREATE_PROCESS              0x0080
+#define PROCESS_SET_QUOTA                   0x0100
+#define PROCESS_SET_INFORMATION             0x0200
+#define PROCESS_QUERY_INFORMATION           0x0400
+#define PROCESS_SET_PORT                    0x0800
+#define PROCESS_SUSPEND_RESUME              0x0800
+#define PROCESS_QUERY_LIMITED_INFORMATION   0x1000
+#else
 #ifndef PROCESS_SET_PORT
-#define PROCESS_SET_PORT    0x0800
+#define PROCESS_SET_PORT                    0x0800
+#endif
 #endif
 
+#ifdef _KERNEL_MODE
+#define THREAD_QUERY_INFORMATION            0x0040
+#define THREAD_SET_THREAD_TOKEN             0x0080
+#define THREAD_IMPERSONATE                  0x0100
+#define THREAD_DIRECT_IMPERSONATION         0x0200
+#else
 #ifndef THREAD_ALERT
-#define THREAD_ALERT        0x0004
+#define THREAD_ALERT                        0x0004
+#endif
+#endif
+
+#ifdef _KERNEL_MODE
+#define JOB_OBJECT_ASSIGN_PROCESS           0x0001
+#define JOB_OBJECT_SET_ATTRIBUTES           0x0002
+#define JOB_OBJECT_QUERY                    0x0004
+#define JOB_OBJECT_TERMINATE                0x0008
+#define JOB_OBJECT_SET_SECURITY_ATTRIBUTES  0x0010
+#define JOB_OBJECT_ALL_ACCESS (STANDARD_RIGHTS_REQUIRED | SYNCHRONIZE | 0x3F)
 #endif
 
 #define GDI_HANDLE_BUFFER_SIZE32 34

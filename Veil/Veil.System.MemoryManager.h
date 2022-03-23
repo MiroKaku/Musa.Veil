@@ -47,6 +47,10 @@
 
 VEIL_BEGIN()
 
+#ifdef _KERNEL_MODE
+#define MEM_IMAGE SEC_IMAGE
+#endif
+
 // private
 #ifndef _KERNEL_MODE
 typedef enum _MEMORY_INFORMATION_CLASS

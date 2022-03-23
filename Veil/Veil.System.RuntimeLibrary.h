@@ -2503,6 +2503,10 @@ RtlWakeAddressSingle(
 // Strings
 //
 
+#ifdef _KERNEL_MODE
+#include <ntstrsafe.h>
+#endif
+
 #ifndef _KERNEL_MODE
 _At_(AnsiString->Buffer, _Post_equal_to_(Buffer))
 _At_(AnsiString->Length, _Post_equal_to_(0))
