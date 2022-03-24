@@ -47,6 +47,10 @@
 
 VEIL_BEGIN()
 
+//
+// Helper
+//
+
 #ifndef _KERNEL_MODE
 
 //++
@@ -147,9 +151,13 @@ RtlFailFast(
     __fastfail(Code);
 }
 
+#endif // !_KERNEL_MODE
+
 //
 //  Doubly-linked list manipulation routines.
 //
+
+#ifndef _KERNEL_MODE
 
 //
 //  VOID
@@ -241,7 +249,6 @@ RtlpCheckListEntry(
 }
 
 #endif
-
 
 FORCEINLINE
 BOOLEAN
@@ -418,7 +425,6 @@ PopEntryList(
     return FirstEntry;
 }
 
-
 FORCEINLINE
 VOID
 PushEntryList(
@@ -455,9 +461,13 @@ ListEntry64To32(
 }
 #endif
 
+#endif // !_KERNEL_MODE
+
 //
 // Run once
 //
+
+#ifndef _KERNEL_MODE
 
 #ifndef _RTL_RUN_ONCE_DEF
 #define _RTL_RUN_ONCE_DEF
@@ -546,9 +556,13 @@ RtlRunOnceComplete(
 
 #endif // NTDDI_VERSION >= NTDDI_LONGHORN
 
+#endif // !_KERNEL_MODE
+
 //
 // AVL Trees
 //
+
+#ifndef _KERNEL_MODE
 
 //
 // This enumerated type is used as the function return value of the function
@@ -661,7 +675,6 @@ typedef RTL_AVL_FREE_ROUTINE* PRTL_AVL_FREE_ROUTINE;
 //          should terminate
 //
 
-
 typedef
 _IRQL_requires_same_
 _Function_class_(RTL_AVL_MATCH_FUNCTION)
@@ -701,7 +714,6 @@ typedef struct _RTL_BALANCED_LINKS {
 } RTL_BALANCED_LINKS;
 typedef RTL_BALANCED_LINKS* PRTL_BALANCED_LINKS;
 
-
 //
 //  To use the generic table package the user declares a variable of type
 //  GENERIC_TABLE and then uses the routines described below to initialize
@@ -731,7 +743,6 @@ typedef RTL_AVL_TABLE* PRTL_AVL_TABLE;
 //  it can be used.
 //
 
-#if (NTDDI_VERSION >= NTDDI_WINXP)
 NTSYSAPI
 VOID
 NTAPI
@@ -742,7 +753,6 @@ RtlInitializeGenericTableAvl(
     _In_ PRTL_AVL_FREE_ROUTINE FreeRoutine,
     _In_opt_ PVOID TableContext
 );
-#endif // NTDDI_VERSION >= NTDDI_WINXP
 
 //
 //  The function InsertElementGenericTable will insert a new element
@@ -757,7 +767,6 @@ RtlInitializeGenericTableAvl(
 //  pointer to the input buffer will not point to the new element.
 //
 
-#if (NTDDI_VERSION >= NTDDI_WINXP)
 NTSYSAPI
 PVOID
 NTAPI
@@ -767,7 +776,6 @@ RtlInsertElementGenericTableAvl(
     _In_ ULONG BufferSize,
     _Out_opt_ PBOOLEAN NewElement
 );
-#endif // NTDDI_VERSION >= NTDDI_WINXP
 
 //
 //  The function InsertElementGenericTableFull will insert a new element
@@ -784,7 +792,6 @@ RtlInsertElementGenericTableAvl(
 //  previous RtlLookupElementGenericTableFull.
 //
 
-#if (NTDDI_VERSION >= NTDDI_WINXP)
 NTSYSAPI
 PVOID
 NTAPI
@@ -796,7 +803,6 @@ RtlInsertElementGenericTableFullAvl(
     _In_ PVOID NodeOrParent,
     _In_ TABLE_SEARCH_RESULT SearchResult
 );
-#endif // NTDDI_VERSION >= NTDDI_WINXP
 
 //
 //  The function DeleteElementGenericTable will find and delete an element
@@ -806,7 +812,6 @@ RtlInsertElementGenericTableFullAvl(
 //  locating the element in the table.
 //
 
-#if (NTDDI_VERSION >= NTDDI_WINXP)
 NTSYSAPI
 BOOLEAN
 NTAPI
@@ -814,7 +819,6 @@ RtlDeleteElementGenericTableAvl(
     _In_ PRTL_AVL_TABLE Table,
     _In_ PVOID Buffer
 );
-#endif // NTDDI_VERSION >= NTDDI_WINXP
 
 //
 //  The function DeleteElementGenericTableAvxEx deletes the element specified
@@ -840,7 +844,6 @@ RtlDeleteElementGenericTableAvlEx(
 //  input buffer is only used as a key in locating the element in the table.
 //
 
-#if (NTDDI_VERSION >= NTDDI_WINXP)
 _Must_inspect_result_
 NTSYSAPI
 PVOID
@@ -849,7 +852,6 @@ RtlLookupElementGenericTableAvl(
     _In_ PRTL_AVL_TABLE Table,
     _In_ PVOID Buffer
 );
-#endif // NTDDI_VERSION >= NTDDI_WINXP
 
 //
 //  The function LookupElementGenericTableFull will find an element in a generic
@@ -861,7 +863,6 @@ RtlLookupElementGenericTableAvl(
 //  call to optimize the insert.
 //
 
-#if (NTDDI_VERSION >= NTDDI_WINXP)
 NTSYSAPI
 PVOID
 NTAPI
@@ -871,7 +872,6 @@ RtlLookupElementGenericTableFullAvl(
     _Out_ PVOID* NodeOrParent,
     _Out_ TABLE_SEARCH_RESULT* SearchResult
 );
-#endif // NTDDI_VERSION >= NTDDI_WINXP
 
 //
 //  The function EnumerateGenericTable will return to the caller one-by-one
@@ -894,7 +894,6 @@ RtlLookupElementGenericTableFullAvl(
 //          the enumeration.
 //
 
-#if (NTDDI_VERSION >= NTDDI_WINXP)
 _Must_inspect_result_
 NTSYSAPI
 PVOID
@@ -903,7 +902,6 @@ RtlEnumerateGenericTableAvl(
     _In_ PRTL_AVL_TABLE Table,
     _In_ BOOLEAN Restart
 );
-#endif // NTDDI_VERSION >= NTDDI_WINXP
 
 //
 //  The function EnumerateGenericTableWithoutSplaying will return to the
@@ -931,7 +929,6 @@ RtlEnumerateGenericTableAvl(
 //          at least shared access to the table for the duration.
 //
 
-#if (NTDDI_VERSION >= NTDDI_WINXP)
 _Must_inspect_result_
 NTSYSAPI
 PVOID
@@ -940,7 +937,6 @@ RtlEnumerateGenericTableWithoutSplayingAvl(
     _In_ PRTL_AVL_TABLE Table,
     _Inout_ PVOID* RestartKey
 );
-#endif // NTDDI_VERSION >= NTDDI_WINXP
 
 //
 //  RtlLookupFirstMatchingElementGenericTableAvl will return the left-most
@@ -951,7 +947,6 @@ RtlEnumerateGenericTableWithoutSplayingAvl(
 //  to return each subsequent match.
 //
 
-#if (NTDDI_VERSION >= NTDDI_WINXP)
 _Must_inspect_result_
 NTSYSAPI
 PVOID
@@ -961,7 +956,6 @@ RtlLookupFirstMatchingElementGenericTableAvl(
     _In_ PVOID Buffer,
     _Out_ PVOID* RestartKey
 );
-#endif // NTDDI_VERSION >= NTDDI_WINXP
 
 //
 //  The function EnumerateGenericTableLikeADirectory will return to the
@@ -995,7 +989,6 @@ RtlLookupFirstMatchingElementGenericTableAvl(
 //          Should some structure be introduced to carry it all?
 //
 
-#if (NTDDI_VERSION >= NTDDI_WINXP)
 _Must_inspect_result_
 NTSYSAPI
 PVOID
@@ -1009,7 +1002,6 @@ RtlEnumerateGenericTableLikeADirectory(
     _Inout_ PULONG DeleteCount,
     _In_ PVOID Buffer
 );
-#endif // NTDDI_VERSION >= NTDDI_WINXP
 
 //
 // The function GetElementGenericTable will return the i'th element
@@ -1020,7 +1012,6 @@ RtlEnumerateGenericTableLikeADirectory(
 // an arbitrary element is deleted from the generic table it will cause
 // all elements inserted after the deleted element to "move up".
 
-#if (NTDDI_VERSION >= NTDDI_WINXP)
 _Must_inspect_result_
 NTSYSAPI
 PVOID
@@ -1029,21 +1020,18 @@ RtlGetElementGenericTableAvl(
     _In_ PRTL_AVL_TABLE Table,
     _In_ ULONG I
 );
-#endif // NTDDI_VERSION >= NTDDI_WINXP
 
 //
 // The function NumberGenericTableElements returns a ULONG value
 // which is the number of generic table elements currently inserted
 // in the generic table.
 
-#if (NTDDI_VERSION >= NTDDI_WINXP)
 NTSYSAPI
 ULONG
 NTAPI
 RtlNumberGenericTableElementsAvl(
     _In_ PRTL_AVL_TABLE Table
 );
-#endif // NTDDI_VERSION >= NTDDI_WINXP
 
 //
 //  The function IsGenericTableEmpty will return to the caller TRUE if
@@ -1054,7 +1042,6 @@ RtlNumberGenericTableElementsAvl(
 //
 // Generic extensions for using generic structures with the avl libraries.
 //
-#if (NTDDI_VERSION >= NTDDI_WINXP)
 _Must_inspect_result_
 NTSYSAPI
 BOOLEAN
@@ -1062,7 +1049,14 @@ NTAPI
 RtlIsGenericTableEmptyAvl(
     _In_ PRTL_AVL_TABLE Table
 );
-#endif // NTDDI_VERSION >= NTDDI_WINXP
+
+#endif // !_KERNEL_MODE
+
+//
+// SPlay linked
+//
+
+#ifndef _KERNEL_MODE
 
 //
 //  Define the splay links and the associated manipuliation macros and
@@ -1076,10 +1070,6 @@ typedef struct _RTL_SPLAY_LINKS {
     struct _RTL_SPLAY_LINKS* RightChild;
 } RTL_SPLAY_LINKS;
 typedef RTL_SPLAY_LINKS* PRTL_SPLAY_LINKS;
-
-//
-// SPlay linked
-//
 
 #if !defined(MIDL_PASS) && !defined(SORTPP_PASS)
 
@@ -1241,21 +1231,18 @@ RtlInsertAsRightChild(
 
 #endif // !defined(MIDL_PASS) && !defined(SORTPP_PASS)
 
-
 //
 //  The Splay function takes as input a pointer to a splay link in a tree
 //  and splays the tree.  Its function return value is a pointer to the
 //  root of the splayed tree.
 //
 
-#if (NTDDI_VERSION >= NTDDI_WIN2K)
 NTSYSAPI
 PRTL_SPLAY_LINKS
 NTAPI
 RtlSplay(
     _Inout_ PRTL_SPLAY_LINKS Links
 );
-#endif
 
 //
 //  The Delete function takes as input a pointer to a splay link in a tree
@@ -1264,15 +1251,12 @@ RtlSplay(
 //  value is NULL.
 //
 
-
-#if (NTDDI_VERSION >= NTDDI_WIN2K)
 NTSYSAPI
 PRTL_SPLAY_LINKS
 NTAPI
 RtlDelete(
     _In_ PRTL_SPLAY_LINKS Links
 );
-#endif
 
 //
 //  The DeleteNoSplay function takes as input a pointer to a splay link in a tree,
@@ -1283,7 +1267,6 @@ RtlDelete(
 //  It operationally differs from RtlDelete only in that it will not splay the tree.
 //
 
-#if (NTDDI_VERSION >= NTDDI_WIN2K)
 NTSYSAPI
 VOID
 NTAPI
@@ -1291,7 +1274,6 @@ RtlDeleteNoSplay(
     _In_ PRTL_SPLAY_LINKS Links,
     _Inout_ PRTL_SPLAY_LINKS* Root
 );
-#endif
 
 //
 //  The SubtreeSuccessor function takes as input a pointer to a splay link
@@ -1300,7 +1282,6 @@ RtlDeleteNoSplay(
 //  return value is NULL.
 //
 
-#if (NTDDI_VERSION >= NTDDI_WIN2K)
 _Must_inspect_result_
 NTSYSAPI
 PRTL_SPLAY_LINKS
@@ -1308,7 +1289,6 @@ NTAPI
 RtlSubtreeSuccessor(
     _In_ PRTL_SPLAY_LINKS Links
 );
-#endif
 
 //
 //  The SubtreePredecessor function takes as input a pointer to a splay link
@@ -1317,7 +1297,6 @@ RtlSubtreeSuccessor(
 //  the return value is NULL.
 //
 
-#if (NTDDI_VERSION >= NTDDI_WIN2K)
 _Must_inspect_result_
 NTSYSAPI
 PRTL_SPLAY_LINKS
@@ -1325,7 +1304,6 @@ NTAPI
 RtlSubtreePredecessor(
     _In_ PRTL_SPLAY_LINKS Links
 );
-#endif
 
 //
 //  The RealSuccessor function takes as input a pointer to a splay link
@@ -1333,7 +1311,6 @@ RtlSubtreePredecessor(
 //  the entire tree.  If there is not a successor, the return value is NULL.
 //
 
-#if (NTDDI_VERSION >= NTDDI_WIN2K)
 _Must_inspect_result_
 NTSYSAPI
 PRTL_SPLAY_LINKS
@@ -1341,7 +1318,6 @@ NTAPI
 RtlRealSuccessor(
     _In_ PRTL_SPLAY_LINKS Links
 );
-#endif
 
 //
 //  The RealPredecessor function takes as input a pointer to a splay link
@@ -1350,7 +1326,6 @@ RtlRealSuccessor(
 //  is NULL.
 //
 
-#if (NTDDI_VERSION >= NTDDI_WIN2K)
 _Must_inspect_result_
 NTSYSAPI
 PRTL_SPLAY_LINKS
@@ -1358,13 +1333,14 @@ NTAPI
 RtlRealPredecessor(
     _In_ PRTL_SPLAY_LINKS Links
 );
-#endif
+
+#endif // !_KERNEL_MODE
 
 //
 // Generic table
 //
 
-
+#ifndef _KERNEL_MODE
 
 //
 //  Define the generic table package.  Note a generic table should really
@@ -1472,7 +1448,6 @@ typedef RTL_GENERIC_TABLE* PRTL_GENERIC_TABLE;
 //  it can be used.
 //
 
-#if (NTDDI_VERSION >= NTDDI_WIN2K)
 NTSYSAPI
 VOID
 NTAPI
@@ -1483,7 +1458,6 @@ RtlInitializeGenericTable(
     _In_ PRTL_GENERIC_FREE_ROUTINE FreeRoutine,
     _In_opt_ PVOID TableContext
 );
-#endif
 
 //
 //  The function InsertElementGenericTable will insert a new element
@@ -1498,7 +1472,6 @@ RtlInitializeGenericTable(
 //  pointer to the input buffer will not point to the new element.
 //
 
-#if (NTDDI_VERSION >= NTDDI_WIN2K)
 NTSYSAPI
 PVOID
 NTAPI
@@ -1508,7 +1481,6 @@ RtlInsertElementGenericTable(
     _In_ ULONG BufferSize,
     _Out_opt_ PBOOLEAN NewElement
 );
-#endif
 
 //
 //  The function InsertElementGenericTableFull will insert a new element
@@ -1525,7 +1497,6 @@ RtlInsertElementGenericTable(
 //  previous RtlLookupElementGenericTableFull.
 //
 
-#if (NTDDI_VERSION >= NTDDI_WIN2K)
 NTSYSAPI
 PVOID
 NTAPI
@@ -1537,7 +1508,6 @@ RtlInsertElementGenericTableFull(
     _In_ PVOID NodeOrParent,
     _In_ TABLE_SEARCH_RESULT SearchResult
 );
-#endif
 
 //
 //  The function DeleteElementGenericTable will find and delete an element
@@ -1547,7 +1517,6 @@ RtlInsertElementGenericTableFull(
 //  locating the element in the table.
 //
 
-#if (NTDDI_VERSION >= NTDDI_WIN2K)
 NTSYSAPI
 BOOLEAN
 NTAPI
@@ -1555,7 +1524,6 @@ RtlDeleteElementGenericTable(
     _In_ PRTL_GENERIC_TABLE Table,
     _In_ PVOID Buffer
 );
-#endif
 
 //
 //  The function LookupElementGenericTable will find an element in a generic
@@ -1565,7 +1533,6 @@ RtlDeleteElementGenericTable(
 //  input buffer is only used as a key in locating the element in the table.
 //
 
-#if (NTDDI_VERSION >= NTDDI_WIN2K)
 _Must_inspect_result_
 NTSYSAPI
 PVOID
@@ -1574,7 +1541,6 @@ RtlLookupElementGenericTable(
     _In_ PRTL_GENERIC_TABLE Table,
     _In_ PVOID Buffer
 );
-#endif
 
 //
 //  The function LookupElementGenericTableFull will find an element in a generic
@@ -1586,7 +1552,6 @@ RtlLookupElementGenericTable(
 //  call to optimize the insert.
 //
 
-#if (NTDDI_VERSION >= NTDDI_WIN2K)
 NTSYSAPI
 PVOID
 NTAPI
@@ -1596,7 +1561,6 @@ RtlLookupElementGenericTableFull(
     _Out_ PVOID* NodeOrParent,
     _Out_ TABLE_SEARCH_RESULT* SearchResult
 );
-#endif
 
 //
 //  The function EnumerateGenericTable will return to the caller one-by-one
@@ -1621,7 +1585,6 @@ RtlLookupElementGenericTableFull(
 //      To enumerate the table without perturbing the splay links, use
 //      RtlEnumerateGenericTableWithoutSplaying
 
-#if (NTDDI_VERSION >= NTDDI_WIN2K)
 _Must_inspect_result_
 NTSYSAPI
 PVOID
@@ -1630,7 +1593,6 @@ RtlEnumerateGenericTable(
     _In_ PRTL_GENERIC_TABLE Table,
     _In_ BOOLEAN Restart
 );
-#endif
 
 //
 //  The function EnumerateGenericTableWithoutSplaying will return to the
@@ -1657,7 +1619,6 @@ RtlEnumerateGenericTable(
 //  the splay order of the tree.
 //
 
-#if (NTDDI_VERSION >= NTDDI_WIN2K)
 _Must_inspect_result_
 NTSYSAPI
 PVOID
@@ -1666,7 +1627,6 @@ RtlEnumerateGenericTableWithoutSplaying(
     _In_ PRTL_GENERIC_TABLE Table,
     _Inout_ PVOID* RestartKey
 );
-#endif
 
 //
 // The function GetElementGenericTable will return the i'th element
@@ -1677,7 +1637,6 @@ RtlEnumerateGenericTableWithoutSplaying(
 // an arbitrary element is deleted from the generic table it will cause
 // all elements inserted after the deleted element to "move up".
 
-#if (NTDDI_VERSION >= NTDDI_WIN2K)
 _Must_inspect_result_
 NTSYSAPI
 PVOID
@@ -1686,21 +1645,18 @@ RtlGetElementGenericTable(
     _In_ PRTL_GENERIC_TABLE Table,
     _In_ ULONG I
 );
-#endif
 
 //
 // The function NumberGenericTableElements returns a ULONG value
 // which is the number of generic table elements currently inserted
 // in the generic table.
 
-#if (NTDDI_VERSION >= NTDDI_WIN2K)
 NTSYSAPI
 ULONG
 NTAPI
 RtlNumberGenericTableElements(
     _In_ PRTL_GENERIC_TABLE Table
 );
-#endif
 
 //
 //  The function IsGenericTableEmpty will return to the caller TRUE if
@@ -1708,7 +1664,6 @@ RtlNumberGenericTableElements(
 //  FALSE otherwise.
 //
 
-#if (NTDDI_VERSION >= NTDDI_WIN2K)
 _Must_inspect_result_
 NTSYSAPI
 BOOLEAN
@@ -1716,13 +1671,16 @@ NTAPI
 RtlIsGenericTableEmpty(
     _In_ PRTL_GENERIC_TABLE Table
 );
-#endif
 
 #endif // RTL_USE_AVL_TABLES
+
+#endif // !_KERNEL_MODE
 
 //
 // Hash Table
 //
+
+#ifndef _KERNEL_MODE
 
 //
 // The hash table header structure can either be allocated
@@ -1744,13 +1702,11 @@ typedef struct _RTL_DYNAMIC_HASH_TABLE_ENTRY {
     ULONG_PTR Signature;
 } RTL_DYNAMIC_HASH_TABLE_ENTRY, * PRTL_DYNAMIC_HASH_TABLE_ENTRY;
 
-
 //
 // Some components want to see the actual signature and can use
 // this macro to encapsulate that operation.
 //
 #define HASH_ENTRY_KEY(x)    ((x)->Signature)
-
 
 //
 // Brief background on each of the parameters and their
@@ -1807,7 +1763,6 @@ typedef struct _RTL_DYNAMIC_HASH_TABLE {
     PVOID Directory;
 
 } RTL_DYNAMIC_HASH_TABLE, * PRTL_DYNAMIC_HASH_TABLE;
-
 
 //
 // Inline functions first.
@@ -2094,7 +2049,6 @@ RtlEndStrongEnumerationHashTable(
 );
 #endif
 
-
 #if (NTDDI_VERSION >= NTDDI_WIN7)
 NTSYSAPI
 BOOLEAN
@@ -2113,9 +2067,13 @@ RtlContractHashTable(
 );
 #endif
 
+#endif // !_KERNEL_MODE
+
 //
 // RB Trees
 //
+
+#ifndef _KERNEL_MODE
 
 #if (NTDDI_VERSION >= NTDDI_WIN8)
 NTSYSAPI
@@ -2137,9 +2095,13 @@ RtlRbRemoveNode(
 );
 #endif
 
+#endif // !_KERNEL_MODE
+
 //
 // Critical sections
 //
+
+#ifndef _KERNEL_MODE
 
 NTSYSAPI
 NTSTATUS
@@ -2229,9 +2191,13 @@ RtlCheckForOrphanedCriticalSections(
     _In_ HANDLE ThreadHandle
 );
 
+#endif // !_KERNEL_MODE
+
 //
 // Resources
 //
+
+#ifndef _KERNEL_MODE
 
 typedef struct _RTL_RESOURCE
 {
@@ -2303,9 +2269,13 @@ RtlConvertExclusiveToShared(
     _Inout_ PRTL_RESOURCE Resource
 );
 
+#endif // !_KERNEL_MODE
+
 //
 // Slim reader-writer locks, condition variables, and barriers
 //
+
+#ifndef _KERNEL_MODE
 
 #if (NTDDI_VERSION >= NTDDI_VISTA)
 // winbase:InitializeSRWLock
@@ -2465,9 +2435,13 @@ RtlBarrierForDelete(
 );
 #endif //(NTDDI_VERSION >= NTDDI_VISTA)
 
+#endif // !_KERNEL_MODE
+
 //
 // Wait on address
 //
+
+#ifndef _KERNEL_MODE
 
 // begin_rev
 #if (NTDDI_VERSION >= NTDDI_WIN8)
@@ -2496,6 +2470,7 @@ RtlWakeAddressSingle(
 );
 #endif
 // end_rev
+
 #endif // !_KERNEL_MODE
 
 
@@ -2508,6 +2483,7 @@ RtlWakeAddressSingle(
 #endif
 
 #ifndef _KERNEL_MODE
+
 _At_(AnsiString->Buffer, _Post_equal_to_(Buffer))
 _At_(AnsiString->Length, _Post_equal_to_(0))
 _At_(AnsiString->MaximumLength, _Post_equal_to_(BufferSize))
@@ -2523,6 +2499,7 @@ RtlInitEmptyAnsiString(
     AnsiString->Buffer = Buffer;
     AnsiString->Length = 0;
 }
+
 #endif // !_KERNEL_MODE
 
 _IRQL_requires_max_(DISPATCH_LEVEL)
@@ -2554,7 +2531,6 @@ RtlInitAnsiString(
     _In_opt_z_ __drv_aliasesMem PCSZ SourceString
 );
 
-#if (NTDDI_VERSION >= NTDDI_WS03)
 _IRQL_requires_max_(DISPATCH_LEVEL)
 NTSYSAPI
 NTSTATUS
@@ -2563,7 +2539,6 @@ RtlInitAnsiStringEx(
     _Out_ PANSI_STRING DestinationString,
     _In_opt_z_ __drv_aliasesMem PCSZ SourceString
 );
-#endif
 
 _IRQL_requires_max_(PASSIVE_LEVEL)
 NTSYSAPI
@@ -2698,6 +2673,7 @@ RtlIsNullOrEmptyUnicodeString(
 }
 
 #ifndef _KERNEL_MODE
+
 _At_(UnicodeString->Buffer, _Post_equal_to_(Buffer))
 _At_(UnicodeString->Length, _Post_equal_to_(0))
 _At_(UnicodeString->MaximumLength, _Post_equal_to_(BufferSize))
@@ -2714,6 +2690,7 @@ RtlInitEmptyUnicodeString(
     DestinationString->MaximumLength = MaximumLength;
     DestinationString->Length = 0;
 }
+
 #endif // !_KERNEL_MODE
 
 _IRQL_requires_max_(DISPATCH_LEVEL)
@@ -2737,13 +2714,15 @@ RtlInitUnicodeStringEx(
     _In_opt_z_ __drv_aliasesMem PCWSTR SourceString
 );
 
+_IRQL_requires_max_(APC_LEVEL)
 _Success_(return != 0)
 _Must_inspect_result_
 NTSYSAPI
 BOOLEAN
 NTAPI
 RtlCreateUnicodeString(
-    _Out_ PUNICODE_STRING DestinationString,
+    _Out_ _At_(DestinationString->Buffer, __drv_allocatesMem(Mem))
+    PUNICODE_STRING DestinationString,
     _In_z_ PCWSTR SourceString
 );
 
@@ -2823,7 +2802,7 @@ RtlCompareUnicodeString(
     _In_ BOOLEAN CaseInSensitive
 );
 
-#if (NTDDI_VERSION >= NTDDI_VISTA)
+_IRQL_requires_max_(PASSIVE_LEVEL)
 _Must_inspect_result_
 NTSYSAPI
 LONG
@@ -2835,7 +2814,6 @@ RtlCompareUnicodeStrings(
     _In_ SIZE_T String2Length,
     _In_ BOOLEAN CaseInSensitive
 );
-#endif
 
 _IRQL_requires_max_(PASSIVE_LEVEL)
 _Must_inspect_result_
@@ -2885,7 +2863,7 @@ RtlPrefixUnicodeString(
     _In_ BOOLEAN CaseInSensitive
 );
 
-#if (NTDDI_VERSION >= NTDDI_THRESHOLD)
+#if (NTDDI_VERSION >= NTDDI_WINTHRESHOLD)
 _IRQL_requires_max_(PASSIVE_LEVEL)
 _Must_inspect_result_
 NTSYSAPI
@@ -2910,9 +2888,9 @@ RtlFindUnicodeSubstring(
 );
 #endif
 
-#define RTL_FIND_CHAR_IN_UNICODE_STRING_START_AT_END 0x00000001
+#define RTL_FIND_CHAR_IN_UNICODE_STRING_START_AT_END        0x00000001
 #define RTL_FIND_CHAR_IN_UNICODE_STRING_COMPLEMENT_CHAR_SET 0x00000002
-#define RTL_FIND_CHAR_IN_UNICODE_STRING_CASE_INSENSITIVE 0x00000004
+#define RTL_FIND_CHAR_IN_UNICODE_STRING_CASE_INSENSITIVE    0x00000004
 
 _Must_inspect_result_
 NTSYSAPI
@@ -3000,8 +2978,10 @@ NTSYSAPI
 NTSTATUS
 NTAPI
 RtlAnsiStringToUnicodeString(
-    _Inout_ PUNICODE_STRING DestinationString,
-    _In_ PANSI_STRING SourceString,
+    _When_(AllocateDestinationString, _Out_ _At_(DestinationString->Buffer, __drv_allocatesMem(Mem)))
+    _When_(!AllocateDestinationString, _Inout_)
+    PUNICODE_STRING DestinationString,
+    _In_ PCANSI_STRING SourceString,
     _In_ BOOLEAN AllocateDestinationString
 );
 
@@ -3036,11 +3016,13 @@ _When_(AllocateDestinationString,
     NTSYSAPI
     NTSTATUS
     NTAPI
-RtlUnicodeStringToUTF8String(
-    _Inout_ PUTF8_STRING DestinationString,
-    _In_ PCUNICODE_STRING SourceString,
-    _In_ BOOLEAN AllocateDestinationString
-);
+    RtlUnicodeStringToUTF8String(
+        _When_(AllocateDestinationString, _Out_ _At_(DestinationString->Buffer, __drv_allocatesMem(Mem)))
+        _When_(!AllocateDestinationString, _Inout_)
+        PUTF8_STRING DestinationString,
+        _In_ PCUNICODE_STRING SourceString,
+        _In_ BOOLEAN AllocateDestinationString
+    );
 
 _IRQL_requires_max_(PASSIVE_LEVEL)
 _Must_inspect_result_
@@ -3048,11 +3030,13 @@ NTSYSAPI
 NTSTATUS
 NTAPI
 RtlUTF8StringToUnicodeString(
-    _Inout_ PUNICODE_STRING DestinationString,
+    _When_(AllocateDestinationString, _Out_ _At_(DestinationString->Buffer, __drv_allocatesMem(Mem)))
+    _When_(!AllocateDestinationString, _Inout_)
+    PUNICODE_STRING DestinationString,
     _In_ PUTF8_STRING SourceString,
     _In_ BOOLEAN AllocateDestinationString
 );
-#endif
+#endif //NTDDI_VERSION >= NTDDI_WIN10_VB
 
 NTSYSAPI
 WCHAR
@@ -3116,7 +3100,9 @@ NTSYSAPI
 NTSTATUS
 NTAPI
 RtlOemStringToCountedUnicodeString(
-    _Inout_ PUNICODE_STRING DestinationString,
+    _When_(AllocateDestinationString, _Out_ _At_(DestinationString->Buffer, __drv_allocatesMem(Mem)))
+    _When_(!AllocateDestinationString, _Inout_)
+    PUNICODE_STRING DestinationString,
     _In_ PCOEM_STRING SourceString,
     _In_ BOOLEAN AllocateDestinationString
 );
@@ -3284,6 +3270,7 @@ RtlUnicodeToUTF8N(
 NTSYSAPI USHORT NlsAnsiCodePage;
 
 #ifndef _KERNEL_MODE
+
 #ifdef _NTSYSTEM_
 
 // Try to avoid these, the preferred system ACP/OEMCP is UTF-8 and these are then irrelevent
@@ -3326,6 +3313,7 @@ typedef struct _NLSTABLEINFO
     PUSHORT UpperCaseTable;
     PUSHORT LowerCaseTable;
 } NLSTABLEINFO, * PNLSTABLEINFO;
+
 #endif // !_KERNEL_MODE
 
 //
@@ -3376,11 +3364,12 @@ NTSYSAPI
 VOID
 NTAPI
 RtlInitCodePageTable(
-    _In_reads_z_(2) PUSHORT TableBase,
+    _In_reads_opt_(2) PUSHORT TableBase,
     _Inout_ PCPTABLEINFO CodePageTable
 );
 
 #ifndef _KERNEL_MODE
+
 NTSYSAPI
 VOID
 NTAPI
@@ -3406,6 +3395,7 @@ RtlIsTextUnicode(
     _In_ ULONG Size,
     _Inout_opt_ PULONG Result
 );
+
 #endif // !_KERNEL_MODE
 
 typedef enum _RTL_NORM_FORM
@@ -3448,6 +3438,7 @@ RtlIsNormalizedString(
 #endif
 
 #ifndef _KERNEL_MODE
+
 #if (NTDDI_VERSION >= NTDDI_WIN7)
 // ntifs:FsRtlIsNameInExpression
 NTSYSAPI
@@ -3498,6 +3489,7 @@ RtlDnsHostNameToComputerName(
     _In_ PUNICODE_STRING DnsHostNameString,
     _In_ BOOLEAN AllocateComputerNameString
 );
+
 #endif // !_KERNEL_MODE
 
 #ifndef _KERNEL_MODE
@@ -3582,13 +3574,14 @@ RtlIdnToNameprepUnicode(
     _Out_writes_to_(*DestinationStringLength, *DestinationStringLength) PWSTR DestinationString,
     _Inout_ PLONG DestinationStringLength
 );
-#endif
+#endif // NTDDI_VERSION >= NTDDI_VISTA
 
 //
 // Prefix
 //
 
 #ifndef _KERNEL_MODE
+
 //
 //  Prefix package types and procedures.
 //
@@ -3613,6 +3606,7 @@ typedef struct _PREFIX_TABLE {
     PPREFIX_TABLE_ENTRY NextPrefixTree;
 } PREFIX_TABLE;
 typedef PREFIX_TABLE* PPREFIX_TABLE;
+
 #endif // !_KERNEL_MODE
 
 _IRQL_requires_max_(PASSIVE_LEVEL)
@@ -3653,6 +3647,7 @@ PfxFindPrefix(
 );
 
 #ifndef _KERNEL_MODE
+
 //
 //  The following definitions are for the unicode version of the prefix
 //  package.
@@ -3675,6 +3670,7 @@ typedef struct _UNICODE_PREFIX_TABLE {
     PUNICODE_PREFIX_TABLE_ENTRY LastNextEntry;
 } UNICODE_PREFIX_TABLE;
 typedef UNICODE_PREFIX_TABLE* PUNICODE_PREFIX_TABLE;
+
 #endif // !_KERNEL_MODE
 
 _IRQL_requires_max_(PASSIVE_LEVEL)
@@ -3691,7 +3687,7 @@ BOOLEAN
 NTAPI
 RtlInsertUnicodePrefix(
     _In_ PUNICODE_PREFIX_TABLE PrefixTable,
-    _In_ PUNICODE_STRING Prefix,
+    _In_ __drv_aliasesMem PUNICODE_STRING Prefix,
     _Out_ PUNICODE_PREFIX_TABLE_ENTRY PrefixTableEntry
 );
 
@@ -3730,6 +3726,7 @@ RtlNextUnicodePrefix(
 //
 
 #ifndef _KERNEL_MODE
+
 //
 //  Compression package types and procedures.
 //
@@ -3813,6 +3810,7 @@ typedef struct _COMPRESSED_DATA_INFO {
 
 } COMPRESSED_DATA_INFO;
 typedef COMPRESSED_DATA_INFO* PCOMPRESSED_DATA_INFO;
+
 #endif // !_KERNEL_MODE
 
 NTSYSAPI
@@ -3974,6 +3972,7 @@ RtlCompressChunks(
 //
 
 #ifndef _KERNEL_MODE
+
 #if (NTDDI_VERSION >= NTDDI_VISTA)
 // private
 NTSYSAPI
@@ -4067,6 +4066,7 @@ RtlGetLocaleFileMappingAddress(
     _Out_ PLARGE_INTEGER DefaultCasingTableSize
 );
 #endif
+
 #endif // !_KERNEL_MODE
 
 //
@@ -4074,6 +4074,7 @@ RtlGetLocaleFileMappingAddress(
 //
 
 #ifndef _KERNEL_MODE
+
 NTSYSAPI
 PPEB
 NTAPI
@@ -4120,6 +4121,7 @@ RtlFreeToPeb(
     _In_ PVOID Block,
     _In_ ULONG Size
 );
+
 #endif // !_KERNEL_MODE
 
 //
@@ -4212,6 +4214,7 @@ typedef struct _RTL_USER_PROCESS_PARAMETERS
 #define RTL_USER_PROC_OPTIN_PROCESS         0x00020000
 
 #ifndef _KERNEL_MODE
+
 NTSYSAPI
 NTSTATUS
 NTAPI
@@ -4476,9 +4479,13 @@ CreateProcessInternalW(
     _Out_opt_ PHANDLE hNewToken
 );
 
+#endif // !_KERNEL_MODE
+
 //
 // Threads
 //
+
+#ifndef _KERNEL_MODE
 
 typedef NTSTATUS(NTAPI* PUSER_THREAD_START_ROUTINE)(
     _In_ PVOID ThreadParameter
@@ -4553,7 +4560,13 @@ RtlFreeUserStack(
 );
 #endif
 
+#endif // !_KERNEL_MODE
+
+//
 // Extended thread context
+//
+
+#ifndef _KERNEL_MODE
 
 typedef struct _CONTEXT_CHUNK
 {
@@ -4680,9 +4693,13 @@ RtlRemoteCall(
     _In_ BOOLEAN AlreadySuspended
 );
 
+#endif // !_KERNEL_MODE
+
 //
 // Vectored exception handlers
 //
+
+#ifndef _KERNEL_MODE
 
 NTSYSAPI
 PVOID
@@ -4714,9 +4731,13 @@ RtlRemoveVectoredContinueHandler(
     _In_ PVOID Handle
 );
 
+#endif // !_KERNEL_MODE
+
 //
 // Runtime exception handling
 //
+
+#ifndef _KERNEL_MODE
 
 typedef ULONG(NTAPI* PRTLP_UNHANDLED_EXCEPTION_FILTER)(
     _In_ PEXCEPTION_POINTERS ExceptionInfo
@@ -4886,6 +4907,7 @@ RtlImageNtHeaderEx(
 );
 
 #ifndef _KERNEL_MODE
+
 NTSYSAPI
 PVOID
 NTAPI
@@ -4903,6 +4925,7 @@ RtlSectionTableFromVirtualAddress(
     _In_ PVOID BaseOfImage,
     _In_ ULONG VirtualAddress
 );
+
 #endif // !_KERNEL_MODE
 
 NTSYSAPI
@@ -4916,6 +4939,7 @@ RtlImageDirectoryEntryToData(
 );
 
 #ifndef _KERNEL_MODE
+
 NTSYSAPI
 PIMAGE_SECTION_HEADER
 NTAPI
@@ -4934,6 +4958,7 @@ RtlImageRvaToVa(
     _In_ ULONG Rva,
     _Out_opt_ PIMAGE_SECTION_HEADER* LastRvaSection
 );
+
 #endif // !_KERNEL_MODE
 
 #if (NTDDI_VERSION >= NTDDI_WIN10)
@@ -4948,6 +4973,7 @@ RtlFindExportedRoutineByName(
 #endif
 
 #ifndef _KERNEL_MODE
+
 #if (NTDDI_VERSION >= NTDDI_WIN10_RS1)
 // rev
 NTSYSAPI
@@ -4959,7 +4985,48 @@ RtlGuardCheckLongJumpTarget(
     _Out_ PBOOL IsLongJumpTarget
 );
 #endif
+
 #endif // !_KERNEL_MODE
+
+#ifdef _KERNEL_MODE
+
+NTSYSAPI
+NTSTATUS
+NTAPI
+RtlPcToFileName(
+    _In_ PVOID PcValue,
+    _Out_ PUNICODE_STRING FileName
+);
+
+NTSYSAPI
+NTSTATUS
+NTAPI
+RtlPcToFilePath(
+    _In_ PVOID PcValue,
+    _Out_ PUNICODE_STRING FilePath
+);
+
+#endif // _KERNEL_MODE
+
+typedef struct _RTL_MODULE_BASIC_INFO {
+    PVOID ImageBase;
+} RTL_MODULE_BASIC_INFO, * PRTL_MODULE_BASIC_INFO;
+
+typedef struct _RTL_MODULE_EXTENDED_INFO {
+    RTL_MODULE_BASIC_INFO BasicInfo;
+    ULONG ImageSize;
+    USHORT FileNameOffset;
+    UCHAR FullPathName[256];
+} RTL_MODULE_EXTENDED_INFO, * PRTL_MODULE_EXTENDED_INFO;
+
+NTSYSAPI
+NTSTATUS
+NTAPI
+RtlQueryModuleInformation(      // ZwQuerySystemInformation(SystemModuleInformation)
+    _Out_ PULONG ReturnLength,
+    _In_ ULONG BufferSize,      // sizeof RTL_MODULE_EXTENDED_INFO or RTL_MODULE_BASIC_INFO
+    _In_ PVOID Buffer           // PRTL_MODULE_EXTENDED_INFO or PRTL_MODULE_BASIC_INFO
+);
 
 //
 // Memory
@@ -4976,6 +5043,7 @@ RtlCompareMemoryUlong(
 );
 
 #ifndef _KERNEL_MODE
+
 #if defined(_M_AMD64)
 FORCEINLINE
 VOID
@@ -5048,6 +5116,7 @@ RtlFillMemoryUlonglong(
     _In_ ULONGLONG Pattern
 );
 #endif
+
 #endif // !_KERNEL_MODE
 
 //
@@ -5055,6 +5124,7 @@ RtlFillMemoryUlonglong(
 //
 
 #ifndef _KERNEL_MODE
+
 NTSYSAPI
 NTSTATUS
 NTAPI
@@ -5175,6 +5245,7 @@ RtlSetEnvironmentStrings(
     _In_ PCWCHAR NewEnvironment,
     _In_ SIZE_T NewEnvironmentSize
 );
+
 #endif // !_KERNEL_MODE
 
 //
@@ -5542,6 +5613,7 @@ NTAPI
 RtlDllShutdownInProgress(
     VOID
 );
+
 #endif // !_KERNEL_MODE
 
 //
@@ -5549,6 +5621,7 @@ RtlDllShutdownInProgress(
 //
 
 #ifndef _KERNEL_MODE
+
 typedef struct _RTL_HEAP_ENTRY
 {
     SIZE_T Size;
@@ -5734,6 +5807,7 @@ RtlZeroHeap(
 );
 
 #ifndef _KERNEL_MODE
+
 NTSYSAPI
 VOID
 NTAPI
@@ -5741,11 +5815,13 @@ RtlProtectHeap(
     _In_ PVOID HeapHandle,
     _In_ BOOLEAN MakeReadOnly
 );
+
 #endif // !_KERNEL_MODE
 
 #define RtlProcessHeap() (NtCurrentPeb()->ProcessHeap)
 
 #ifndef _KERNEL_MODE
+
 NTSYSAPI
 BOOLEAN
 NTAPI
@@ -6084,6 +6160,7 @@ NTAPI
 RtlFlushHeaps(
     VOID
 );
+
 #endif // !_KERNEL_MODE
 
 //
@@ -6091,8 +6168,8 @@ RtlFlushHeaps(
 //
 
 #ifndef _KERNEL_MODE
-// begin_private
 
+// begin_private
 typedef struct _RTL_MEMORY_ZONE_SEGMENT
 {
     struct _RTL_MEMORY_ZONE_SEGMENT* NextSegment;
@@ -6156,8 +6233,8 @@ RtlUnlockMemoryZone(
     _In_ PVOID MemoryZone
 );
 #endif
-
 // end_private
+
 #endif // !_KERNEL_MODE
 
 //
@@ -6165,8 +6242,8 @@ RtlUnlockMemoryZone(
 //
 
 #ifndef _KERNEL_MODE
-// begin_private
 
+// begin_private
 #if (NTDDI_VERSION >= NTDDI_VISTA)
 NTSYSAPI
 NTSTATUS
@@ -6232,8 +6309,8 @@ RtlUnlockMemoryBlockLookaside(
     _In_ PVOID MemoryBlockLookaside
 );
 #endif
-
 // end_private
+
 #endif // !_KERNEL_MODE
 
 //
@@ -6241,6 +6318,7 @@ RtlUnlockMemoryBlockLookaside(
 //
 
 #ifndef _KERNEL_MODE
+
 #if (NTDDI_VERSION >= NTDDI_VISTA)
 // private
 NTSYSAPI
@@ -6259,9 +6337,13 @@ RtlSetCurrentTransaction(
 );
 #endif
 
+#endif // _KERNEL_MODE
+
 //
 // LUIDs
 //
+
+#ifndef _KERNEL_MODE
 
 FORCEINLINE BOOLEAN RtlIsEqualLuid( // RtlEqualLuid
     _In_ PLUID L1,
@@ -6327,10 +6409,11 @@ RtlCopyLuidAndAttributesArray(
     _In_ PLUID_AND_ATTRIBUTES Dest
 );
 
-#ifndef _KERNEL_MODE
 //
 // Byte swap routines.
 //
+
+#ifndef _KERNEL_MODE
 
 //
 // Byte swap routines.  These are used to convert from little-endian to
@@ -6338,6 +6421,7 @@ RtlCopyLuidAndAttributesArray(
 //
 
 #if (defined(_M_IX86) && (_MSC_FULL_VER > 13009037)) || ((defined(_M_AMD64) || defined(_M_IA64)) && (_MSC_FULL_VER > 13009175)) || defined(_M_ARM) || defined(_M_ARM64)
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -6354,27 +6438,23 @@ extern "C" {
 #define RtlUshortByteSwap(_x)    _byteswap_ushort((USHORT)(_x))
 #define RtlUlongByteSwap(_x)     _byteswap_ulong((_x))
 #define RtlUlonglongByteSwap(_x) _byteswap_uint64((_x))
+
 #else
 
-#if (NTDDI_VERSION >= NTDDI_WIN2K)
 NTSYSAPI
 USHORT
 FASTCALL
 RtlUshortByteSwap(
     _In_ USHORT Source
 );
-#endif
 
-#if (NTDDI_VERSION >= NTDDI_WIN2K)
 NTSYSAPI
 ULONG
 FASTCALL
 RtlUlongByteSwap(
     _In_ ULONG Source
 );
-#endif
 
-#if (NTDDI_VERSION >= NTDDI_WIN2K)
 NTSYSAPI
 ULONGLONG
 FASTCALL
@@ -6382,7 +6462,7 @@ RtlUlonglongByteSwap(
     _In_ ULONGLONG Source
 );
 #endif
-#endif
+
 #endif // !_KERNEL_MODE
 
 //
@@ -6390,6 +6470,7 @@ RtlUlonglongByteSwap(
 //
 
 #ifndef _KERNEL_MODE
+
 // private
 typedef struct _RTL_PROCESS_VERIFIER_OPTIONS
 {
@@ -6505,6 +6586,7 @@ RtlSetProcessDebugInformation(
 //
 
 #ifdef _KERNEL_MODE
+
 typedef struct _MESSAGE_RESOURCE_ENTRY {
     USHORT   Length;
     USHORT   Flags;
@@ -6524,6 +6606,7 @@ typedef struct _MESSAGE_RESOURCE_DATA {
     UINT32 NumberOfBlocks;
     MESSAGE_RESOURCE_BLOCK Blocks[1];
 } MESSAGE_RESOURCE_DATA, * PMESSAGE_RESOURCE_DATA;
+
 #endif // _KERNEL_MODE
 
 NTSYSAPI
@@ -6584,6 +6667,7 @@ RtlFormatMessageEx(
 );
 
 #ifndef _KERNEL_MODE
+
 NTSYSAPI
 NTSTATUS
 NTAPI
@@ -6596,6 +6680,7 @@ RtlGetFileMUIPath(
     _Inout_ PULONG FileMUIPathLength,
     _Inout_ PULONGLONG Enumerator
 );
+
 #endif // !_KERNEL_MODE
 
 //
@@ -6622,6 +6707,7 @@ RtlNtStatusToDosErrorNoTeb(
 );
 
 #ifndef _KERNEL_MODE
+
 NTSYSAPI
 NTSTATUS
 NTAPI
@@ -6675,6 +6761,7 @@ RtlSetThreadErrorMode(
     _In_ ULONG NewMode,
     _Out_opt_ PULONG OldMode
 );
+
 #endif // !_KERNEL_MODE
 
 //
@@ -6682,6 +6769,7 @@ RtlSetThreadErrorMode(
 //
 
 #ifndef _KERNEL_MODE
+
 #if (NTDDI_VERSION >= NTDDI_VISTA)
 // private
 NTSYSAPI
@@ -6730,6 +6818,7 @@ RtlReportSilentProcessExit(
     _In_ NTSTATUS ExitStatus
 );
 #endif
+
 #endif // !_KERNEL_MODE
 
 //
@@ -6755,6 +6844,7 @@ RtlRandomEx(
 );
 
 #ifndef _KERNEL_MODE
+
 NTSYSAPI
 ULONG
 NTAPI
@@ -6772,6 +6862,7 @@ RtlComputeImportTableHash(
     _Out_writes_bytes_(16) PCHAR Hash,
     _In_ ULONG ImportTableHashRevision // must be 1
 );
+
 #endif // !_KERNEL_MODE
 
 //
@@ -6794,7 +6885,7 @@ NTSYSAPI
 NTSTATUS
 NTAPI
 RtlCharToInteger(
-    _In_ PCSTR String,
+    _In_z_ PCSZ String,
     _In_opt_ ULONG Base,
     _Out_ PULONG Value
 );
@@ -6811,6 +6902,7 @@ RtlLargeIntegerToChar(
 );
 
 _IRQL_requires_max_(PASSIVE_LEVEL)
+_At_(String->MaximumLength, _Const_)
 NTSYSAPI
 NTSTATUS
 NTAPI
@@ -6832,11 +6924,13 @@ RtlInt64ToUnicodeString(
 );
 
 #ifndef _KERNEL_MODE
+
 #ifdef _WIN64
 #define RtlIntPtrToUnicodeString(Value, Base, String) RtlInt64ToUnicodeString(Value, Base, String)
 #else
 #define RtlIntPtrToUnicodeString(Value, Base, String) RtlIntegerToUnicodeString(Value, Base, String)
 #endif
+
 #endif // !_KERNEL_MODE
 
 _IRQL_requires_max_(PASSIVE_LEVEL)
@@ -6849,9 +6943,7 @@ RtlUnicodeStringToInteger(
     _Out_ PULONG Value
 );
 
-_IRQL_requires_max_(PASSIVE_LEVEL)
 NTSTATUS
-NTAPI
 RtlUnicodeStringToInt64(
     _In_ PCUNICODE_STRING String,
     _In_opt_ ULONG Base,
@@ -6869,6 +6961,7 @@ RtlUnicodeStringToInt64(
 //
 
 #ifndef _KERNEL_MODE
+
 typedef struct _TIME_FIELDS
 {
     CSHORT Year;            // 1601...
@@ -6971,6 +7064,7 @@ RtlGetSystemTimePrecise(
     VOID
 );
 #endif
+
 #endif // !_KERNEL_MODE
 
 //
@@ -7014,11 +7108,13 @@ RtlSetTimeZoneInformation(
 //
 
 #ifndef _KERNEL_MODE
+
 typedef struct _RTL_BITMAP {
     ULONG SizeOfBitMap;                     // Number of bits in bit map
     PULONG Buffer;                          // Pointer to the bit map itself
 } RTL_BITMAP;
 typedef RTL_BITMAP* PRTL_BITMAP;
+
 #endif // !_KERNEL_MODE
 
 NTSYSAPI
@@ -7026,8 +7122,8 @@ VOID
 NTAPI
 RtlInitializeBitMap(
     _Out_ PRTL_BITMAP BitMapHeader,
-    _In_ PULONG BitMapBuffer,
-    _In_ ULONG SizeOfBitMap
+    _In_opt_ __drv_aliasesMem PULONG BitMapBuffer,
+    _In_opt_ ULONG SizeOfBitMap
 );
 
 NTSYSAPI
@@ -7163,6 +7259,7 @@ RtlSetBits(
 //
 
 #ifndef _KERNEL_MODE
+
 typedef struct _RTL_BITMAP_RUN {
 
     ULONG StartingIndex;
@@ -7170,6 +7267,7 @@ typedef struct _RTL_BITMAP_RUN {
 
 } RTL_BITMAP_RUN;
 typedef RTL_BITMAP_RUN* PRTL_BITMAP_RUN;
+
 #endif // !_KERNEL_MODE
 
 NTSYSAPI
@@ -7199,6 +7297,7 @@ RtlFindFirstRunClear(
 );
 
 #ifndef _KERNEL_MODE
+
 _Must_inspect_result_
 FORCEINLINE
 BOOLEAN
@@ -7213,6 +7312,7 @@ RtlCheckBit(
     return (((PLONG)BitMapHeader->Buffer)[BitPosition / 32] >> (BitPosition % 32)) & 0x1;
 #endif
 }
+
 #endif // !_KERNEL_MODE
 
 
@@ -7392,6 +7492,7 @@ RtlTestBitEx(
 //
 
 #ifndef _KERNEL_MODE
+
 typedef struct _RTL_HANDLE_TABLE_ENTRY
 {
     union
@@ -7462,6 +7563,7 @@ RtlIsValidIndexHandle(
     _In_ ULONG HandleIndex,
     _Out_ PRTL_HANDLE_TABLE_ENTRY* Handle
 );
+
 #endif // !_KERNEL_MODE
 
 //
@@ -7722,6 +7824,7 @@ RtlCopySidAndAttributesArray(
 );
 
 #ifndef _KERNEL_MODE
+
 #if (NTDDI_VERSION >= NTDDI_VISTA)
 // private
 NTSYSAPI
@@ -7767,6 +7870,7 @@ RtlSidIsHigherLevel(
     _Out_ PBOOLEAN HigherLevel
 );
 #endif
+
 #endif // !_KERNEL_MODE
 
 #if (NTDDI_VERSION >= NTDDI_WIN7)
@@ -7931,6 +8035,7 @@ RtlSetControlSecurityDescriptor(
 );
 
 #ifndef _KERNEL_MODE
+
 NTSYSAPI
 NTSTATUS
 NTAPI
@@ -7955,6 +8060,7 @@ RtlSetSecurityDescriptorRMControl(
     _Inout_ PSECURITY_DESCRIPTOR SecurityDescriptor,
     _In_opt_ PUCHAR RMControl
 );
+
 #endif // !_KERNEL_MODE
 
 _IRQL_requires_max_(APC_LEVEL)
@@ -7968,7 +8074,6 @@ RtlSetDaclSecurityDescriptor(
     _In_ BOOLEAN DaclDefaulted
 );
 
-_IRQL_requires_max_(APC_LEVEL)
 NTSYSAPI
 NTSTATUS
 NTAPI
@@ -8178,6 +8283,7 @@ RtlValidAcl(
 );
 
 #ifdef _KERNEL_MODE
+
 //
 // Currently define Flags for "OBJECT" ACE types.
 //
@@ -8217,6 +8323,7 @@ typedef struct _ACL_SIZE_INFORMATION {
     UINT32 AclBytesFree;
 } ACL_SIZE_INFORMATION;
 typedef ACL_SIZE_INFORMATION* PACL_SIZE_INFORMATION;
+
 #endif // !_KERNEL_MODE
 
 _IRQL_requires_max_(APC_LEVEL)
@@ -8474,6 +8581,7 @@ RtlDefaultNpAcl(
 //
 
 #ifndef _KERNEL_MODE
+
 NTSYSAPI
 NTSTATUS
 NTAPI
@@ -8591,6 +8699,7 @@ RtlCopySecurityDescriptor(
     _In_ PSECURITY_DESCRIPTOR InputSecurityDescriptor,
     _Out_ PSECURITY_DESCRIPTOR* OutputSecurityDescriptor
 );
+
 #endif // !_KERNEL_MODE
 
 //
@@ -8598,6 +8707,7 @@ RtlCopySecurityDescriptor(
 //
 
 #ifndef _KERNEL_MODE
+
 NTSYSAPI
 VOID
 NTAPI
@@ -9317,6 +9427,7 @@ RtlIsProcessorFeaturePresent(
 );
 
 #ifndef _KERNEL_MODE
+
 // rev
 NTSYSAPI
 ULONG
@@ -9334,6 +9445,7 @@ RtlGetCurrentProcessorNumberEx(
     _Out_ PPROCESSOR_NUMBER ProcessorNumber
 );
 #endif
+
 #endif // !_KERNEL_MODE
 
 //
@@ -9341,6 +9453,7 @@ RtlGetCurrentProcessorNumberEx(
 //
 
 #ifndef _KERNEL_MODE
+
 NTSYSAPI
 VOID
 NTAPI
@@ -9361,6 +9474,7 @@ NTAPI
 RtlGetFrame(
     VOID
 );
+
 #endif // !_KERNEL_MODE
 
 #define RTL_WALK_USER_MODE_STACK    0x00000001
@@ -9508,8 +9622,8 @@ RtlUnlockModuleSection(
 //
 
 #ifndef _KERNEL_MODE
-// begin_msdn:"Winternl"
 
+// begin_msdn:"Winternl"
 #define RTL_UNLOAD_EVENT_TRACE_NUMBER 64
 
 // private
@@ -9552,8 +9666,8 @@ RtlGetUnloadEventTraceEx(
     _Out_ PVOID * EventTrace // works across all processes
 );
 #endif
-
 // end_msdn
+
 #endif // !_KERNEL_MODE
 
 //
@@ -9561,6 +9675,7 @@ RtlGetUnloadEventTraceEx(
 //
 
 #ifndef _KERNEL_MODE
+
 #if (NTDDI_VERSION >= NTDDI_WIN7)
 // rev
 NTSYSAPI
@@ -9578,6 +9693,7 @@ RtlQueryPerformanceFrequency(
     _Out_ PLARGE_INTEGER PerformanceFrequency
 );
 #endif
+
 #endif // !_KERNEL_MODE
 
 //
@@ -9585,6 +9701,7 @@ RtlQueryPerformanceFrequency(
 //
 
 #ifndef _KERNEL_MODE
+
 // rev
 typedef enum _IMAGE_MITIGATION_POLICY
 {
@@ -9759,6 +9876,7 @@ RtlSetImageMitigationPolicy(
     _In_ ULONG BufferSize
 );
 #endif
+
 #endif // !_KERNEL_MODE
 
 //
@@ -9902,6 +10020,7 @@ RtlCheckTokenMembershipEx(
 );
 
 #ifndef _KERNEL_MODE
+
 // rev
 NTSYSAPI
 NTSTATUS
@@ -9943,6 +10062,7 @@ NTAPI
 RtlIsValidProcessTrustLabelSid(
     _In_ PSID Sid
 );
+
 #endif // !_KERNEL_MODE
 
 #if (NTDDI_VERSION >= NTDDI_WIN10_RS4)
@@ -9979,6 +10099,7 @@ RtlGetAppContainerSidType(
 //
 
 #ifndef _KERNEL_MODE
+
 NTSYSAPI
 NTSTATUS
 NTAPI
@@ -9993,6 +10114,7 @@ NTAPI
 RtlFlsFree(
     _In_ ULONG FlsIndex
 );
+
 #endif // !_KERNEL_MODE
 
 //
@@ -10000,6 +10122,7 @@ RtlFlsFree(
 // 
 
 #ifndef _KERNEL_MODE
+
 typedef enum _STATE_LOCATION_TYPE
 {
     LocationTypeRegistry = 0,
@@ -10022,6 +10145,7 @@ RtlGetPersistedStateLocation(
     _In_                        ULONG    BufferLengthIn,
     _Out_opt_                   PULONG   BufferLengthOut
 );
+
 #endif // !_KERNEL_MODE
 
 //
@@ -10111,6 +10235,7 @@ RtlQueryPackageClaims(
 //
 
 #if (NTDDI_VERSION >= NTDDI_WIN10_RS3)
+
 #ifndef _KERNEL_MODE
 #undef PHCM_MAX
 #define PHCM_APPLICATION_DEFAULT      ((CHAR)0)
@@ -10135,9 +10260,11 @@ NTAPI
 RtlSetThreadPlaceholderCompatibilityMode(
     _In_ CHAR Mode
 );
+
 #endif // NTDDI_VERSION >= NTDDI_WIN10_RS3
 
 #if (NTDDI_VERSION >= NTDDI_WIN10_RS4)
+
 #ifndef _KERNEL_MODE
 #undef PHCM_MAX
 #define PHCM_DISGUISE_FULL_PLACEHOLDERS  ((CHAR)3)
@@ -10158,6 +10285,7 @@ NTAPI
 RtlSetProcessPlaceholderCompatibilityMode(
     _In_ CHAR Mode
 );
+
 #endif // NTDDI_VERSION >= NTDDI_WIN10_RS4
 
 //
@@ -10165,6 +10293,7 @@ RtlSetProcessPlaceholderCompatibilityMode(
 //
 
 #ifndef _KERNEL_MODE
+
 // rev
 NTSYSAPI
 NTSTATUS
@@ -10183,6 +10312,7 @@ RtlSetProtectedPolicy(
     _In_ ULONG_PTR PolicyValue,
     _Out_ PULONG_PTR OldPolicyValue
 );
+
 #endif // !_KERNEL_MODE
 
 //
@@ -10326,6 +10456,7 @@ RtlFindClosestEncodableLength(
 //
 
 #ifndef _KERNEL_MODE
+
 typedef NTSTATUS(NTAPI* PRTL_SECURE_MEMORY_CACHE_CALLBACK)(
     _In_ PVOID Address,
     _In_ SIZE_T Length
@@ -10354,6 +10485,7 @@ RtlFlushSecureMemoryCache(
     _In_ PVOID MemoryCache,
     _In_opt_ SIZE_T MemoryLength
 );
+
 #endif // !_KERNEL_MODE
 
 //
@@ -10361,6 +10493,7 @@ RtlFlushSecureMemoryCache(
 //
 
 #if (NTDDI_VERSION >= NTDDI_WIN10_RS3)
+
 typedef struct _RTL_FEATURE_USAGE_REPORT
 {
     ULONG FeatureId;
@@ -10500,7 +10633,8 @@ RtlUnsubscribeFromFeatureUsageNotifications(
     _In_ ULONG FeatureConfigurationCount
 );
 #endif // !_KERNEL_MODE
-#endif
+
+#endif // NTDDI_VERSION >= NTDDI_WIN10_RS3
 
 //
 // Only Kernel RTL
@@ -10517,6 +10651,37 @@ FsRtlSetTopLevelIrpForModWriter()
 {
     IoSetTopLevelIrp((PIRP)FSRTL_MOD_WRITE_TOP_LEVEL_IRP);
 }
+
+_Must_inspect_result_
+_IRQL_requires_max_(APC_LEVEL)
+NTSYSAPI
+NTSTATUS
+NTAPI
+FsRtlGetFileNameInformation(                // -> FltMgr!FsRtlGetFileNameInformation
+    _In_ PFILE_OBJECT FileObject,
+    _In_ ULONG NameOptions,                 // FLT_FILE_NAME_OPTIONS
+    _Out_ PUNICODE_STRING FileName,
+    _Outptr_ PVOID* FileNameInformation     // PFLT_FILE_NAME_INFORMATION
+);
+
+_IRQL_requires_max_(APC_LEVEL)
+FORCEINLINE
+NTSTATUS
+NTAPI
+FsRtlParseFileNameInformation(
+    _Inout_ PFLT_FILE_NAME_INFORMATION FileNameInformation
+)
+{
+    return FltParseFileNameInformation(FileNameInformation);
+}
+
+_IRQL_requires_max_(APC_LEVEL)
+NTSYSAPI
+VOID
+NTAPI
+FsRtlReleaseFileNameInformation(
+    _In_ PVOID FileNameInformation
+);
 
 #endif // _KERNEL_MODE
 
