@@ -18,7 +18,7 @@
 首先，请确保您的程序使用的是最新的 Windows SDK。然后克隆项目，直接 include 即可。
 
 ```C
-// 如果你不想让 MINT 污染全局空间的话，请包含以下宏定义
+// 如果你不想污染全局空间的话，请包含以下宏定义
 #define VEIL_USE_SEPARATE_NAMESPACE
 
 #include "veil.h"
