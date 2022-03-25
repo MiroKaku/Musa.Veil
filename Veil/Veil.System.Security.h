@@ -333,6 +333,7 @@ ZwCreateTokenEx(
 );
 #endif
 
+_Must_inspect_result_
 __kernel_entry NTSYSCALLAPI
 NTSTATUS
 NTAPI
@@ -352,6 +353,7 @@ ZwOpenProcessToken(
     _Out_ PHANDLE TokenHandle
 );
 
+_Must_inspect_result_
 __kernel_entry NTSYSCALLAPI
 NTSTATUS
 NTAPI
@@ -373,6 +375,7 @@ ZwOpenProcessTokenEx(
     _Out_ PHANDLE TokenHandle
 );
 
+_Must_inspect_result_
 __kernel_entry NTSYSCALLAPI
 NTSTATUS
 NTAPI
@@ -394,6 +397,7 @@ ZwOpenThreadToken(
     _Out_ PHANDLE TokenHandle
 );
 
+_Must_inspect_result_
 __kernel_entry NTSYSCALLAPI
 NTSTATUS
 NTAPI
@@ -417,6 +421,7 @@ ZwOpenThreadTokenEx(
     _Out_ PHANDLE TokenHandle
 );
 
+_Must_inspect_result_
 __kernel_entry NTSYSCALLAPI
 NTSTATUS
 NTAPI
@@ -425,7 +430,7 @@ NtDuplicateToken(
     _In_ ACCESS_MASK DesiredAccess,
     _In_opt_ POBJECT_ATTRIBUTES ObjectAttributes,
     _In_ BOOLEAN EffectiveOnly,
-    _In_ TOKEN_TYPE Type,
+    _In_ TOKEN_TYPE TokenType,
     _Out_ PHANDLE NewTokenHandle
 );
 
@@ -442,6 +447,11 @@ ZwDuplicateToken(
     _Out_ PHANDLE NewTokenHandle
 );
 
+
+_When_(TokenInformationClass == TokenAccessInformation,
+_At_(TokenInformationLength,
+    _In_range_(>= , sizeof(TOKEN_ACCESS_INFORMATION))))
+_Must_inspect_result_
 __kernel_entry NTSYSCALLAPI
 NTSTATUS
 NTAPI
@@ -465,6 +475,7 @@ ZwQueryInformationToken(
     _Out_ PULONG ReturnLength
 );
 
+_Must_inspect_result_
 __kernel_entry NTSYSCALLAPI
 NTSTATUS
 NTAPI
@@ -486,6 +497,7 @@ ZwSetInformationToken(
     _In_ ULONG TokenInformationLength
 );
 
+_Must_inspect_result_
 __kernel_entry NTSYSCALLAPI
 NTSTATUS
 NTAPI
@@ -495,7 +507,7 @@ NtAdjustPrivilegesToken(
     _In_opt_ PTOKEN_PRIVILEGES NewState,
     _In_ ULONG BufferLength,
     _Out_writes_bytes_to_opt_(BufferLength, *ReturnLength) PTOKEN_PRIVILEGES PreviousState,
-    _Out_opt_ PULONG ReturnLength
+    _Out_ _When_(PreviousState == NULL, _Out_opt_) PULONG ReturnLength
 );
 
 _IRQL_requires_max_(PASSIVE_LEVEL)
@@ -511,6 +523,7 @@ ZwAdjustPrivilegesToken(
     _Out_opt_ PULONG ReturnLength
 );
 
+_Must_inspect_result_
 __kernel_entry NTSYSCALLAPI
 NTSTATUS
 NTAPI
@@ -518,9 +531,9 @@ NtAdjustGroupsToken(
     _In_ HANDLE TokenHandle,
     _In_ BOOLEAN ResetToDefault,
     _In_opt_ PTOKEN_GROUPS NewState,
-    _In_opt_ ULONG BufferLength,
+    _In_range_(>= , sizeof(TOKEN_GROUPS)) ULONG BufferLength,
     _Out_writes_bytes_to_opt_(BufferLength, *ReturnLength) PTOKEN_GROUPS PreviousState,
-    _Out_opt_ PULONG ReturnLength
+    _Out_ PULONG ReturnLength
 );
 
 _IRQL_requires_max_(PASSIVE_LEVEL)
@@ -583,6 +596,7 @@ ZwAdjustTokenClaimsAndDeviceGroups(
 );
 #endif
 
+_Must_inspect_result_
 __kernel_entry NTSYSCALLAPI
 NTSTATUS
 NTAPI
@@ -670,6 +684,7 @@ ZwCompareTokens(
     _Out_ PBOOLEAN Equal
 );
 
+_Must_inspect_result_
 __kernel_entry NTSYSCALLAPI
 NTSTATUS
 NTAPI
@@ -689,6 +704,7 @@ ZwPrivilegeCheck(
     _Out_ PBOOLEAN Result
 );
 
+_Must_inspect_result_
 __kernel_entry NTSYSCALLAPI
 NTSTATUS
 NTAPI
@@ -913,6 +929,7 @@ ZwCompareSigningLevels(
 // Audit alarm
 //
 
+_Must_inspect_result_
 __kernel_entry NTSYSCALLAPI
 NTSTATUS
 NTAPI
@@ -948,6 +965,7 @@ ZwAccessCheckAndAuditAlarm(
     _Out_ PBOOLEAN GenerateOnClose
 );
 
+_Must_inspect_result_
 __kernel_entry NTSYSCALLAPI
 NTSTATUS
 NTAPI
@@ -993,6 +1011,7 @@ ZwAccessCheckByTypeAndAuditAlarm(
     _Out_ PBOOLEAN GenerateOnClose
 );
 
+_Must_inspect_result_
 __kernel_entry NTSYSCALLAPI
 NTSTATUS
 NTAPI
@@ -1038,6 +1057,7 @@ ZwAccessCheckByTypeResultListAndAuditAlarm(
     _Out_ PBOOLEAN GenerateOnClose
 );
 
+_Must_inspect_result_
 __kernel_entry NTSYSCALLAPI
 NTSTATUS
 NTAPI

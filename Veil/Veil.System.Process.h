@@ -3737,63 +3737,63 @@ PsReferenceProcessFilePointer(
 
 // Thread
 
-NTSYSAPI
+NTKERNELAPI
 BOOLEAN
 NTAPI
 PsIsSystemThread(
     _In_ PETHREAD Thread
 );
 
-NTSYSAPI
+_IRQL_requires_max_(DISPATCH_LEVEL)
+NTKERNELAPI
 BOOLEAN
-NTAPI
 PsIsThreadTerminating(
     _In_ PETHREAD Thread
 );
 
-NTSYSAPI
+NTKERNELAPI
 BOOLEAN
 NTAPI
 PsIsThreadImpersonating(
     _In_ PETHREAD Thread
 );
 
-NTSYSAPI
+NTKERNELAPI
 PVOID
 NTAPI
 PsGetCurrentThreadStackLimit(
     VOID
 );
 
-NTSYSAPI
+NTKERNELAPI
 PVOID
 NTAPI
 PsGetCurrentThreadStackBase(
     VOID
 );
 
-NTSYSAPI
+NTKERNELAPI
 KPROCESSOR_MODE
 NTAPI
 PsGetCurrentThreadPreviousMode(
     VOID
 );
 
-NTSYSAPI
+NTKERNELAPI
 PEPROCESS
 NTAPI
 PsGetThreadProcess(
     _In_ PETHREAD Thread
 );
 
-NTSYSAPI
+NTKERNELAPI
 PEPROCESS
 NTAPI
 PsGetCurrentThreadProcess(
     VOID
 );
 
-NTSYSAPI
+NTKERNELAPI
 HANDLE
 NTAPI
 PsGetCurrentThreadProcessId(
@@ -3811,14 +3811,14 @@ PsGetThreadClientId(
     return ClientId;
 }
 
-NTSYSAPI
+NTKERNELAPI
 ULONG
 NTAPI
 PsGetThreadSessionId(
     _In_ PETHREAD Thread
 );
 
-NTSYSAPI
+NTKERNELAPI
 NTSTATUS
 NTAPI
 PsSetContextThread(
@@ -3827,7 +3827,7 @@ PsSetContextThread(
     _In_ KPROCESSOR_MODE Mode
 );
 
-NTSYSAPI
+NTKERNELAPI
 NTSTATUS
 NTAPI
 PsGetContextThread(
@@ -3836,7 +3836,7 @@ PsGetContextThread(
     _In_ KPROCESSOR_MODE Mode
 );
 
-NTSYSAPI
+NTKERNELAPI
 VOID
 NTAPI
 PsSetThreadWin32Thread(
@@ -3845,21 +3845,21 @@ PsSetThreadWin32Thread(
     _In_ PVOID PrevWin32Thread
 );
 
-NTSYSAPI
+NTKERNELAPI
 PVOID
 NTAPI
 PsGetThreadWin32Thread(
     _In_ PETHREAD Thread
 );
 
-NTSYSAPI
+NTKERNELAPI
 PVOID
 NTAPI
 PsGetCurrentThreadWin32Thread(
     VOID
 );
 
-NTSYSAPI
+NTKERNELAPI
 PVOID
 NTAPI
 PsGetCurrentThreadWin32ThreadAndEnterCriticalRegion(
@@ -3868,21 +3868,21 @@ PsGetCurrentThreadWin32ThreadAndEnterCriticalRegion(
 
 #define PsGetThreadTcb(Thread) ((PKTHREAD)(Thread))
 
-NTSYSAPI
+NTKERNELAPI
 PVOID
 NTAPI
 PsGetThreadTeb(
     _In_ PETHREAD Thread
 );
 
-NTSYSAPI
+NTKERNELAPI
 CCHAR
 NTAPI
 PsGetThreadFreezeCount(
     _In_ PETHREAD Thread
 );
 
-NTSYSAPI
+NTKERNELAPI
 BOOLEAN
 NTAPI
 PsGetThreadHardErrorsAreDisabled(

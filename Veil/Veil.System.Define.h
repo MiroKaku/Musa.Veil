@@ -743,6 +743,14 @@ typedef struct _KSYSTEM_TIME
 #include <poppack.h>
 #endif // _KERNEL_MODE
 
+#ifndef _FILETIME_
+#define _FILETIME_
+typedef struct _FILETIME {
+    UINT32 dwLowDateTime;
+    UINT32 dwHighDateTime;
+} FILETIME, * PFILETIME, * LPFILETIME;
+#endif
+
 //
 // This isn't in NT, but it's useful.
 //

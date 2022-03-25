@@ -539,13 +539,17 @@ NtQueryKey(
 );
 
 _IRQL_requires_max_(PASSIVE_LEVEL)
+_When_(Length == 0, _Post_satisfies_(return < 0))
+_When_(Length > 0, _Post_satisfies_(return <= 0))
+_Success_(return == STATUS_SUCCESS)
+_On_failure_(_When_(return == STATUS_BUFFER_OVERFLOW || return == STATUS_BUFFER_TOO_SMALL, _Post_satisfies_(*ResultLength > Length)))
 NTSYSAPI
 NTSTATUS
 NTAPI
 ZwQueryKey(
     _In_ HANDLE KeyHandle,
     _In_ KEY_INFORMATION_CLASS KeyInformationClass,
-    _Out_writes_bytes_opt_(Length) PVOID KeyInformation,
+    _Out_writes_bytes_to_opt_(Length, *ResultLength) PVOID KeyInformation,
     _In_ ULONG Length,
     _Out_ PULONG ResultLength
 );
@@ -566,7 +570,8 @@ NTSTATUS
 NTAPI
 ZwSetInformationKey(
     _In_ HANDLE KeyHandle,
-    _In_ KEY_SET_INFORMATION_CLASS KeySetInformationClass,
+    _In_ __drv_strictTypeMatch(__drv_typeConst)
+    KEY_SET_INFORMATION_CLASS KeySetInformationClass,
     _In_reads_bytes_(KeySetInformationLength) PVOID KeySetInformation,
     _In_ ULONG KeySetInformationLength
 );
@@ -583,7 +588,12 @@ NtQueryValueKey(
     _Out_ PULONG ResultLength
 );
 
+
 _IRQL_requires_max_(PASSIVE_LEVEL)
+_When_(Length == 0, _Post_satisfies_(return < 0))
+_When_(Length > 0, _Post_satisfies_(return <= 0))
+_Success_(return == STATUS_SUCCESS)
+_On_failure_(_When_(return == STATUS_BUFFER_OVERFLOW || return == STATUS_BUFFER_TOO_SMALL, _Post_satisfies_(*ResultLength > Length)))
 NTSYSAPI
 NTSTATUS
 NTAPI
@@ -591,7 +601,7 @@ ZwQueryValueKey(
     _In_ HANDLE KeyHandle,
     _In_ PUNICODE_STRING ValueName,
     _In_ KEY_VALUE_INFORMATION_CLASS KeyValueInformationClass,
-    _Out_writes_bytes_opt_(Length) PVOID KeyValueInformation,
+    _Out_writes_bytes_to_opt_(Length, *ResultLength) PVOID KeyValueInformation,
     _In_ ULONG Length,
     _Out_ PULONG ResultLength
 );
@@ -659,6 +669,10 @@ NtEnumerateKey(
 );
 
 _IRQL_requires_max_(PASSIVE_LEVEL)
+_When_(Length == 0, _Post_satisfies_(return < 0))
+_When_(Length > 0, _Post_satisfies_(return <= 0))
+_Success_(return == STATUS_SUCCESS)
+_On_failure_(_When_(return == STATUS_BUFFER_OVERFLOW || return == STATUS_BUFFER_TOO_SMALL, _Post_satisfies_(*ResultLength > Length)))
 NTSYSAPI
 NTSTATUS
 NTAPI
@@ -666,7 +680,7 @@ ZwEnumerateKey(
     _In_ HANDLE KeyHandle,
     _In_ ULONG Index,
     _In_ KEY_INFORMATION_CLASS KeyInformationClass,
-    _Out_writes_bytes_opt_(Length) PVOID KeyInformation,
+    _Out_writes_bytes_to_opt_(Length, *ResultLength) PVOID KeyInformation,
     _In_ ULONG Length,
     _Out_ PULONG ResultLength
 );
@@ -684,6 +698,10 @@ NtEnumerateValueKey(
 );
 
 _IRQL_requires_max_(PASSIVE_LEVEL)
+_When_(Length == 0, _Post_satisfies_(return < 0))
+_When_(Length > 0, _Post_satisfies_(return <= 0))
+_Success_(return == STATUS_SUCCESS)
+_On_failure_(_When_(return == STATUS_BUFFER_OVERFLOW || return == STATUS_BUFFER_TOO_SMALL, _Post_satisfies_(*ResultLength > Length)))
 NTSYSAPI
 NTSTATUS
 NTAPI
@@ -691,7 +709,7 @@ ZwEnumerateValueKey(
     _In_ HANDLE KeyHandle,
     _In_ ULONG Index,
     _In_ KEY_VALUE_INFORMATION_CLASS KeyValueInformationClass,
-    _Out_writes_bytes_opt_(Length) PVOID KeyValueInformation,
+    _Out_writes_bytes_to_opt_(Length, *ResultLength) PVOID KeyValueInformation,
     _In_ ULONG Length,
     _Out_ PULONG ResultLength
 );
@@ -929,7 +947,7 @@ NTSTATUS
 NTAPI
 ZwRestoreKey(
     _In_ HANDLE KeyHandle,
-    _In_ HANDLE FileHandle,
+    _In_opt_ HANDLE FileHandle,
     _In_ ULONG Flags
 );
 
@@ -1179,7 +1197,7 @@ ZwThawRegistry(
 );
 #endif
 
-#if (NTDDI_VERSION >= NTDDI_WIN10_RS1)
+#if (NTDDI_VERSION >= NTDDI_WIN10_TH2)
 __kernel_entry NTSYSCALLAPI
 NTSTATUS
 NTAPI
@@ -1190,24 +1208,27 @@ NtCreateRegistryTransaction(
     _Reserved_ ULONG CreateOptions
 );
 
+_Must_inspect_result_
 _IRQL_requires_max_(PASSIVE_LEVEL)
-NTSYSAPI
+__kernel_entry NTSYSCALLAPI
 NTSTATUS
 NTAPI
 ZwCreateRegistryTransaction(
-    _Out_ HANDLE* RegistryTransactionHandle,
+    _Out_ PHANDLE TransactionHandle,
     _In_ ACCESS_MASK DesiredAccess,
-    _In_opt_ POBJECT_ATTRIBUTES ObjAttributes,
-    _Reserved_ ULONG CreateOptions
+    _In_opt_ POBJECT_ATTRIBUTES ObjectAttributes,
+    _In_opt_ ULONG CreateOptions
 );
 
+_Must_inspect_result_
+_IRQL_requires_max_(PASSIVE_LEVEL)
 __kernel_entry NTSYSCALLAPI
 NTSTATUS
 NTAPI
 NtOpenRegistryTransaction(
-    _Out_ HANDLE* RegistryTransactionHandle,
+    _Out_ PHANDLE TransactionHandle,
     _In_ ACCESS_MASK DesiredAccess,
-    _In_ POBJECT_ATTRIBUTES ObjAttributes
+    _In_ POBJECT_ATTRIBUTES ObjectAttributes
 );
 
 _IRQL_requires_max_(PASSIVE_LEVEL)
@@ -1229,20 +1250,21 @@ NtCommitRegistryTransaction(
 );
 
 _IRQL_requires_max_(PASSIVE_LEVEL)
-NTSYSAPI
+__kernel_entry NTSYSCALLAPI
 NTSTATUS
 NTAPI
 ZwCommitRegistryTransaction(
-    _In_ HANDLE RegistryTransactionHandle,
-    _Reserved_ ULONG Flags
+    _In_ HANDLE TransactionHandle,
+    _In_ ULONG Flags
 );
 
+_IRQL_requires_max_(PASSIVE_LEVEL)
 __kernel_entry NTSYSCALLAPI
 NTSTATUS
 NTAPI
 NtRollbackRegistryTransaction(
-    _In_ HANDLE RegistryTransactionHandle,
-    _Reserved_ ULONG Flags
+    _In_ HANDLE TransactionHandle,
+    _In_ ULONG Flags
 );
 
 _IRQL_requires_max_(PASSIVE_LEVEL)

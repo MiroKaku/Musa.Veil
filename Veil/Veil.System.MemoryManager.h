@@ -1716,17 +1716,17 @@ MmUnmapViewOfSection(
     _In_ PVOID BaseAddress
 );
 
-NTSYSAPI
+_IRQL_requires_max_(APC_LEVEL)
+NTKERNELAPI
 BOOLEAN
-NTAPI
 MmForceSectionClosed(
     _In_ PSECTION_OBJECT_POINTERS SectionObjectPointer,
     _In_ BOOLEAN DelayClose
 );
 
-NTSYSAPI
+_IRQL_requires_max_(APC_LEVEL)
+NTKERNELAPI
 BOOLEAN
-NTAPI
 MmForceSectionClosedEx(
     _In_ PSECTION_OBJECT_POINTERS SectionObjectPointer,
     _In_ ULONG ForceCloseFlags

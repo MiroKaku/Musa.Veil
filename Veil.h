@@ -116,3 +116,5 @@
 #include "Veil/Veil.System.ConfigurationManager.h"
 #include "Veil/Veil.System.RuntimeLibrary.h"
 #include "Veil/Veil.System.Security.h"
+#include "Veil/Veil.System.Crypt.h"
+#include "Veil/Veil.System.CodeIntegrity.h"

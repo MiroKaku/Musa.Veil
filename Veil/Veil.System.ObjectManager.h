@@ -945,14 +945,13 @@ ObCreateObject(
 
 NTKERNELAPI
 NTSTATUS
-NTAPI
 ObInsertObject(
-    _In_ PVOID              Object,
-    _In_opt_ PACCESS_STATE  PassedAccessState,
-    _In_opt_ ACCESS_MASK    DesiredAccess,
-    _In_ ULONG              ObjectPointerBias,
+    _In_ PVOID Object,
+    _Inout_opt_ PACCESS_STATE PassedAccessState,
+    _In_opt_ ACCESS_MASK DesiredAccess,
+    _In_ ULONG ObjectPointerBias,
     _Out_opt_ PVOID* NewObject,
-    _Out_opt_ PHANDLE       Handle
+    _Out_opt_ PHANDLE Handle
 );
 
 NTKERNELAPI
@@ -970,15 +969,14 @@ ObOpenObjectByName(
 
 NTKERNELAPI
 NTSTATUS
-NTAPI
 ObOpenObjectByPointer(
-    _In_ PVOID              aObject,
-    _In_ ULONG              aHandleAttributes,
-    _Out_opt_ PACCESS_STATE  aPassedAccessState,
-    _In_ ACCESS_MASK        aDesiredAccess,
-    _In_opt_ POBJECT_TYPE   aObjectType,
-    _In_ KPROCESSOR_MODE    aAccessMode,
-    _Out_ PHANDLE           aHandle
+    _In_ PVOID Object,
+    _In_ ULONG HandleAttributes,
+    _In_opt_ PACCESS_STATE PassedAccessState,
+    _In_ ACCESS_MASK DesiredAccess,
+    _In_opt_ POBJECT_TYPE ObjectType,
+    _In_ KPROCESSOR_MODE AccessMode,
+    _Out_ PHANDLE Handle
 );
 
 #if (NTDDI_VERSION >= NTDDI_WIN7)
