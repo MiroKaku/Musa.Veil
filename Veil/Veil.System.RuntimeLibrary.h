@@ -3070,7 +3070,7 @@ RtlUnicodeStringToUTF8String(
     {
         ULONG ActualByteCount = 0ul;
 
-        Status = RtlUnicodeToUTF8N(nullptr, 0, &ActualByteCount, SourceString->Buffer, SourceString->Length);
+        Status = RtlUnicodeToUTF8N(NULL, 0, &ActualByteCount, SourceString->Buffer, SourceString->Length);
         if (ActualByteCount == 0ul)
         {
             break;
@@ -3086,7 +3086,7 @@ RtlUnicodeStringToUTF8String(
         if (AllocateDestinationString)
         {
             DestinationString->Buffer = (PSTR)ExAllocatePool(PagedPool, ActualByteCount);
-            if (DestinationString->Buffer == nullptr)
+            if (DestinationString->Buffer == NULL)
             {
                 Status = STATUS_NO_MEMORY;
                 break;
@@ -3147,7 +3147,7 @@ RtlUTF8StringToUnicodeString(
     {
         ULONG ActualByteCount = 0ul;
 
-        Status = RtlUTF8ToUnicodeN(nullptr, 0, &ActualByteCount, SourceString->Buffer, SourceString->Length);
+        Status = RtlUTF8ToUnicodeN(NULL, 0, &ActualByteCount, SourceString->Buffer, SourceString->Length);
         if (ActualByteCount == 0ul)
         {
             break;
@@ -3163,7 +3163,7 @@ RtlUTF8StringToUnicodeString(
         if (AllocateDestinationString)
         {
             DestinationString->Buffer = (PWCH)ExAllocatePool(PagedPool, ActualByteCount);
-            if (DestinationString->Buffer == nullptr)
+            if (DestinationString->Buffer == NULL)
             {
                 Status = STATUS_NO_MEMORY;
                 break;
