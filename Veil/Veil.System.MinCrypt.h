@@ -10,25 +10,14 @@
  */
 
 /*
- * PROJECT:   Mouri's Internal NT API Collections (MINT)
- * FILE:      MINT.h
- * PURPOSE:   Definition for the Windows Internal API from ntdll.dll,
- *            samlib.dll and winsta.dll
+ * PROJECT:   https://github.com/Ido-Moshe-Github/CiDllDemo
+ * FILE:      ci.h
+ * PURPOSE:   Definition for the ci.dll API and Struct.
  *
  * LICENSE:   Relicensed under The MIT License from The CC BY 4.0 License
  *
- * DEVELOPER: Mouri_Naruto (Mouri_Naruto AT Outlook.com)
- */
-
-/*
- * This file is part of the Process Hacker project - https://processhacker.sf.io/
+ * DEVELOPER: [Ido Moshe, Liron Zuarets]
  *
- * You can redistribute this file and/or modify it under the terms of the
- * Attribution 4.0 International (CC BY 4.0) license.
- *
- * You must give appropriate credit, provide a link to the license, and
- * indicate if changes were made. You may do so in any reasonable manner, but
- * not in any way that suggests the licensor endorses you or your use.
  */
 
 #pragma once
@@ -48,6 +37,12 @@
 VEIL_BEGIN()
 
 #ifdef _KERNEL_MODE
+
+#ifndef _MINCRYPT_LIB
+#define MINCRYPTAPI __declspec(dllimport)
+#else
+#define MINCRYPTAPI
+#endif
 
 //
 // Algorithm IDs and Flags
@@ -265,89 +260,250 @@ typedef unsigned int ALG_ID;
 #define CALG_THIRDPARTY_HASH            (ALG_CLASS_HASH         | ALG_TYPE_THIRDPARTY | ALG_SID_THIRDPARTY_ANY)
 #endif //(NTDDI_VERSION >= NTDDI_WIN10_RS1)
 
-//
-// The following are error status bits
-//
+#include <pshpack8.h>
+typedef struct _MINCRYPTOAPI_BLOB
+{
+    UINT32 Size;
+    _Field_size_bytes_(Size)  UINT8* Data;
 
-// These can be applied to certificates and chains
+} MINCRYPT_INTEGER_BLOB, * PMINCRYPT_INTEGER_BLOB,
+MINCRYPT_UINT_BLOB, * PMINCRYPT_UINT_BLOB,
+MINCRYPT_OBJID_BLOB, * PMINCRYPT_OBJID_BLOB,
+MINCERT_NAME_BLOB, * PMINCERT_NAME_BLOB,
+MINCERT_RDN_VALUE_BLOB, * PMINCERT_RDN_VALUE_BLOB,
+MINCERT_BLOB, * PMINCERT_BLOB,
+MINCRL_BLOB, * PMINCRL_BLOB,
+MINCRYPT_DATA_BLOB, * PMINCRYPT_DATA_BLOB,
+MINCRYPT_HASH_BLOB, * PMINCRYPT_HASH_BLOB,
+MINCRYPT_DIGEST_BLOB, * PMINCRYPT_DIGEST_BLOB,
+MINCRYPT_DER_BLOB, * PMINCRYPT_DER_BLOB,
+MINCRYPT_ATTR_BLOB, * PMINCRYPT_ATTR_BLOB;
 
-#define CERT_TRUST_NO_ERROR                             0x00000000
-#define CERT_TRUST_IS_NOT_TIME_VALID                    0x00000001
-#define CERT_TRUST_IS_NOT_TIME_NESTED                   0x00000002
-#define CERT_TRUST_IS_REVOKED                           0x00000004
-#define CERT_TRUST_IS_NOT_SIGNATURE_VALID               0x00000008
-#define CERT_TRUST_IS_NOT_VALID_FOR_USAGE               0x00000010
-#define CERT_TRUST_IS_UNTRUSTED_ROOT                    0x00000020
-#define CERT_TRUST_REVOCATION_STATUS_UNKNOWN            0x00000040
-#define CERT_TRUST_IS_CYCLIC                            0x00000080
+typedef struct _MINCRYPT_NAME_BLOB
+{
+    _Field_size_bytes_(Size)  PCHAR Data;
+    USHORT Size;
 
-#define CERT_TRUST_INVALID_EXTENSION                    0x00000100
-#define CERT_TRUST_INVALID_POLICY_CONSTRAINTS           0x00000200
-#define CERT_TRUST_INVALID_BASIC_CONSTRAINTS            0x00000400
-#define CERT_TRUST_INVALID_NAME_CONSTRAINTS             0x00000800
-#define CERT_TRUST_HAS_NOT_SUPPORTED_NAME_CONSTRAINT    0x00001000
+}MINCRYPT_NAME_BLOB, * PMINCRYPT_NAME_BLOB;
 
-// In LH, this error will never be set.
-#define CERT_TRUST_HAS_NOT_DEFINED_NAME_CONSTRAINT      0x00002000
+#define MINCRYPT_MAX_HASH_LENGTH 64
 
-#define CERT_TRUST_HAS_NOT_PERMITTED_NAME_CONSTRAINT    0x00004000
-#define CERT_TRUST_HAS_EXCLUDED_NAME_CONSTRAINT         0x00008000
+typedef struct _MINCRYPT_CHAIN_ELEMENT
+{
+    ALG_ID          HashAlgId;  // CALG_SHA1,       CALG_SHA_256
+    UINT32          HashSize;   // SHA1(160bit/8),  SHA256(256bit/8)
+    UINT8           Hash[MINCRYPT_MAX_HASH_LENGTH];
 
-#define CERT_TRUST_IS_OFFLINE_REVOCATION                0x01000000
-#define CERT_TRUST_NO_ISSUANCE_CHAIN_POLICY             0x02000000
-#define CERT_TRUST_IS_EXPLICIT_DISTRUST                 0x04000000
-#define CERT_TRUST_HAS_NOT_SUPPORTED_CRITICAL_EXT       0x08000000
-#define CERT_TRUST_HAS_WEAK_SIGNATURE                   0x00100000
-#define CERT_TRUST_HAS_WEAK_HYGIENE                     0x00200000
+    MINCRYPT_NAME_BLOB Subject;
+    MINCRYPT_NAME_BLOB Issuer;
 
-// These can be applied to chains only
+    MINCERT_BLOB    Certificate;
 
-#define CERT_TRUST_IS_PARTIAL_CHAIN                     0x00010000
-#define CERT_TRUST_CTL_IS_NOT_TIME_VALID                0x00020000
-#define CERT_TRUST_CTL_IS_NOT_SIGNATURE_VALID           0x00040000
-#define CERT_TRUST_CTL_IS_NOT_VALID_FOR_USAGE           0x00080000
+}MINCRYPT_CHAIN_ELEMENT, * PMINCRYPT_CHAIN_ELEMENT;
 
-//
-// The following are info status bits
-//
+typedef struct _MINCRYPT_CHAIN_INFO
+{
+    UINT32          Size;
 
-// These can be applied to certificates only
+    MINCERT_BLOB*   PublicKeys;
+    UINT32          NumberOfPublicKeys;
 
-#define CERT_TRUST_HAS_EXACT_MATCH_ISSUER               0x00000001
-#define CERT_TRUST_HAS_KEY_MATCH_ISSUER                 0x00000002
-#define CERT_TRUST_HAS_NAME_MATCH_ISSUER                0x00000004
-#define CERT_TRUST_IS_SELF_SIGNED                       0x00000008
-#define CERT_TRUST_AUTO_UPDATE_CA_REVOCATION            0x00000010
-#define CERT_TRUST_AUTO_UPDATE_END_REVOCATION           0x00000020
-#define CERT_TRUST_NO_OCSP_FAILOVER_TO_CRL              0x00000040
-#define CERT_TRUST_IS_KEY_ROLLOVER                      0x00000080
-#define CERT_TRUST_SSL_HANDSHAKE_OCSP                   0x00040000
-#define CERT_TRUST_SSL_TIME_VALID_OCSP                  0x00080000
-#define CERT_TRUST_SSL_RECONNECT_OCSP                   0x00100000
+    MINCERT_BLOB*   EKUs;
+    UINT32          NumberOfEKUs;
 
-// These can be applied to certificates and chains
+    PMINCRYPT_CHAIN_ELEMENT ChainElements;
+    UINT32          NumberOfChainElement;
 
-#define CERT_TRUST_HAS_PREFERRED_ISSUER                 0x00000100
-#define CERT_TRUST_HAS_ISSUANCE_CHAIN_POLICY            0x00000200
-#define CERT_TRUST_HAS_VALID_NAME_CONSTRAINTS           0x00000400
-#define CERT_TRUST_IS_PEER_TRUSTED                      0x00000800
-#define CERT_TRUST_HAS_CRL_VALIDITY_EXTENDED            0x00001000
+    // ASN.1 blob of authenticated attributes - spcSpOpusInfo, contentType, etc.
+    MINCRYPT_ATTR_BLOB AuthenticodeAttributes;
 
-// Indicates that the certificate was found in
-// a store specified by hExclusiveRoot or hExclusiveTrustedPeople
-#define CERT_TRUST_IS_FROM_EXCLUSIVE_TRUST_STORE        0x00002000
+    // UINT8 Hash[32];
 
-#if (NTDDI_VERSION >= NTDDI_WIN8)
-#define CERT_TRUST_IS_CA_TRUSTED                        0x00004000
-#define CERT_TRUST_HAS_AUTO_UPDATE_WEAK_SIGNATURE       0x00008000
-#define CERT_TRUST_HAS_ALLOW_WEAK_SIGNATURE             0x00020000
-#endif
+    /* memory layout */
 
-// These can be applied to chains only
+    // EKUs[NumberOfEKUs]
 
-#define CERT_TRUST_IS_COMPLEX_CHAIN                     0x00010000
-#define CERT_TRUST_SSL_TIME_VALID                       0x01000000
-#define CERT_TRUST_NO_TIME_CHECK                        0x02000000
+    // PublicKeys[NumberOfPublicKeys]
+
+    // AuthenticodeAttributes.Data[AuthenticodeAttributes.Size]
+
+    // ChainElements[NumberOfChainElement]
+
+}MINCRYPT_CHAIN_INFO, * PMINCRYPT_CHAIN_INFO;
+
+typedef struct _MINCRYPT_POLICY_INFO
+{
+    UINT32          Size;
+    UINT32          VerificationStatus;
+    UINT32          PolicyBits;
+
+    MINCRYPT_CHAIN_INFO* ChainInfo;
+
+    LARGE_INTEGER   RevocationTime;     // When was the certificate revoked (if applicable)
+    LARGE_INTEGER   NotBefore;          // The certificate is not valid before this time
+    LARGE_INTEGER   NotAfter;           // The certificate is not valid after  this time
+
+}MINCRYPT_POLICY_INFO, PMINCRYPT_POLICY_INFO;
+#include <poppack.h>
+
+
+/**
+*  Resets a PolicyInfo struct - frees the dynamically allocated buffer in PolicyInfo (ChainInfo) if not null.
+*  Zeros the entire PolicyInfo struct.
+*
+*  @param  PolicyInfo - the struct to reset.
+*
+*  @return the struct which was reset.
+*/
+_IRQL_requires_max_(PASSIVE_LEVEL)
+MINCRYPTAPI
+PVOID
+NTAPI
+CiFreePolicyInfo(
+    _In_ MINCRYPT_POLICY_INFO* PolicyInfo
+);
+
+
+/**
+*  Win7SP1-Win8.1 only (KB3033929 installed). Use CiValidateFileObject on Win10!
+*
+*  Given a file digest and signature of a file, verify the signature and provide information regarding
+*  the certificates that was used for signing (the entire certificate chain)
+*
+*  @param  Hash - buffer containing the digest
+*
+*  @param  HashSize - size of the digest, e.g. 0x14(160bit) for SHA1, 0x20(256bit) for SHA256
+*
+*  @param  HashAlgId - digest algorithm identifier, e.g. CALG_SHA1(0x8004), CALG_SHA_256(0x800C)
+*
+*  @param  SecurityDirectory - pointer to the start of the security directory
+*
+*  @param  SizeOfSecurityDirectory - size the security directory
+*
+*  @param  PolicyInfo[out] - PolicyInfo containing information about the signer certificate chain
+*
+*  @param  SigningTime[out] - when the file was signed (FILETIME format)
+*
+*  @param  TimeStampPolicyInfo[out] - PolicyInfo containing information about the timestamping authority (TSA) certificate chain
+*
+*  @return STATUS_SUCCESS if the file digest in the signature matches the given digest and the signer cetificate is verified.
+*           Various error values otherwise, for example:
+*           STATUS_INVALID_IMAGE_HASH - the digest does not match the digest in the signature
+*           STATUS_IMAGE_CERT_REVOKED - the certificate used for signing the file is revoked
+*           STATUS_IMAGE_CERT_EXPIRED - the certificate used for signing the file has expired
+*/
+_IRQL_requires_max_(PASSIVE_LEVEL)
+MINCRYPTAPI
+NTSTATUS
+NTAPI
+CiCheckSignedFile(
+    _In_ PVOID                  Hash,
+    _In_ UINT32                 HashSize,
+    _In_ ALG_ID                 HashAlgId,
+    _In_ PVOID                  SecurityDirectory,
+    _In_ UINT32                 SizeOfSecurityDirectory,
+    _Out_ MINCRYPT_POLICY_INFO* PolicyInfo,
+    _Out_ LARGE_INTEGER* SigningTime,
+    _Out_ MINCRYPT_POLICY_INFO* TimeStampPolicyInfo
+);
+
+
+/**
+*  Win7SP1-Win8.1 only (KB3033929 installed). Use CiValidateFileObject on Win10!
+*
+*  Checks if the SHA-1 message digest is contained within a verified system catalog
+*
+*  @note   must be attached to the PsInitialSystemProcess first!
+*
+*  @param  Hash - buffer containing the digest
+*
+*  @param  HashSize - size of the digest, e.g. 0x14(160bit) for SHA1, 0x20(256bit) for SHA256
+*
+*  @param  HashAlgId - digest algorithm identifier, e.g. CALG_SHA1(0x8004), CALG_SHA_256(0x800C)
+*
+*  @param  IsReloadCatalogs - is reload catalogs cache.
+*
+*  @param  Always0 - this is for IsReloadCatalogs, Always0 != 0 ? 16 : 24;
+* 
+*  @param  Always2007F - unknown, always 0x2007F, maybe a mask.
+*
+*  @param  PolicyInfo[out] - PolicyInfo containing information about the signer certificate chain.
+*
+*  @param  CatalogName[out option] - catalog file name.
+* 
+*  @param  SigningTime[out] - when the file was signed (FILETIME format)
+*
+*  @param  TimeStampPolicyInfo[out] - PolicyInfo containing information about the timestamping authority (TSA) certificate chain.
+*
+*  @return STATUS_SUCCESS if the file digest in the signature matches the given digest and the signer cetificate is verified.
+*           Various error values otherwise, for example:
+*           STATUS_INVALID_IMAGE_HASH - the digest does not match the digest in the signature
+*           STATUS_IMAGE_CERT_REVOKED - the certificate used for signing the file is revoked
+*           STATUS_IMAGE_CERT_EXPIRED - the certificate used for signing the file has expired
+*/
+_IRQL_requires_max_(PASSIVE_LEVEL)
+MINCRYPTAPI
+NTSTATUS
+NTAPI
+CiVerifyHashInCatalog(
+    _In_ PVOID                  Hash,
+    _In_ UINT32                 HashSize,
+    _In_ ALG_ID                 HashAlgId,
+    _In_ BOOLEAN                IsReloadCatalogs,
+    _In_ UINT32                 Always0,
+    _In_ UINT32                 Always2007F,
+    _Out_ MINCRYPT_POLICY_INFO* PolicyInfo,
+    _Out_opt_ UNICODE_STRING*   CatalogName,
+    _Out_ LARGE_INTEGER*        SigningTime,
+    _Out_ MINCRYPT_POLICY_INFO* TimeStampPolicyInfo
+);
+
+
+#if (NTDDI_VERSION >= NTDDI_WIN10)
+/**
+*  Given a file object, verify the signature and provide information regarding
+*   the certificates that was used for signing (the entire certificate chain)
+*
+*  @param  FileObject - FileObject of the PE in question
+*
+*  @param  Unkonwn1 - unknown, 0 is a valid value. (Unkonwn1 and Unkonwn2 together calculate the minimum support algorithm)
+*
+*  @param  Unkonwn2 - unknown, 0 is a valid value. (^ the words above refer to 'CipGetHashAlgorithmForLegacyScenario')
+*
+*  @param  PolicyInfo[out] - PolicyInfo containing information about the signer certificate chain.
+*
+*  @param  TimeStampPolicyInfo[out] - PolicyInfo containing information about the timestamping authority (TSA) certificate chain.
+*
+*  @param  SigningTime[out] - when the file was signed (FILETIME format)
+*
+*  @param  Hash - buffer containing the digest
+*
+*  @param  HashSize - size of the digest, e.g. 0x14(160bit) for SHA1, 0x20(256bit) for SHA256
+*
+*  @param  HashAlgId - digest algorithm identifier, e.g. CALG_SHA1(0x8004), CALG_SHA_256(0x800C)
+*
+*  @return STATUS_SUCCESS if the file digest in the signature matches the given digest and the signer cetificate is verified.
+*           Various error values otherwise, for example:
+*           STATUS_INVALID_IMAGE_HASH - the digest does not match the digest in the signature
+*           STATUS_IMAGE_CERT_REVOKED - the certificate used for signing the file is revoked
+*           STATUS_IMAGE_CERT_EXPIRED - the certificate used for signing the file has expired
+*/
+_IRQL_requires_max_(PASSIVE_LEVEL)
+MINCRYPTAPI
+NTSTATUS
+NTAPI
+CiValidateFileObject(
+    _In_ FILE_OBJECT*           FileObject,
+    _In_opt_ UINT32             Unkonwn1,
+    _In_opt_ UINT32             Unkonwn2,
+    _Out_ MINCRYPT_POLICY_INFO* PolicyInfo,
+    _Out_ MINCRYPT_POLICY_INFO* TimeStampPolicyInfo,
+    _Out_ LARGE_INTEGER*        SigningTime,
+    _Out_ UINT8*                Hash,
+    _Inout_ UINT32*             HashSize,
+    _Out_ ALG_ID*               HashAlgId
+);
+#endif // NTDDI_VERSION >= NTDDI_WIN10
 
 #endif // _KERNEL_MODE
 

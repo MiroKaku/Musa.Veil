@@ -1423,7 +1423,6 @@ NtFlushBuffersFile(
 _IRQL_requires_max_(PASSIVE_LEVEL)
 NTSYSAPI
 NTSTATUS
-NTAPI
 ZwFlushBuffersFile(
     _In_ HANDLE FileHandle,
     _Out_ PIO_STATUS_BLOCK IoStatusBlock
@@ -1449,10 +1448,9 @@ NtFlushBuffersFileEx (
 _IRQL_requires_max_(PASSIVE_LEVEL)
 NTSYSAPI
 NTSTATUS
-NTAPI
 ZwFlushBuffersFileEx(
     _In_ HANDLE FileHandle,
-    _In_ ULONG Flags,
+    _In_ ULONG FLags,
     _In_reads_bytes_(ParametersSize) PVOID Parameters,
     _In_ ULONG ParametersSize,
     _Out_ PIO_STATUS_BLOCK IoStatusBlock
@@ -1625,9 +1623,7 @@ NtQueryEaFile(
 );
 
 _IRQL_requires_max_(PASSIVE_LEVEL)
-//NTSYSAPI
 NTSTATUS
-NTAPI
 ZwQueryEaFile(
     _In_ HANDLE FileHandle,
     _Out_ PIO_STATUS_BLOCK IoStatusBlock,
@@ -1651,9 +1647,7 @@ NtSetEaFile(
 );
 
 _IRQL_requires_max_(PASSIVE_LEVEL)
-//NTSYSAPI
 NTSTATUS
-NTAPI
 ZwSetEaFile(
     _In_ HANDLE FileHandle,
     _Out_ PIO_STATUS_BLOCK IoStatusBlock,

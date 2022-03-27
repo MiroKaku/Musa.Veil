@@ -996,7 +996,6 @@ ObOpenObjectByPointerWithTag(
 
 NTKERNELAPI
 VOID
-NTAPI
 ObMakeTemporaryObject(
     _In_ PVOID Object
 );

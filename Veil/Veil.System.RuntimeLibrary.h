@@ -2478,6 +2478,14 @@ RtlWakeAddressSingle(
 // Strings
 //
 
+#ifndef ANSI_STRING_MAX_BYTES
+#define ANSI_STRING_MAX_BYTES ((USHORT)65535)
+#endif // ANSI_STRING_MAX_BYTES
+
+#ifndef ANSI_STRING_MAX_CHARS
+#define ANSI_STRING_MAX_CHARS ANSI_STRING_MAX_BYTES
+#endif
+
 #ifdef _KERNEL_MODE
 #include <ntstrsafe.h>
 #endif
@@ -3006,23 +3014,22 @@ _When_(AllocateDestinationString,
 
 #if (NTDDI_VERSION >= NTDDI_WIN10_VB)
 _When_(AllocateDestinationString,
-    _At_(DestinationString->MaximumLength,
-        _Out_range_(<= , (SourceString->MaximumLength / sizeof(WCHAR)))))
-    _When_(!AllocateDestinationString,
-        _At_(DestinationString->Buffer, _Const_)
-        _At_(DestinationString->MaximumLength, _Const_))
-    _IRQL_requires_max_(PASSIVE_LEVEL)
-    _When_(AllocateDestinationString, _Must_inspect_result_)
-    NTSYSAPI
-    NTSTATUS
-    NTAPI
-    RtlUnicodeStringToUTF8String(
-        _When_(AllocateDestinationString, _Out_ _At_(DestinationString->Buffer, __drv_allocatesMem(Mem)))
-        _When_(!AllocateDestinationString, _Inout_)
-        PUTF8_STRING DestinationString,
-        _In_ PCUNICODE_STRING SourceString,
-        _In_ BOOLEAN AllocateDestinationString
-    );
+    _At_(DestinationString->MaximumLength, _Out_range_(<= , (SourceString->MaximumLength / sizeof(WCHAR)))))
+_When_(!AllocateDestinationString,
+    _At_(DestinationString->Buffer, _Const_)
+    _At_(DestinationString->MaximumLength, _Const_))
+_IRQL_requires_max_(PASSIVE_LEVEL)
+_When_(AllocateDestinationString, _Must_inspect_result_)
+NTSYSAPI
+NTSTATUS
+NTAPI
+RtlUnicodeStringToUTF8String(
+    _When_(AllocateDestinationString, _Out_ _At_(DestinationString->Buffer, __drv_allocatesMem(Mem)))
+    _When_(!AllocateDestinationString, _Inout_)
+    PUTF8_STRING DestinationString,
+    _In_ PCUNICODE_STRING SourceString,
+    _In_ BOOLEAN AllocateDestinationString
+);
 
 _IRQL_requires_max_(PASSIVE_LEVEL)
 _Must_inspect_result_
@@ -3036,7 +3043,168 @@ RtlUTF8StringToUnicodeString(
     _In_ PUTF8_STRING SourceString,
     _In_ BOOLEAN AllocateDestinationString
 );
-#endif //NTDDI_VERSION >= NTDDI_WIN10_VB
+
+#else // NTDDI_VERSION >= NTDDI_WIN10_VB
+
+_When_(AllocateDestinationString,
+_At_(DestinationString->MaximumLength, _Out_range_(<= , (SourceString->MaximumLength / sizeof(WCHAR)))))
+_When_(!AllocateDestinationString,
+    _At_(DestinationString->Buffer, _Const_)
+    _At_(DestinationString->MaximumLength, _Const_))
+_IRQL_requires_max_(PASSIVE_LEVEL)
+_When_(AllocateDestinationString, _Must_inspect_result_)
+FORCEINLINE
+NTSTATUS
+NTAPI
+RtlUnicodeStringToUTF8String(
+    _When_(AllocateDestinationString, _Out_ _At_(DestinationString->Buffer, __drv_allocatesMem(Mem)))
+    _When_(!AllocateDestinationString, _Inout_)
+    PUTF8_STRING DestinationString,
+    _In_ PCUNICODE_STRING SourceString,
+    _In_ BOOLEAN AllocateDestinationString
+)
+{
+    NTSTATUS Status = STATUS_SUCCESS;
+
+    do
+    {
+        ULONG ActualByteCount = 0ul;
+
+        Status = RtlUnicodeToUTF8N(nullptr, 0, &ActualByteCount, SourceString->Buffer, SourceString->Length);
+        if (ActualByteCount == 0ul)
+        {
+            break;
+        }
+
+        ActualByteCount += sizeof ANSI_NULL;
+
+        if (ActualByteCount >= ANSI_STRING_MAX_BYTES)
+        {
+            return STATUS_INVALID_PARAMETER_2;
+        }
+
+        if (AllocateDestinationString)
+        {
+            DestinationString->Buffer = (PSTR)ExAllocatePool(PagedPool, ActualByteCount);
+            if (DestinationString->Buffer == nullptr)
+            {
+                Status = STATUS_NO_MEMORY;
+                break;
+            }
+            DestinationString->MaximumLength = (USHORT)ActualByteCount;
+
+            RtlSecureZeroMemory(DestinationString->Buffer, ActualByteCount);
+        }
+        else
+        {
+            if (DestinationString->MaximumLength < ActualByteCount)
+            {
+                Status = STATUS_BUFFER_OVERFLOW;
+                break;
+            }
+        }
+
+        Status = RtlUnicodeToUTF8N(DestinationString->Buffer, DestinationString->MaximumLength, &ActualByteCount, SourceString->Buffer, SourceString->Length);
+        if (!NT_SUCCESS(Status))
+        {
+            if (AllocateDestinationString)
+            {
+                RtlFreeAnsiString(DestinationString);
+            }
+            break;
+        }
+
+        if (ActualByteCount > DestinationString->MaximumLength)
+        {
+            Status = STATUS_BUFFER_OVERFLOW;
+            break;
+        }
+
+        DestinationString->Length = (USHORT)ActualByteCount;
+        DestinationString->Buffer[ActualByteCount / sizeof ANSI_NULL] = ANSI_NULL;
+
+    } while (false);
+
+    return Status;
+}
+
+_IRQL_requires_max_(PASSIVE_LEVEL)
+_Must_inspect_result_
+FORCEINLINE
+NTSTATUS
+NTAPI
+RtlUTF8StringToUnicodeString(
+    _When_(AllocateDestinationString, _Out_ _At_(DestinationString->Buffer, __drv_allocatesMem(Mem)))
+    _When_(!AllocateDestinationString, _Inout_)
+    PUNICODE_STRING DestinationString,
+    _In_ PUTF8_STRING SourceString,
+    _In_ BOOLEAN AllocateDestinationString
+)
+{
+    NTSTATUS Status = STATUS_SUCCESS;
+
+    do
+    {
+        ULONG ActualByteCount = 0ul;
+
+        Status = RtlUTF8ToUnicodeN(nullptr, 0, &ActualByteCount, SourceString->Buffer, SourceString->Length);
+        if (ActualByteCount == 0ul)
+        {
+            break;
+        }
+
+        ActualByteCount += sizeof UNICODE_NULL;
+
+        if (ActualByteCount >= UNICODE_STRING_MAX_BYTES)
+        {
+            return STATUS_INVALID_PARAMETER_2;
+        }
+
+        if (AllocateDestinationString)
+        {
+            DestinationString->Buffer = (PWCH)ExAllocatePool(PagedPool, ActualByteCount);
+            if (DestinationString->Buffer == nullptr)
+            {
+                Status = STATUS_NO_MEMORY;
+                break;
+            }
+            DestinationString->MaximumLength = (USHORT)ActualByteCount;
+
+            RtlSecureZeroMemory(DestinationString->Buffer, ActualByteCount);
+        }
+        else
+        {
+            if (DestinationString->MaximumLength < ActualByteCount)
+            {
+                Status = STATUS_BUFFER_OVERFLOW;
+                break;
+            }
+        }
+
+        Status = RtlUTF8ToUnicodeN(DestinationString->Buffer, DestinationString->MaximumLength, &ActualByteCount, SourceString->Buffer, SourceString->Length);
+        if (!NT_SUCCESS(Status))
+        {
+            if (AllocateDestinationString)
+            {
+                RtlFreeUnicodeString(DestinationString);
+            }
+            break;
+        }
+
+        if (ActualByteCount > DestinationString->MaximumLength)
+        {
+            Status = STATUS_BUFFER_OVERFLOW;
+            break;
+        }
+
+        DestinationString->Length = (USHORT)ActualByteCount;
+        DestinationString->Buffer[ActualByteCount / sizeof UNICODE_NULL] = UNICODE_NULL;
+
+    } while (false);
+
+    return Status;
+}
+#endif //NTDDI_VERSION < NTDDI_WIN10_VB
 
 NTSYSAPI
 WCHAR

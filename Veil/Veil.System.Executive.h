@@ -1090,7 +1090,6 @@ NtCreateTimer(
 _IRQL_requires_max_(PASSIVE_LEVEL)
 _When_(return = 0, __drv_allocatesMem(TimerObject))
 NTSTATUS
-NTAPI
 ZwCreateTimer(
     _Out_ PHANDLE TimerHandle,
     _In_ ACCESS_MASK DesiredAccess,
@@ -1108,9 +1107,7 @@ NtOpenTimer(
 );
 
 _IRQL_requires_max_(PASSIVE_LEVEL)
-//NTSYSAPI
 NTSTATUS
-NTAPI
 ZwOpenTimer(
     _Out_ PHANDLE TimerHandle,
     _In_ ACCESS_MASK DesiredAccess,
@@ -1131,9 +1128,7 @@ NtSetTimer(
 );
 
 _IRQL_requires_max_(PASSIVE_LEVEL)
-//NTSYSAPI
 NTSTATUS
-NTAPI
 ZwSetTimer(
     _In_ HANDLE TimerHandle,
     _In_ PLARGE_INTEGER DueTime,
@@ -1156,9 +1151,7 @@ NtSetTimerEx(
 );
 
 _IRQL_requires_max_(PASSIVE_LEVEL)
-//NTSYSAPI
 NTSTATUS
-NTAPI
 ZwSetTimerEx(
     _In_ HANDLE TimerHandle,
     _In_ TIMER_SET_INFORMATION_CLASS TimerSetInformationClass,
@@ -1176,9 +1169,7 @@ NtCancelTimer(
 );
 
 _IRQL_requires_max_(PASSIVE_LEVEL)
-//NTSYSAPI
 NTSTATUS
-NTAPI
 ZwCancelTimer(
     _In_ HANDLE TimerHandle,
     _Out_opt_ PBOOLEAN CurrentState

@@ -3739,7 +3739,6 @@ PsReferenceProcessFilePointer(
 
 NTKERNELAPI
 BOOLEAN
-NTAPI
 PsIsSystemThread(
     _In_ PETHREAD Thread
 );
@@ -3781,7 +3780,6 @@ PsGetCurrentThreadPreviousMode(
 
 NTKERNELAPI
 PEPROCESS
-NTAPI
 PsGetThreadProcess(
     _In_ PETHREAD Thread
 );
