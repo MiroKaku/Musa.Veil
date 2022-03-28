@@ -286,7 +286,9 @@ typedef struct _MINCRYPT_NAME_BLOB
 
 }MINCRYPT_NAME_BLOB, * PMINCRYPT_NAME_BLOB;
 
-#define MINCRYPT_MAX_HASH_LENGTH 64
+#define MINCRYPT_MAX_HASH_LENGTH    (64)
+#define MINCRYPT_SHA1_LENGTH        (160/8)
+#define MINCRYPT_SHA256_LENGTH      (256/8)
 
 typedef struct _MINCRYPT_CHAIN_ELEMENT
 {
@@ -311,6 +313,8 @@ typedef struct _MINCRYPT_CHAIN_INFO
     MINCERT_BLOB*   EKUs;
     UINT32          NumberOfEKUs;
 
+#if (NTDDI_VERSION >= NTDDI_WIN10)
+
     PMINCRYPT_CHAIN_ELEMENT ChainElements;
     UINT32          NumberOfChainElement;
 
@@ -318,6 +322,8 @@ typedef struct _MINCRYPT_CHAIN_INFO
     MINCRYPT_ATTR_BLOB AuthenticodeAttributes;
 
     // UINT8 Hash[32];
+
+#endif // NTDDI_VERSION >= NTDDI_WIN10
 
     /* memory layout */
 
@@ -340,51 +346,17 @@ typedef struct _MINCRYPT_POLICY_INFO
     MINCRYPT_CHAIN_INFO* ChainInfo;
 
     LARGE_INTEGER   RevocationTime;     // When was the certificate revoked (if applicable)
+
+#if (NTDDI_VERSION >= NTDDI_WIN10)
+
     LARGE_INTEGER   NotBefore;          // The certificate is not valid before this time
     LARGE_INTEGER   NotAfter;           // The certificate is not valid after  this time
+
+#endif // NTDDI_VERSION >= NTDDI_WIN10
 
 }MINCRYPT_POLICY_INFO, PMINCRYPT_POLICY_INFO;
 #include <poppack.h>
 
-
-typedef
-_IRQL_requires_same_
-_Function_class_(MINCRYPT_ALLOCATE_ROUTINE)
-__drv_allocatesMem(Mem)
-PVOID
-NTAPI
-MINCRYPT_ALLOCATE_ROUTINE(
-    _In_ SIZE_T ByteSize
-);
-typedef MINCRYPT_ALLOCATE_ROUTINE* PMINCRYPT_ALLOCATE_ROUTINE;
-
-/**
-*  Parse the publisher name from the certificate
-*
-*  @param  Certificate - &PolicyInfo.ChainInfo->ChainElements[x].Certificate
-*
-*  @param  AllocateRoutine - used to allocate PublisherName buffer.
-*
-*  @param  PublisherName[out] - publisher name.
-*
-*  @return buffer length.
-*/
-MINCRYPTAPI
-INT
-NTAPI
-CiGetCertPublisherName(
-    _In_ MINCERT_BLOB* Certificate,
-    _In_ PMINCRYPT_ALLOCATE_ROUTINE AllocateRoutine,
-    _Out_ PUNICODE_STRING PublisherName
-);
-
-
-MINCRYPTAPI
-VOID
-NTAPI
-CiSetTrustedOriginClaimId(
-    _In_ UINT32 ClaimId
-);
 
 /**
 *  Resets a PolicyInfo struct - frees the dynamically allocated buffer in PolicyInfo (ChainInfo) if not null.
@@ -399,7 +371,7 @@ MINCRYPTAPI
 PVOID
 NTAPI
 CiFreePolicyInfo(
-    _In_ MINCRYPT_POLICY_INFO* PolicyInfo
+    _Inout_ MINCRYPT_POLICY_INFO* PolicyInfo
 );
 
 
@@ -408,6 +380,8 @@ CiFreePolicyInfo(
 *
 *  Given a file digest and signature of a file, verify the signature and provide information regarding
 *  the certificates that was used for signing (the entire certificate chain)
+*
+*  @note   must be attached to the PsInitialSystemProcess first!
 *
 *  @param  Hash - buffer containing the digest
 *
@@ -499,6 +473,46 @@ CiVerifyHashInCatalog(
 
 
 #if (NTDDI_VERSION >= NTDDI_WIN10)
+
+typedef
+_IRQL_requires_same_
+_Function_class_(MINCRYPT_ALLOCATE_ROUTINE)
+__drv_allocatesMem(Mem)
+PVOID
+NTAPI
+MINCRYPT_ALLOCATE_ROUTINE(
+    _In_ SIZE_T ByteSize
+);
+typedef MINCRYPT_ALLOCATE_ROUTINE* PMINCRYPT_ALLOCATE_ROUTINE;
+
+/**
+*  Parse the publisher name from the certificate
+*
+*  @param  Certificate - &PolicyInfo.ChainInfo->ChainElements[x].Certificate
+*
+*  @param  AllocateRoutine - used to allocate PublisherName buffer.
+*
+*  @param  PublisherName[out] - publisher name.
+*
+*  @return buffer length.
+*/
+MINCRYPTAPI
+NTSTATUS
+NTAPI
+CiGetCertPublisherName(
+    _In_ MINCERT_BLOB* Certificate,
+    _In_ PMINCRYPT_ALLOCATE_ROUTINE AllocateRoutine,
+    _Out_ PUNICODE_STRING PublisherName
+);
+
+
+MINCRYPTAPI
+VOID
+NTAPI
+CiSetTrustedOriginClaimId(
+    _In_ UINT32 ClaimId
+);
+
 /**
 *  Given a file object, verify the signature and provide information regarding
 *   the certificates that was used for signing (the entire certificate chain)
@@ -542,6 +556,7 @@ CiValidateFileObject(
     _Inout_ UINT32*             HashSize,
     _Out_ ALG_ID*               HashAlgId
 );
+
 #endif // NTDDI_VERSION >= NTDDI_WIN10
 
 #endif // _KERNEL_MODE
