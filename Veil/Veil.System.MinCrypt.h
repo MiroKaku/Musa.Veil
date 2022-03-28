@@ -347,6 +347,45 @@ typedef struct _MINCRYPT_POLICY_INFO
 #include <poppack.h>
 
 
+typedef
+_IRQL_requires_same_
+_Function_class_(MINCRYPT_ALLOCATE_ROUTINE)
+__drv_allocatesMem(Mem)
+PVOID
+NTAPI
+MINCRYPT_ALLOCATE_ROUTINE(
+    _In_ SIZE_T ByteSize
+);
+typedef MINCRYPT_ALLOCATE_ROUTINE* PMINCRYPT_ALLOCATE_ROUTINE;
+
+/**
+*  Parse the publisher name from the certificate
+*
+*  @param  Certificate - &PolicyInfo.ChainInfo->ChainElements[x].Certificate
+*
+*  @param  AllocateRoutine - used to allocate PublisherName buffer.
+*
+*  @param  PublisherName[out] - publisher name.
+*
+*  @return buffer length.
+*/
+MINCRYPTAPI
+INT
+NTAPI
+CiGetCertPublisherName(
+    _In_ MINCERT_BLOB* Certificate,
+    _In_ PMINCRYPT_ALLOCATE_ROUTINE AllocateRoutine,
+    _Out_ PUNICODE_STRING PublisherName
+);
+
+
+MINCRYPTAPI
+VOID
+NTAPI
+CiSetTrustedOriginClaimId(
+    _In_ UINT32 ClaimId
+);
+
 /**
 *  Resets a PolicyInfo struct - frees the dynamically allocated buffer in PolicyInfo (ChainInfo) if not null.
 *  Zeros the entire PolicyInfo struct.

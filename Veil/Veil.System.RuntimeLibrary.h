@@ -2687,16 +2687,17 @@ _At_(UnicodeString->Length, _Post_equal_to_(0))
 _At_(UnicodeString->MaximumLength, _Post_equal_to_(BufferSize))
 FORCEINLINE
 VOID
-NTAPI
 RtlInitEmptyUnicodeString(
-    _Out_ PUNICODE_STRING DestinationString,
-    _In_opt_ PWCHAR Buffer,
-    _In_ USHORT MaximumLength
+    _Out_ PUNICODE_STRING UnicodeString,
+    _Writable_bytes_(BufferSize)
+    _When_(BufferSize != 0, _Notnull_)
+    __drv_aliasesMem PWCHAR Buffer,
+    _In_ USHORT BufferSize
 )
 {
-    DestinationString->Buffer = Buffer;
-    DestinationString->MaximumLength = MaximumLength;
-    DestinationString->Length = 0;
+    UnicodeString->Buffer = Buffer;
+    UnicodeString->MaximumLength = BufferSize;
+    UnicodeString->Length = 0;
 }
 
 #endif // !_KERNEL_MODE

@@ -102,4 +102,41 @@ CiFreePolicyInfo(
     return nullptr;
 }
 
+typedef
+_IRQL_requires_same_
+_Function_class_(MINCRYPT_ALLOCATE_ROUTINE)
+__drv_allocatesMem(Mem)
+PVOID
+NTAPI
+MINCRYPT_ALLOCATE_ROUTINE (
+    _In_ SIZE_T ByteSize
+    );
+typedef MINCRYPT_ALLOCATE_ROUTINE *PMINCRYPT_ALLOCATE_ROUTINE;
+
+MINCRYPTAPI
+INT
+NTAPI
+CiGetCertPublisherName(
+    _In_ MINCERT_BLOB* Certificate,
+    _In_ PMINCRYPT_ALLOCATE_ROUTINE AllocateRoutine,
+    _Out_ PUNICODE_STRING PublisherName
+)
+{
+    UNREFERENCED_PARAMETER(Certificate);
+    UNREFERENCED_PARAMETER(AllocateRoutine);
+    UNREFERENCED_PARAMETER(PublisherName);
+
+    return 0;
+}
+
+MINCRYPTAPI
+VOID
+NTAPI
+CiSetTrustedOriginClaimId(
+    _In_ UINT32 ClaimId
+)
+{
+    UNREFERENCED_PARAMETER(ClaimId);
+}
+
 EXTERN_C_END

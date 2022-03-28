@@ -1,15 +1,15 @@
 LIBRARY ci.dll
 EXPORTS
-    CiValidateFileAsImageType       @1  NONAME
-    CiRegisterSigningInformation    @2  NONAME
-    CiUnregisterSigningInformation  @3  NONAME
+    ;CiValidateFileAsImageType       @1  NONAME
+    ;CiRegisterSigningInformation    @2  NONAME
+    ;CiUnregisterSigningInformation  @3  NONAME
     CiCheckSignedFile
-    CiFindPageHashesInCatalog
-    CiFindPageHashesInSignedFile
+    ;CiFindPageHashesInCatalog
+    ;CiFindPageHashesInSignedFile
     CiFreePolicyInfo
     CiGetCertPublisherName
-    CiGetPEInformation
-    CiInitialize
+    ;CiGetPEInformation
+    ;CiInitialize
     CiSetTrustedOriginClaimId
     CiValidateFileObject
     CiVerifyHashInCatalog
