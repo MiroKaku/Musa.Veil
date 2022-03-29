@@ -2714,6 +2714,7 @@ RtlInitUnicodeString(
     _In_opt_z_ __drv_aliasesMem PCWSTR SourceString
 );
 
+#ifndef RtlInitUnicodeStringEx
 _IRQL_requires_max_(DISPATCH_LEVEL)
 NTSYSAPI
 NTSTATUS
@@ -2722,6 +2723,7 @@ RtlInitUnicodeStringEx(
     _Out_ PUNICODE_STRING DestinationString,
     _In_opt_z_ __drv_aliasesMem PCWSTR SourceString
 );
+#endif
 
 _IRQL_requires_max_(APC_LEVEL)
 _Success_(return != 0)
