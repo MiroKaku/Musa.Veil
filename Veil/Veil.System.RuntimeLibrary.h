@@ -5175,6 +5175,104 @@ RtlPcToFilePath(
     _Out_ PUNICODE_STRING FilePath
 );
 
+NTSYSAPI
+PVOID
+NTAPI
+RtlPcToFileHeader(
+    _In_ PVOID PcValue,
+    _Out_ PVOID* BaseOfImage
+);
+
+NTSYSAPI
+VOID
+NTAPI
+RtlRaiseException(
+    _In_ PEXCEPTION_RECORD ExceptionRecord
+);
+
+NTSYSAPI
+VOID
+NTAPI
+RtlUnwind(
+    _In_opt_ PVOID TargetFrame,
+    _In_opt_ PVOID TargetIp,
+    _In_opt_ PEXCEPTION_RECORD ExceptionRecord,
+    _In_ PVOID ReturnValue
+);
+
+#if defined(_M_AMD64) || defined(_M_ARM64) || defined(_M_ARM)
+
+//
+// Define unwind history table structure.
+//
+
+#define UNWIND_HISTORY_TABLE_SIZE 12
+
+typedef struct _UNWIND_HISTORY_TABLE_ENTRY
+{
+    ULONG_PTR ImageBase;
+    PIMAGE_RUNTIME_FUNCTION_ENTRY FunctionEntry;
+
+} UNWIND_HISTORY_TABLE_ENTRY, * PUNWIND_HISTORY_TABLE_ENTRY;
+
+typedef struct _UNWIND_HISTORY_TABLE
+{
+    UINT32 Count;
+    UINT8  LocalHint;
+    UINT8  GlobalHint;
+    UINT8  Search;
+    UINT8  Once;
+    ULONG_PTR LowAddress;
+    ULONG_PTR HighAddress;
+    UNWIND_HISTORY_TABLE_ENTRY Entry[UNWIND_HISTORY_TABLE_SIZE];
+
+} UNWIND_HISTORY_TABLE, * PUNWIND_HISTORY_TABLE;
+
+NTSYSAPI
+PIMAGE_RUNTIME_FUNCTION_ENTRY
+NTAPI
+RtlLookupFunctionEntry(
+    _In_ DWORD64 ControlPc,
+    _Out_ PDWORD64 ImageBase,
+    _Inout_opt_ PUNWIND_HISTORY_TABLE HistoryTable
+);
+
+NTSYSAPI
+VOID
+__cdecl
+RtlRestoreContext(
+    _In_ PCONTEXT ContextRecord,
+    _In_opt_ struct _EXCEPTION_RECORD* ExceptionRecord
+);
+
+NTSYSAPI
+VOID
+NTAPI
+RtlUnwindEx(
+    _In_opt_ PVOID TargetFrame,
+    _In_opt_ PVOID TargetIp,
+    _In_opt_ PEXCEPTION_RECORD ExceptionRecord,
+    _In_ PVOID ReturnValue,
+    _In_ PCONTEXT ContextRecord,
+    _In_opt_ PUNWIND_HISTORY_TABLE HistoryTable
+);
+
+NTSYSAPI
+PEXCEPTION_ROUTINE
+NTAPI
+RtlVirtualUnwind(
+    _In_ UINT32 HandlerType,
+    _In_ SIZE_T ImageBase,
+    _In_ SIZE_T ControlPc,
+    _In_ PIMAGE_RUNTIME_FUNCTION_ENTRY FunctionEntry,
+    _Inout_ PCONTEXT ContextRecord,
+    _Out_ PVOID* HandlerData,
+    _Out_ PSIZE_T EstablisherFrame,
+    _Inout_opt_ /*PKNONVOLATILE_CONTEXT_POINTERS*/ PVOID ContextPointers
+);
+
+#endif // _M_AMD64 | _M_ARM64 | _M_ARM
+
 #endif // _KERNEL_MODE
 
 typedef struct _RTL_MODULE_BASIC_INFO {
