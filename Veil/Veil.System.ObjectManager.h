@@ -1110,6 +1110,15 @@ ObDuplicateObject(
     _In_ KPROCESSOR_MODE PreviousMode
 );
 
+NTKERNELAPI
+NTSTATUS
+NTAPI
+ObSetHandleAttributes(
+    _In_ HANDLE Handle,
+    _In_ POBJECT_HANDLE_FLAG_INFORMATION HandleFlags,
+    _In_ KPROCESSOR_MODE PreviousMode
+);
+
 #endif // _KERNEL_MODE
 
 VEIL_END()

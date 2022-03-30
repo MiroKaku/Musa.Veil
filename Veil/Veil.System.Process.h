@@ -3509,6 +3509,15 @@ ZwAllocateReserveObject(
 
 // Process
 
+NTKERNELAPI
+NTSTATUS
+NTAPI
+PsLookupProcessThreadByCid(
+    _In_ PCLIENT_ID ClientId,
+    _Out_opt_ PEPROCESS* Process,
+    _Out_ PETHREAD* Thread
+);
+
 NTSYSAPI
 BOOLEAN
 NTAPI
@@ -3668,6 +3677,20 @@ PsSuspendProcess(
 
 NTSTATUS NTAPI
 PsResumeProcess(
+    _In_ PEPROCESS Process
+);
+
+NTKERNELAPI
+NTSTATUS
+NTAPI
+PsAcquireProcessExitSynchronization(
+    _In_ PEPROCESS Process
+);
+
+NTKERNELAPI
+VOID
+NTAPI
+PsReleaseProcessExitSynchronization(
     _In_ PEPROCESS Process
 );
 
