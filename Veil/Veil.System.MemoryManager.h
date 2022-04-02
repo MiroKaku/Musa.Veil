@@ -739,6 +739,8 @@ typedef struct _MEMORY_RANGE_ENTRY
 } MEMORY_RANGE_ENTRY, * PMEMORY_RANGE_ENTRY;
 #endif // !_KERNEL_MODE
 
+#if (NTDDI_VERSION >= NTDDI_WIN10_RS2)
+
 #ifdef _KERNEL_MODE
 
 //
@@ -797,6 +799,8 @@ typedef struct _CFG_CALL_TARGET_LIST_INFORMATION
     PVOID Section; // since REDSTONE5
     ULONGLONG FileOffset;
 } CFG_CALL_TARGET_LIST_INFORMATION, * PCFG_CALL_TARGET_LIST_INFORMATION;
+
+#endif // NTDDI_VERSION >= NTDDI_WIN10_RS2
 
 // end_private
 
@@ -1598,6 +1602,8 @@ ZwLoadEnclaveData(
     _Out_opt_ PULONG EnclaveError
 );
 
+#if (NTDDI_VERSION >= NTDDI_WIN10_TH2)
+
 __kernel_entry NTSYSCALLAPI
 NTSTATUS
 NTAPI
@@ -1620,6 +1626,10 @@ ZwInitializeEnclave(
     _In_ ULONG EnclaveInformationLength,
     _Out_opt_ PULONG EnclaveError
 );
+
+#endif // NTDDI_VERSION >= NTDDI_WIN10_TH2
+
+#if (NTDDI_VERSION >= NTDDI_WIN10_RS3)
 
 // rev
 __kernel_entry NTSYSCALLAPI
@@ -1669,6 +1679,8 @@ ZwCallEnclave(
     _In_ BOOLEAN WaitForThread,
     _Out_opt_ PVOID* ReturnValue
 );
+
+#endif // NTDDI_VERSION >= NTDDI_VERSION_RS3
 
 //
 // Only Kernel

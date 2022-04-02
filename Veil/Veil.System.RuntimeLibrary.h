@@ -248,11 +248,11 @@ RtlpCheckListEntry(
     }
 }
 
-#else  // DBG
+#else
 
 #define RtlpCheckListEntry
 
-#endif // !DBG
+#endif
 
 FORCEINLINE
 BOOLEAN
@@ -3019,6 +3019,34 @@ _When_(AllocateDestinationString,
         _In_ BOOLEAN AllocateDestinationString
     );
 
+#if (NTDDI_VERSION >= NTDDI_WIN7)
+_IRQL_requires_max_(PASSIVE_LEVEL)
+_Must_inspect_result_
+NTSYSAPI
+NTSTATUS
+NTAPI
+RtlUTF8ToUnicodeN(
+    _Out_writes_bytes_to_(UnicodeStringMaxByteCount, *UnicodeStringActualByteCount) PWSTR UnicodeStringDestination,
+    _In_ ULONG UnicodeStringMaxByteCount,
+    _Out_ PULONG UnicodeStringActualByteCount,
+    _In_reads_bytes_(UTF8StringByteCount) PCCH UTF8StringSource,
+    _In_ ULONG UTF8StringByteCount
+);
+
+_IRQL_requires_max_(PASSIVE_LEVEL)
+_Must_inspect_result_
+NTSYSAPI
+NTSTATUS
+NTAPI
+RtlUnicodeToUTF8N(
+    _Out_writes_bytes_to_(UTF8StringMaxByteCount, *UTF8StringActualByteCount) PCHAR UTF8StringDestination,
+    _In_ ULONG UTF8StringMaxByteCount,
+    _Out_ PULONG UTF8StringActualByteCount,
+    _In_reads_bytes_(UnicodeStringByteCount) PCWCH UnicodeStringSource,
+    _In_ ULONG UnicodeStringByteCount
+);
+#endif
+
 #if (NTDDI_VERSION >= NTDDI_WIN10_VB)
 _When_(AllocateDestinationString,
     _At_(DestinationString->MaximumLength, _Out_range_(<= , (SourceString->MaximumLength / sizeof(WCHAR)))))
@@ -3092,7 +3120,12 @@ RtlUnicodeStringToUTF8String(
 
         if (AllocateDestinationString)
         {
+#ifdef _KERNEL_MODE
+#pragma warning(suppress: 4996)
             DestinationString->Buffer = (PSTR)ExAllocatePool(PagedPool, ActualByteCount);
+#else
+            DestinationString->Buffer = (PSTR)LocalAlloc(LPTR, ActualByteCount);
+#endif
             if (DestinationString->Buffer == NULL)
             {
                 Status = STATUS_NO_MEMORY;
@@ -3169,7 +3202,12 @@ RtlUTF8StringToUnicodeString(
 
         if (AllocateDestinationString)
         {
+#ifdef _KERNEL_MODE
+#pragma warning(suppress: 4996)
             DestinationString->Buffer = (PWCH)ExAllocatePool(PagedPool, ActualByteCount);
+#else
+            DestinationString->Buffer = (PWCH)LocalAlloc(LPTR, ActualByteCount);
+#endif
             if (DestinationString->Buffer == NULL)
             {
                 Status = STATUS_NO_MEMORY;
@@ -3211,6 +3249,7 @@ RtlUTF8StringToUnicodeString(
 
     return Status;
 }
+
 #endif //NTDDI_VERSION < NTDDI_WIN10_VB
 
 NTSYSAPI
@@ -3411,34 +3450,6 @@ RtlConsoleMultiByteToUnicodeN(
     _In_ ULONG BytesInMultiByteString,
     _Out_ PULONG pdwSpecialChar
 );
-
-#if (NTDDI_VERSION >= NTDDI_WIN7)
-_IRQL_requires_max_(PASSIVE_LEVEL)
-_Must_inspect_result_
-NTSYSAPI
-NTSTATUS
-NTAPI
-RtlUTF8ToUnicodeN(
-    _Out_writes_bytes_to_(UnicodeStringMaxByteCount, *UnicodeStringActualByteCount) PWSTR UnicodeStringDestination,
-    _In_ ULONG UnicodeStringMaxByteCount,
-    _Out_ PULONG UnicodeStringActualByteCount,
-    _In_reads_bytes_(UTF8StringByteCount) PCCH UTF8StringSource,
-    _In_ ULONG UTF8StringByteCount
-);
-
-_IRQL_requires_max_(PASSIVE_LEVEL)
-_Must_inspect_result_
-NTSYSAPI
-NTSTATUS
-NTAPI
-RtlUnicodeToUTF8N(
-    _Out_writes_bytes_to_(UTF8StringMaxByteCount, *UTF8StringActualByteCount) PCHAR UTF8StringDestination,
-    _In_ ULONG UTF8StringMaxByteCount,
-    _Out_ PULONG UTF8StringActualByteCount,
-    _In_reads_bytes_(UnicodeStringByteCount) PCWCH UnicodeStringSource,
-    _In_ ULONG UnicodeStringByteCount
-);
-#endif
 
 // #include <ntnls.h>
 
