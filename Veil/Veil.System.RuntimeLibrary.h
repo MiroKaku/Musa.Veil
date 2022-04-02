@@ -248,7 +248,11 @@ RtlpCheckListEntry(
     }
 }
 
-#endif
+#else  // DBG
+
+#define RtlpCheckListEntry
+
+#endif // !DBG
 
 FORCEINLINE
 BOOLEAN
