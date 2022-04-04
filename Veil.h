@@ -75,6 +75,8 @@
 // User-Mode
 //
 
+struct IUnknown;
+
 // This header file provides access to Win32, plus NTSTATUS values and some access mask values.
 
 #define  WINDOWS_IGNORE_PACKING_MISMATCH

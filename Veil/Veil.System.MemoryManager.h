@@ -1389,7 +1389,7 @@ ZwAllocateUserPhysicalPages(
     _Out_writes_(*NumberOfPages) PULONG_PTR UserPfnArray
 );
 
-#if (NTDDI_VERSION >= NTDDI_WINTHRESHOLD)
+#if (NTDDI_VERSION >= NTDDI_WIN10_RS4)
 __kernel_entry NTSYSCALLAPI
 NTSTATUS
 NTAPI
@@ -1412,7 +1412,7 @@ ZwAllocateUserPhysicalPagesEx(
     _Inout_updates_opt_(ParameterCount) PMEM_EXTENDED_PARAMETER ExtendedParameters,
     _In_ ULONG ExtendedParameterCount
 );
-#endif
+#endif // NTDDI_VERSION >= NTDDI_WIN10_RS4
 
 __kernel_entry NTSYSCALLAPI
 NTSTATUS
