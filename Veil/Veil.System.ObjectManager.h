@@ -415,7 +415,7 @@ ZwClose(
     _In_ HANDLE Handle
 );
 
-#if (NTDDI_VERSION >= NTDDI_WINTHRESHOLD)
+#if (NTDDI_VERSION >= NTDDI_WIN10)
 __kernel_entry NTSYSCALLAPI
 NTSTATUS
 NTAPI
@@ -432,7 +432,7 @@ ZwCompareObjects(
     _In_ HANDLE FirstObjectHandle,
     _In_ HANDLE SecondObjectHandle
 );
-#endif
+#endif // NTDDI_VERSION >= NTDDI_WIN10
 
 //
 // Directory objects

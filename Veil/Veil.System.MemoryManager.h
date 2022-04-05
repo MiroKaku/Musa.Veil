@@ -505,7 +505,7 @@ ZwAllocateVirtualMemory(
     _In_ ULONG Protect
 );
 
-#if (NTDDI_VERSION >= NTDDI_WIN10_RS5)
+#if (NTDDI_VERSION >= NTDDI_WIN10_RS4)
 _Must_inspect_result_
 __drv_allocatesMem(Mem)
 __kernel_entry NTSYSCALLAPI
@@ -536,7 +536,7 @@ ZwAllocateVirtualMemoryEx(
     _Inout_updates_opt_(ExtendedParameterCount) PMEM_EXTENDED_PARAMETER ExtendedParameters,
     _In_ ULONG ExtendedParameterCount
 );
-#endif
+#endif // NTDDI_VERSION >= NTDDI_WIN10_RS4
 
 __kernel_entry NTSYSCALLAPI
 NTSTATUS
@@ -943,7 +943,7 @@ ZwCreateSectionEx(
     _Inout_updates_opt_(ExtendedParameterCount) PMEM_EXTENDED_PARAMETER ExtendedParameters,
     _In_ ULONG ExtendedParameterCount
 );
-#endif
+#endif // NTDDI_VERSION >= NTDDI_WIN10_RS5
 
 _Must_inspect_result_
 __kernel_entry NTSYSCALLAPI
@@ -1002,7 +1002,7 @@ ZwMapViewOfSection(
     _In_ ULONG Win32Protect
 );
 
-#if (NTDDI_VERSION >= NTDDI_WIN10_RS5)
+#if (NTDDI_VERSION >= NTDDI_WIN10_RS4)
 _Must_inspect_result_
 _Post_satisfies_(*ViewSize >= _Old_(*ViewSize))
 __kernel_entry NTSYSCALLAPI
@@ -1037,7 +1037,7 @@ ZwMapViewOfSectionEx(
     _Inout_updates_opt_(ParameterCount) PMEM_EXTENDED_PARAMETER ExtendedParameters,
     _In_ ULONG ExtendedParameterCount
 );
-#endif
+#endif // NTDDI_VERSION >= NTDDI_WIN10_RS4
 
 __kernel_entry NTSYSCALLAPI
 NTSTATUS
@@ -1260,7 +1260,7 @@ typedef struct _MEMORY_PARTITION_MEMORY_EVENTS_INFORMATION
     HANDLE MaximumCommitCondition; // \KernelObjects\MaximumCommitCondition
 } MEMORY_PARTITION_MEMORY_EVENTS_INFORMATION, * PMEMORY_PARTITION_MEMORY_EVENTS_INFORMATION;
 
-#if (NTDDI_VERSION >= NTDDI_WINTHRESHOLD)
+#if (NTDDI_VERSION >= NTDDI_WIN10)
 __kernel_entry NTSYSCALLAPI
 NTSTATUS
 NTAPI
@@ -1326,7 +1326,7 @@ ZwManagePartition(
     _Inout_updates_bytes_(PartitionInformationLength) PVOID PartitionInformation,
     _In_ ULONG PartitionInformationLength
 );
-#endif
+#endif // NTDDI_VERSION >= NTDDI_WIN10
 
 //
 // User physical pages
@@ -1389,7 +1389,7 @@ ZwAllocateUserPhysicalPages(
     _Out_writes_(*NumberOfPages) PULONG_PTR UserPfnArray
 );
 
-#if (NTDDI_VERSION >= NTDDI_WIN10_RS4)
+#if (NTDDI_VERSION >= NTDDI_WIN10_VB)
 __kernel_entry NTSYSCALLAPI
 NTSTATUS
 NTAPI
@@ -1412,7 +1412,7 @@ ZwAllocateUserPhysicalPagesEx(
     _Inout_updates_opt_(ParameterCount) PMEM_EXTENDED_PARAMETER ExtendedParameters,
     _In_ ULONG ExtendedParameterCount
 );
-#endif // NTDDI_VERSION >= NTDDI_WIN10_RS4
+#endif // NTDDI_VERSION >= NTDDI_WIN10_VB
 
 __kernel_entry NTSYSCALLAPI
 NTSTATUS
@@ -1540,6 +1540,7 @@ ZwFlushWriteBuffer(
 // Enclave support
 //
 
+#if (NTDDI_VERSION >= NTDDI_WIN10_TH2)
 __kernel_entry NTSYSCALLAPI
 NTSTATUS
 NTAPI
@@ -1601,8 +1602,6 @@ ZwLoadEnclaveData(
     _Out_opt_ PSIZE_T NumberOfBytesWritten,
     _Out_opt_ PULONG EnclaveError
 );
-
-#if (NTDDI_VERSION >= NTDDI_WIN10_TH2)
 
 __kernel_entry NTSYSCALLAPI
 NTSTATUS

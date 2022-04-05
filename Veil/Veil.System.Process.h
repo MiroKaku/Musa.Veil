@@ -2201,7 +2201,7 @@ ZwGetCurrentProcessorNumber(
     VOID
 );
 
-#if (NTDDI_VERSION >= NTDDI_WIN7)
+#if (NTDDI_VERSION >= NTDDI_WIN10)
 __kernel_entry NTSYSCALLAPI
 ULONG
 NTAPI
@@ -2216,7 +2216,7 @@ NTAPI
 ZwGetCurrentProcessorNumberEx(
     _Out_opt_ PPROCESSOR_NUMBER ProcessorNumber
 );
-#endif
+#endif // NTDDI_VERSION >= NTDDI_WIN10
 
 __kernel_entry NTSYSCALLAPI
 NTSTATUS
@@ -2364,7 +2364,6 @@ ZwContinue(
     _In_ BOOLEAN TestAlert
 );
 
-#if (NTDDI_VERSION >= NTDDI_WINTHRESHOLD)
 typedef enum _KCONTINUE_TYPE
 {
     KCONTINUE_UNWIND,
@@ -2384,6 +2383,7 @@ typedef struct _KCONTINUE_ARGUMENT
 #define KCONTINUE_FLAG_TEST_ALERT  0x00000001 // wbenny
 #define KCONTINUE_FLAG_DELIVER_APC 0x00000002 // wbenny
 
+#if (NTDDI_VERSION >= NTDDI_WIN10_VB)
 __kernel_entry NTSYSCALLAPI
 NTSTATUS
 NTAPI
@@ -2400,6 +2400,7 @@ ZwContinueEx(
     _In_ PCONTEXT ContextRecord,
     _In_ PVOID ContinueArgument // PKCONTINUE_ARGUMENT and BOOLEAN are valid
 );
+#endif // NTDDI_VERSION >= NTDDI_WIN10_VB
 
 //FORCEINLINE
 //NTSTATUS
@@ -2420,7 +2421,6 @@ ZwContinueEx(
 //{
 //    return ZwContinueEx(ContextRecord, (PCONTINUE_ARGUMENT)TestAlert);
 //}
-#endif
 
 __kernel_entry NTSYSCALLAPI
 NTSTATUS

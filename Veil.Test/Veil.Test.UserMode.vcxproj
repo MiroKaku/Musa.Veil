@@ -26,7 +26,6 @@
     <Keyword>Win32Proj</Keyword>
     <ProjectGuid>{5e94fd3f-3f19-4c3e-b7de-43cb0877224f}</ProjectGuid>
     <RootNamespace>VeilTest</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
     <ProjectName>Veil.Test.UserMode</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />

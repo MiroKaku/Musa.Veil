@@ -1243,7 +1243,7 @@ typedef struct _T2_SET_PARAMETERS_V0
 
 typedef PVOID PT2_CANCEL_PARAMETERS;
 
-#if (NTDDI_VERSION >= NTDDI_WIN10)
+#if (NTDDI_VERSION >= NTDDI_WINBLUE)
 __kernel_entry NTSYSCALLAPI
 NTSTATUS
 NTAPI
@@ -1304,7 +1304,7 @@ ZwCancelTimer2(
     _In_ HANDLE TimerHandle,
     _In_ PT2_CANCEL_PARAMETERS Parameters
 );
-#endif
+#endif // NTDDI_VERSION >= NTDDI_WINBLUE
 
 //
 // Profile
@@ -1790,7 +1790,7 @@ ZwUnsubscribeWnfStateChange(
 );
 #endif
 
-#if (NTDDI_VERSION >= NTDDI_WIN10)
+#if (NTDDI_VERSION >= NTDDI_WINBLUE)
 __kernel_entry NTSYSCALLAPI
 NTSTATUS
 NTAPI
@@ -1830,7 +1830,7 @@ NTAPI
 ZwSetWnfProcessNotificationEvent(
     _In_ HANDLE NotificationEvent
 );
-#endif
+#endif // NTDDI_VERSION >= NTDDI_WINBLUE
 
 //
 // Worker factory

@@ -1503,7 +1503,7 @@ ZwQueryInformationByName(
     _In_ ULONG Length,
     _In_ FILE_INFORMATION_CLASS FileInformationClass
 );
-#endif
+#endif // NTDDI_VERSION >= NTDDI_WIN10_RS2
 
 __kernel_entry NTSYSCALLAPI
 NTSTATUS
@@ -1605,7 +1605,7 @@ ZwQueryDirectoryFileEx(
     _In_ ULONG QueryFlags,
     _In_opt_ PUNICODE_STRING FileName
 );
-#endif
+#endif // NTDDI_VERSION >= NTDDI_WIN10_RS3
 
 __kernel_entry NTSYSCALLAPI
 NTSTATUS
@@ -2168,7 +2168,7 @@ ZwNotifyChangeDirectoryFileEx(
     _In_ BOOLEAN WatchTree,
     _In_opt_ DIRECTORY_NOTIFY_INFORMATION_CLASS DirectoryNotifyInformationClass
 );
-#endif
+#endif // NTDDI_VERSION >= NTDDI_WIN10_RS3
 
 __kernel_entry NTSYSCALLAPI
 NTSTATUS

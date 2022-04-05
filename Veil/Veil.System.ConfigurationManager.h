@@ -826,7 +826,7 @@ ZwLoadKeyEx(
 );
 
 // rev by tyranid
-#if (NTDDI_VERSION >= NTDDI_WIN10_MN)
+#if (NTDDI_VERSION >= NTDDI_WIN10_VB)
 __kernel_entry NTSYSCALLAPI
 NTSTATUS
 NTAPI
@@ -855,7 +855,7 @@ ZwLoadKey3(
     _Out_opt_ PHANDLE RootHandle,
     _Reserved_ PVOID Reserved
 );
-#endif
+#endif // NTDDI_VERSION >= NTDDI_WIN10_VB
 
 __kernel_entry NTSYSCALLAPI
 NTSTATUS
@@ -1274,7 +1274,7 @@ ZwRollbackRegistryTransaction(
     _In_ HANDLE RegistryTransactionHandle,
     _Reserved_ ULONG Flags
 );
-#endif
+#endif // NTDDI_VERSION >= NTDDI_WIN10_TH2
 
 VEIL_END()
 

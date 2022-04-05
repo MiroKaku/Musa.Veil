@@ -1318,7 +1318,7 @@ ZwAlpcImpersonateClientOfPort(
     _In_ PVOID Flags
 );
 
-#if (NTDDI_VERSION >= NTDDI_WINTHRESHOLD)
+#if (NTDDI_VERSION >= NTDDI_WIN10)
 __kernel_entry NTSYSCALLAPI
 NTSTATUS
 NTAPI
@@ -1337,7 +1337,7 @@ ZwAlpcImpersonateClientContainerOfPort(
     _In_ PPORT_MESSAGE Message,
     _In_ ULONG Flags
 );
-#endif
+#endif // NTDDI_VERSION >= NTDDI_WIN10
 
 __kernel_entry NTSYSCALLAPI
 NTSTATUS
