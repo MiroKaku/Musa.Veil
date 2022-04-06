@@ -154,6 +154,7 @@ struct IUnknown;
 #include "Veil/Veil.System.ALPC.h"
 #include "Veil/Veil.System.PowerManager.h"
 #include "Veil/Veil.System.ConfigurationManager.h"
+#include "Veil/Veil.System.Nls.h"
 #include "Veil/Veil.System.RuntimeLibrary.h"
 #include "Veil/Veil.System.Security.h"
 #include "Veil/Veil.System.MinCrypt.h"

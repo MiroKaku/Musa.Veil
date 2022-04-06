@@ -3451,57 +3451,6 @@ RtlConsoleMultiByteToUnicodeN(
     _Out_ PULONG pdwSpecialChar
 );
 
-// #include <ntnls.h>
-
-NTSYSAPI USHORT NlsAnsiCodePage;
-
-#ifndef _KERNEL_MODE
-
-#ifdef _NTSYSTEM_
-
-// Try to avoid these, the preferred system ACP/OEMCP is UTF-8 and these are then irrelevent
-#define NLS_MB_CODE_PAGE_TAG NlsMbCodePageTag
-#define NLS_MB_OEM_CODE_PAGE_TAG NlsMbOemCodePageTag
-
-#else
-
-// Try to avoid these, the preferred system ACP/OEMCP is UTF-8 and these are then irrelevent
-#define NLS_MB_CODE_PAGE_TAG (*NlsMbCodePageTag)
-#define NLS_MB_OEM_CODE_PAGE_TAG (*NlsMbOemCodePageTag)
-
-#endif // _NTSYSTEM_
-
-extern BOOLEAN NLS_MB_CODE_PAGE_TAG;     // TRUE -> Multibyte CP, FALSE -> Singlebyte
-extern BOOLEAN NLS_MB_OEM_CODE_PAGE_TAG; // TRUE -> Multibyte CP, FALSE -> Singlebyte
-
-#define MAXIMUM_LEADBYTES 12
-
-typedef struct _CPTABLEINFO
-{
-    USHORT CodePage;
-    USHORT MaximumCharacterSize;
-    USHORT DefaultChar;
-    USHORT UniDefaultChar;
-    USHORT TransDefaultChar;
-    USHORT TransUniDefaultChar;
-    USHORT DBCSCodePage;
-    UCHAR LeadByte[MAXIMUM_LEADBYTES];
-    PUSHORT MultiByteTable;
-    PVOID WideCharTable;
-    PUSHORT DBCSRanges;
-    PUSHORT DBCSOffsets;
-} CPTABLEINFO, * PCPTABLEINFO;
-
-typedef struct _NLSTABLEINFO
-{
-    CPTABLEINFO OemTableInfo;
-    CPTABLEINFO AnsiTableInfo;
-    PUSHORT UpperCaseTable;
-    PUSHORT LowerCaseTable;
-} NLSTABLEINFO, * PNLSTABLEINFO;
-
-#endif // !_KERNEL_MODE
-
 //
 //  String manipulation routines
 //
