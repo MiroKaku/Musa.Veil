@@ -1138,7 +1138,7 @@ ZwAreMappedFilesTheSame(
 // Partitions
 //
 
-#if !defined(_KERNEL_MODE) or (WDK_NTDDI_VERSION <= NTDDI_WIN10_VB)
+#if !defined(_KERNEL_MODE) || (WDK_NTDDI_VERSION <= NTDDI_WIN10_VB)
 // private
 typedef enum _PARTITION_INFORMATION_CLASS
 {
