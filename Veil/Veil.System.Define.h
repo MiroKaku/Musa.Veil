@@ -655,6 +655,11 @@ typedef enum _SUITE_TYPE
 
 #endif // _NTDEF
 
+#if defined(_KERNEL_MODE) and (WDK_NTDDI_VERSION <= NTDDI_WIN10_19H1)
+typedef STRING UTF8_STRING;
+typedef PSTRING PUTF8_STRING;
+#endif
+
 //
 // Critical Section
 //

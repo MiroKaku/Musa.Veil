@@ -720,15 +720,15 @@ typedef enum class _VIRTUAL_MEMORY_INFORMATION_CLASS
     MaxVmInfoClass
 } VIRTUAL_MEMORY_INFORMATION_CLASS;
 #else
-#define VmPrefetchInformation                   0
-#define VmPagePriorityInformation               1
-#define VmCfgCallTargetInformation              2
-#define VmPageDirtyStateInformation             3
-#define VmImageHotPatchInformation              4
-#define VmPhysicalContiguityInformation         5
-#define VmVirtualMachinePrepopulateInformation  6
-#define VmRemoveFromWorkingSetInformation       7
-#define MaxVmInfoClass                          8
+#define VmPrefetchInformation                   ((_VIRTUAL_MEMORY_INFORMATION_CLASS)0)
+#define VmPagePriorityInformation               ((_VIRTUAL_MEMORY_INFORMATION_CLASS)1)
+#define VmCfgCallTargetInformation              ((_VIRTUAL_MEMORY_INFORMATION_CLASS)2)
+#define VmPageDirtyStateInformation             ((_VIRTUAL_MEMORY_INFORMATION_CLASS)3)
+#define VmImageHotPatchInformation              ((_VIRTUAL_MEMORY_INFORMATION_CLASS)4)
+#define VmPhysicalContiguityInformation         ((_VIRTUAL_MEMORY_INFORMATION_CLASS)5)
+#define VmVirtualMachinePrepopulateInformation  ((_VIRTUAL_MEMORY_INFORMATION_CLASS)6)
+#define VmRemoveFromWorkingSetInformation       ((_VIRTUAL_MEMORY_INFORMATION_CLASS)7)
+#define MaxVmInfoClass                          ((_VIRTUAL_MEMORY_INFORMATION_CLASS)8)
 #endif // !_KERNEL_MODE
 
 #ifndef _KERNEL_MODE
@@ -1138,7 +1138,7 @@ ZwAreMappedFilesTheSame(
 // Partitions
 //
 
-#ifndef _KERNEL_MODE
+#if !defined(_KERNEL_MODE) or (WDK_NTDDI_VERSION <= NTDDI_WIN10_VB)
 // private
 typedef enum _PARTITION_INFORMATION_CLASS
 {
@@ -1159,21 +1159,21 @@ typedef enum _PARTITION_INFORMATION_CLASS
     SystemMemoryPartitionMax
 } PARTITION_INFORMATION_CLASS, * PPARTITION_INFORMATION_CLASS;
 #else
-#define SystemMemoryPartitionInformation                0x0
-#define SystemMemoryPartitionMoveMemory                 0x1
-#define SystemMemoryPartitionAddPagefile                0x2
-#define SystemMemoryPartitionCombineMemory              0x3
-#define SystemMemoryPartitionInitialAddMemory           0x4
-#define SystemMemoryPartitionGetMemoryEvents            0x5
-#define SystemMemoryPartitionSetAttributes              0x6
-#define SystemMemoryPartitionNodeInformation            0x7
-#define SystemMemoryPartitionCreateLargePages           0x8
-#define SystemMemoryPartitionDedicatedMemoryInformation 0x9
-#define SystemMemoryPartitionOpenDedicatedMemory        0xA
-#define SystemMemoryPartitionMemoryChargeAttributes     0xB
-#define SystemMemoryPartitionClearAttributes            0xC
-#define SystemMemoryPartitionSetMemoryThresholds        0xD
-#define SystemMemoryPartitionMax                        0xE
+#define SystemMemoryPartitionInformation                ((_PARTITION_INFORMATION_CLASS)0x0)
+#define SystemMemoryPartitionMoveMemory                 ((_PARTITION_INFORMATION_CLASS)0x1)
+#define SystemMemoryPartitionAddPagefile                ((_PARTITION_INFORMATION_CLASS)0x2)
+#define SystemMemoryPartitionCombineMemory              ((_PARTITION_INFORMATION_CLASS)0x3)
+#define SystemMemoryPartitionInitialAddMemory           ((_PARTITION_INFORMATION_CLASS)0x4)
+#define SystemMemoryPartitionGetMemoryEvents            ((_PARTITION_INFORMATION_CLASS)0x5)
+#define SystemMemoryPartitionSetAttributes              ((_PARTITION_INFORMATION_CLASS)0x6)
+#define SystemMemoryPartitionNodeInformation            ((_PARTITION_INFORMATION_CLASS)0x7)
+#define SystemMemoryPartitionCreateLargePages           ((_PARTITION_INFORMATION_CLASS)0x8)
+#define SystemMemoryPartitionDedicatedMemoryInformation ((_PARTITION_INFORMATION_CLASS)0x9)
+#define SystemMemoryPartitionOpenDedicatedMemory        ((_PARTITION_INFORMATION_CLASS)0xA)
+#define SystemMemoryPartitionMemoryChargeAttributes     ((_PARTITION_INFORMATION_CLASS)0xB)
+#define SystemMemoryPartitionClearAttributes            ((_PARTITION_INFORMATION_CLASS)0xC)
+#define SystemMemoryPartitionSetMemoryThresholds        ((_PARTITION_INFORMATION_CLASS)0xD)
+#define SystemMemoryPartitionMax                        ((_PARTITION_INFORMATION_CLASS)0xE)
 #endif //!_KERNEL_MODE
 
 // private
