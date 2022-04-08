@@ -6265,15 +6265,15 @@ RtlWalkHeap(
 );
 
 // HEAP_INFORMATION_CLASS
-#define HeapCompatibilityInformation 0x0 // q; s: ULONG
-#define HeapEnableTerminationOnCorruption 0x1 // q; s: NULL
-#define HeapExtendedInformation 0x2 // q; s: HEAP_EXTENDED_INFORMATION
-#define HeapOptimizeResources 0x3 // q; s: HEAP_OPTIMIZE_RESOURCES_INFORMATION 
-#define HeapTaggingInformation 0x4
-#define HeapStackDatabase 0x5
-#define HeapMemoryLimit 0x6 // 19H2
-#define HeapDetailedFailureInformation 0x80000001
-#define HeapSetDebuggingInformation 0x80000002 // q; s: HEAP_DEBUGGING_INFORMATION
+#define HeapCompatibilityInformation        ((HEAP_INFORMATION_CLASS)0x0       ) // q; s: ULONG
+#define HeapEnableTerminationOnCorruption   ((HEAP_INFORMATION_CLASS)0x1       ) // q; s: NULL
+#define HeapExtendedInformation             ((HEAP_INFORMATION_CLASS)0x2       ) // q; s: HEAP_EXTENDED_INFORMATION
+#define HeapOptimizeResources               ((HEAP_INFORMATION_CLASS)0x3       ) // q; s: HEAP_OPTIMIZE_RESOURCES_INFORMATION 
+#define HeapTaggingInformation              ((HEAP_INFORMATION_CLASS)0x4       )
+#define HeapStackDatabase                   ((HEAP_INFORMATION_CLASS)0x5       )
+#define HeapMemoryLimit                     ((HEAP_INFORMATION_CLASS)0x6       ) // 19H2
+#define HeapDetailedFailureInformation      ((HEAP_INFORMATION_CLASS)0x80000001)
+#define HeapSetDebuggingInformation         ((HEAP_INFORMATION_CLASS)0x80000002) // q; s: HEAP_DEBUGGING_INFORMATION
 
 typedef enum _HEAP_COMPATIBILITY_MODE
 {

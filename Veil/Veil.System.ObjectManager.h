@@ -88,13 +88,13 @@ typedef enum _OBJECT_INFORMATION_CLASS
     MaxObjectInfoClass
 } OBJECT_INFORMATION_CLASS;
 #else
-#define ObjectBasicInformation          0
-#define ObjectNameInformation           1
-#define ObjectTypeInformation           2
-#define ObjectTypesInformation          3
-#define ObjectHandleFlagInformation     4
-#define ObjectSessionInformation        5
-#define ObjectSessionObjectInformation  6
+#define ObjectBasicInformation          ((_OBJECT_INFORMATION_CLASS)0)
+#define ObjectNameInformation           ((_OBJECT_INFORMATION_CLASS)1)
+#define ObjectTypeInformation           ((_OBJECT_INFORMATION_CLASS)2)
+#define ObjectTypesInformation          ((_OBJECT_INFORMATION_CLASS)3)
+#define ObjectHandleFlagInformation     ((_OBJECT_INFORMATION_CLASS)4)
+#define ObjectSessionInformation        ((_OBJECT_INFORMATION_CLASS)5)
+#define ObjectSessionObjectInformation  ((_OBJECT_INFORMATION_CLASS)6)
 #endif // !_KERNEL_MODE
 
 typedef struct _OBJECT_BASIC_INFORMATION

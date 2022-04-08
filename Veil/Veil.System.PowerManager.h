@@ -74,15 +74,15 @@ typedef struct _SYSTEM_HIBERFILE_INFORMATION
 #define POWER_REQUEST_CONTEXT_NOT_SPECIFIED DIAGNOSTIC_REASON_NOT_SPECIFIED
 
 // enum _POWER_REQUEST_TYPE
-#define PowerRequestDisplayRequired         0
-#define PowerRequestSystemRequired          1
-#define PowerRequestAwayModeRequired        2
-#define PowerRequestExecutionRequired       3
-#define PowerRequestPerfBoostRequired       4
-#define PowerRequestActiveLockScreen        5
-#define PowerRequestInvalid                 6
-#define PowerRequestUnknown                 7
-#define PowerRequestFullScreenVideoRequired 8
+#define PowerRequestDisplayRequired         ((_POWER_REQUEST_TYPE)0)
+#define PowerRequestSystemRequired          ((_POWER_REQUEST_TYPE)1)
+#define PowerRequestAwayModeRequired        ((_POWER_REQUEST_TYPE)2)
+#define PowerRequestExecutionRequired       ((_POWER_REQUEST_TYPE)3)
+#define PowerRequestPerfBoostRequired       ((_POWER_REQUEST_TYPE)4)
+#define PowerRequestActiveLockScreen        ((_POWER_REQUEST_TYPE)5)
+#define PowerRequestInvalid                 ((_POWER_REQUEST_TYPE)6)
+#define PowerRequestUnknown                 ((_POWER_REQUEST_TYPE)7)
+#define PowerRequestFullScreenVideoRequired ((_POWER_REQUEST_TYPE)8)
 
 #ifndef _KERNEL_MODE
 typedef struct _POWER_REQUEST_ACTION

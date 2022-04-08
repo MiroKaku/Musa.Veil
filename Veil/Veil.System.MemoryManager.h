@@ -55,37 +55,37 @@ VEIL_BEGIN()
 #ifndef _KERNEL_MODE
 typedef enum _MEMORY_INFORMATION_CLASS
 {
-    MemoryBasicInformation, // MEMORY_BASIC_INFORMATION
-    MemoryWorkingSetInformation, // MEMORY_WORKING_SET_INFORMATION
-    MemoryMappedFilenameInformation, // UNICODE_STRING
-    MemoryRegionInformation, // MEMORY_REGION_INFORMATION
-    MemoryWorkingSetExInformation, // MEMORY_WORKING_SET_EX_INFORMATION
-    MemorySharedCommitInformation, // MEMORY_SHARED_COMMIT_INFORMATION
-    MemoryImageInformation, // MEMORY_IMAGE_INFORMATION
-    MemoryRegionInformationEx, // MEMORY_REGION_INFORMATION
+    MemoryBasicInformation,                 // MEMORY_BASIC_INFORMATION
+    MemoryWorkingSetInformation,            // MEMORY_WORKING_SET_INFORMATION
+    MemoryMappedFilenameInformation,        // UNICODE_STRING
+    MemoryRegionInformation,                // MEMORY_REGION_INFORMATION
+    MemoryWorkingSetExInformation,          // MEMORY_WORKING_SET_EX_INFORMATION
+    MemorySharedCommitInformation,          // MEMORY_SHARED_COMMIT_INFORMATION
+    MemoryImageInformation,                 // MEMORY_IMAGE_INFORMATION
+    MemoryRegionInformationEx,              // MEMORY_REGION_INFORMATION
     MemoryPrivilegedBasicInformation,
-    MemoryEnclaveImageInformation, // MEMORY_ENCLAVE_IMAGE_INFORMATION // since REDSTONE3
-    MemoryBasicInformationCapped, // 10
-    MemoryPhysicalContiguityInformation, // MEMORY_PHYSICAL_CONTIGUITY_INFORMATION // since 20H1
-    MemoryBadInformation, // since WIN11
-    MemoryBadInformationAllProcesses, // since 22H1
+    MemoryEnclaveImageInformation,          // MEMORY_ENCLAVE_IMAGE_INFORMATION // since REDSTONE3
+    MemoryBasicInformationCapped,           // 10
+    MemoryPhysicalContiguityInformation,    // MEMORY_PHYSICAL_CONTIGUITY_INFORMATION // since 20H1
+    MemoryBadInformation,                   // since WIN11
+    MemoryBadInformationAllProcesses,       // since 22H1
     MaxMemoryInfoClass
 } MEMORY_INFORMATION_CLASS;
 #else
-#define MemoryBasicInformation              0x0
-#define MemoryWorkingSetInformation         0x1
-#define MemoryMappedFilenameInformation     0x2
-#define MemoryRegionInformation             0x3
-#define MemoryWorkingSetExInformation       0x4
-#define MemorySharedCommitInformation       0x5
-#define MemoryImageInformation              0x6
-#define MemoryRegionInformationEx           0x7
-#define MemoryPrivilegedBasicInformation    0x8
-#define MemoryEnclaveImageInformation       0x9
-#define MemoryBasicInformationCapped        0xA
-#define MemoryPhysicalContiguityInformation 0xB
-#define MemoryBadInformation                0xC
-#define MemoryBadInformationAllProcesses    0xD
+#define MemoryBasicInformation              ((_MEMORY_INFORMATION_CLASS)0x0)
+#define MemoryWorkingSetInformation         ((_MEMORY_INFORMATION_CLASS)0x1)
+#define MemoryMappedFilenameInformation     ((_MEMORY_INFORMATION_CLASS)0x2)
+#define MemoryRegionInformation             ((_MEMORY_INFORMATION_CLASS)0x3)
+#define MemoryWorkingSetExInformation       ((_MEMORY_INFORMATION_CLASS)0x4)
+#define MemorySharedCommitInformation       ((_MEMORY_INFORMATION_CLASS)0x5)
+#define MemoryImageInformation              ((_MEMORY_INFORMATION_CLASS)0x6)
+#define MemoryRegionInformationEx           ((_MEMORY_INFORMATION_CLASS)0x7)
+#define MemoryPrivilegedBasicInformation    ((_MEMORY_INFORMATION_CLASS)0x8)
+#define MemoryEnclaveImageInformation       ((_MEMORY_INFORMATION_CLASS)0x9)
+#define MemoryBasicInformationCapped        ((_MEMORY_INFORMATION_CLASS)0xA)
+#define MemoryPhysicalContiguityInformation ((_MEMORY_INFORMATION_CLASS)0xB)
+#define MemoryBadInformation                ((_MEMORY_INFORMATION_CLASS)0xC)
+#define MemoryBadInformationAllProcesses    ((_MEMORY_INFORMATION_CLASS)0xD)
 #endif // !_KERNEL_MODE
 
 typedef struct _MEMORY_WORKING_SET_BLOCK
@@ -504,6 +504,128 @@ ZwAllocateVirtualMemory(
     _In_ ULONG AllocationType,
     _In_ ULONG Protect
 );
+
+#if (WDK_NTDDI_VERSION <= NTDDI_WIN10_RS4)
+
+typedef struct _MEM_ADDRESS_REQUIREMENTS {
+    PVOID LowestStartingAddress;
+    PVOID HighestEndingAddress;
+    SIZE_T Alignment;
+} MEM_ADDRESS_REQUIREMENTS, * PMEM_ADDRESS_REQUIREMENTS;
+
+#define MEM_EXTENDED_PARAMETER_GRAPHICS                 0x00000001
+#define MEM_EXTENDED_PARAMETER_NONPAGED                 0x00000002
+#define MEM_EXTENDED_PARAMETER_ZERO_PAGES_OPTIONAL      0x00000004
+#define MEM_EXTENDED_PARAMETER_NONPAGED_LARGE           0x00000008
+#define MEM_EXTENDED_PARAMETER_NONPAGED_HUGE            0x00000010
+#define MEM_EXTENDED_PARAMETER_SOFT_FAULT_PAGES         0x00000020
+#define MEM_EXTENDED_PARAMETER_EC_CODE                  0x00000040
+
+//
+// Use the high ULONG64 bit of the MEM_EXTENDED_PARAMETER to indicate
+// that the supplied NUMA node in the low bits is mandatory.  Note this
+// is different from the MEM_EXTENDED_PARAMETER_XXX fields above because
+// those are encoded in the Type field; this is encoded in the ULong64 field.
+//
+// This can only be used nonpaged allocations since we don't want page
+// faults to fail due to transient memory shortages on arbitrary nodes.
+//
+
+#define MEM_EXTENDED_PARAMETER_NUMA_NODE_MANDATORY      MINLONG64
+
+typedef enum MEM_EXTENDED_PARAMETER_TYPE {
+    MemExtendedParameterInvalidType = 0,
+    MemExtendedParameterAddressRequirements,
+    MemExtendedParameterNumaNode,
+    MemExtendedParameterPartitionHandle,
+    MemExtendedParameterUserPhysicalHandle,
+    MemExtendedParameterAttributeFlags,
+    MemExtendedParameterImageMachine,
+    MemExtendedParameterMax
+} MEM_EXTENDED_PARAMETER_TYPE, * PMEM_EXTENDED_PARAMETER_TYPE;
+
+#define MEM_EXTENDED_PARAMETER_TYPE_BITS    8
+
+typedef struct DECLSPEC_ALIGN(8) MEM_EXTENDED_PARAMETER {
+
+    struct {
+        ULONG64 Type : MEM_EXTENDED_PARAMETER_TYPE_BITS;
+        ULONG64 Reserved : 64 - MEM_EXTENDED_PARAMETER_TYPE_BITS;
+    } DUMMYSTRUCTNAME;
+
+    union {
+        ULONG64 ULong64;
+        PVOID Pointer;
+        SIZE_T Size;
+        HANDLE Handle;
+        ULONG ULong;
+    } DUMMYUNIONNAME;
+
+} MEM_EXTENDED_PARAMETER, * PMEM_EXTENDED_PARAMETER;
+
+#define MEMORY_CURRENT_PARTITION_HANDLE         ((HANDLE) (LONG_PTR) -1)
+#define MEMORY_SYSTEM_PARTITION_HANDLE          ((HANDLE) (LONG_PTR) -2)
+#define MEMORY_EXISTING_VAD_PARTITION_HANDLE    ((HANDLE) (LONG_PTR) -3)
+
+//
+// Dedicated memory attributes.
+//
+
+#define MEM_DEDICATED_ATTRIBUTE_NOT_SPECIFIED   ((ULONG64) -1)
+
+typedef enum _MEM_DEDICATED_ATTRIBUTE_TYPE {
+    MemDedicatedAttributeReadBandwidth = 0,
+    MemDedicatedAttributeReadLatency,
+    MemDedicatedAttributeWriteBandwidth,
+    MemDedicatedAttributeWriteLatency,
+    MemDedicatedAttributeMax
+} MEM_DEDICATED_ATTRIBUTE_TYPE, * PMEM_DEDICATED_ATTRIBUTE_TYPE;
+
+
+
+typedef struct _MEMORY_PARTITION_DEDICATED_MEMORY_OPEN_INFORMATION {
+
+    //
+    // Type identifier of the dedicated memory to open.
+    //
+
+    ULONG64 DedicatedMemoryTypeId;
+
+    //
+    // Attributes and desired access for the new handle to be opened and stored
+    // in DedicatedMemoryPartitionHandle.
+    //
+
+    ULONG HandleAttributes;
+    ACCESS_MASK DesiredAccess;
+
+    //
+    // Returned handle to the opened dedicated memory partition.
+    //
+
+    HANDLE DedicatedMemoryPartitionHandle;
+
+} MEMORY_PARTITION_DEDICATED_MEMORY_OPEN_INFORMATION, * PMEMORY_PARTITION_DEDICATED_MEMORY_OPEN_INFORMATION;
+
+#define SEC_HUGE_PAGES              0x00020000  
+#define SEC_64K_PAGES               0x00080000  
+#define SEC_FILE                    0x00800000  
+#define SEC_IMAGE                   0x01000000  
+#define SEC_RESERVE                 0x04000000  
+#define SEC_COMMIT                  0x08000000  
+#define SEC_NOCACHE                 0x10000000  
+#define SEC_LARGE_PAGES             0x80000000  
+#define SEC_IMAGE_NO_EXECUTE (SEC_IMAGE | SEC_NOCACHE)  
+
+typedef enum MEM_SECTION_EXTENDED_PARAMETER_TYPE {
+    MemSectionExtendedParameterInvalidType = 0,
+    MemSectionExtendedParameterUserPhysicalFlags,
+    MemSectionExtendedParameterNumaNode,
+    MemSectionExtendedParameterSigningLevel,
+    MemSectionExtendedParameterMax
+} MEM_SECTION_EXTENDED_PARAMETER_TYPE, * PMEM_SECTION_EXTENDED_PARAMETER_TYPE;
+
+#endif // WDK_NTDDI_VERSION <= NTDDI_WIN10_RS4
 
 #if (NTDDI_VERSION >= NTDDI_WIN10_RS4)
 _Must_inspect_result_
