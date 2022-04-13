@@ -5831,7 +5831,7 @@ NTAPI
 RtlAreLongPathsEnabled(
     VOID
 );
-#endif
+#endif // NTDDI_VERSION >= NTDDI_WIN10_RS2
 
 NTSYSAPI
 BOOLEAN

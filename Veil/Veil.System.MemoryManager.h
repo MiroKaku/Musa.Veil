@@ -57,7 +57,7 @@ typedef enum _MEMORY_INFORMATION_CLASS
 {
     MemoryBasicInformation,                 // MEMORY_BASIC_INFORMATION
     MemoryWorkingSetInformation,            // MEMORY_WORKING_SET_INFORMATION
-    MemoryMappedFilenameInformation,        // UNICODE_STRING
+    MemoryMappedFileNameInformation,        // UNICODE_STRING
     MemoryRegionInformation,                // MEMORY_REGION_INFORMATION
     MemoryWorkingSetExInformation,          // MEMORY_WORKING_SET_EX_INFORMATION
     MemorySharedCommitInformation,          // MEMORY_SHARED_COMMIT_INFORMATION
@@ -74,7 +74,7 @@ typedef enum _MEMORY_INFORMATION_CLASS
 #else
 #define MemoryBasicInformation              ((_MEMORY_INFORMATION_CLASS)0x0)
 #define MemoryWorkingSetInformation         ((_MEMORY_INFORMATION_CLASS)0x1)
-#define MemoryMappedFilenameInformation     ((_MEMORY_INFORMATION_CLASS)0x2)
+#define MemoryMappedFileNameInformation     ((_MEMORY_INFORMATION_CLASS)0x2)
 #define MemoryRegionInformation             ((_MEMORY_INFORMATION_CLASS)0x3)
 #define MemoryWorkingSetExInformation       ((_MEMORY_INFORMATION_CLASS)0x4)
 #define MemorySharedCommitInformation       ((_MEMORY_INFORMATION_CLASS)0x5)
