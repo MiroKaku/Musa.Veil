@@ -10156,7 +10156,51 @@ NTAPI
 RtlIsMultiUsersInSessionSku(
     VOID
 );
-#endif // NTDDI_VERSION >= NTDDI_WIN10_RS1
+#else // NTDDI_VERSION >= NTDDI_WIN10_RS1
+FORCEINLINE
+ULONG
+NTAPI
+RtlGetActiveConsoleId(
+    VOID
+)
+{
+    return SharedUserData->ActiveConsoleId;
+}
+
+FORCEINLINE
+ULONGLONG
+NTAPI
+RtlGetConsoleSessionForegroundProcessId(
+    VOID
+)
+{
+    return SharedUserData->ConsoleSessionForegroundProcessId;
+}
+
+_IRQL_requires_max_(PASSIVE_LEVEL)
+_Must_inspect_result_
+FORCEINLINE
+BOOLEAN
+NTAPI
+RtlIsMultiSessionSku(
+    VOID
+)
+{
+    return SharedUserData->DbgMultiSessionSku;
+}
+
+_IRQL_requires_max_(PASSIVE_LEVEL)
+_Must_inspect_result_
+FORCEINLINE
+BOOLEAN
+NTAPI
+RtlIsMultiUsersInSessionSku(
+    VOID
+)
+{
+    return SharedUserData->DbgMultiUsersInSessionSku;
+}
+#endif // NTDDI_VERSION < NTDDI_WIN10_RS1
 
 //
 // Appcontainer

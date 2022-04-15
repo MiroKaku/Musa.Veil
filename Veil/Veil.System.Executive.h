@@ -5766,6 +5766,11 @@ C_ASSERT(sizeof(KUSER_SHARED_DATA) == 0x730);
 #endif
 
 #endif /* __midl | MIDL_PASS */
+
+#ifndef SharedUserData
+#define SharedUserData USER_SHARED_DATA
+#endif
+
 #endif // _KERNEL_MODE
 
 #define USER_SHARED_DATA ((KUSER_SHARED_DATA * const)0x7ffe0000)
