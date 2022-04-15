@@ -1228,6 +1228,97 @@ ZwPrivilegedServiceAuditAlarm(
     _In_ BOOLEAN AccessGranted
 );
 
+// LSA
+
+#ifndef _KERNEL_MODE
+
+#include <NTSecAPI.h>
+
+#else // _KERNEL_MODE
+
+//#pragma comment(lib, "ksecdd.lib")
+
+#if (NTDDI_VERSION >= NTDDI_VISTA)
+typedef struct _LSA_LAST_INTER_LOGON_INFO {
+    LARGE_INTEGER LastSuccessfulLogon;
+    LARGE_INTEGER LastFailedLogon;
+    ULONG FailedAttemptCountSinceLastSuccessfulLogon;
+} LSA_LAST_INTER_LOGON_INFO, * PLSA_LAST_INTER_LOGON_INFO;
+#endif // NTDDI_VERSION >= NTDDI_VISTA
+
+typedef struct _SECURITY_LOGON_SESSION_DATA {
+    ULONG               Size;
+    LUID                LogonId;
+    LSA_UNICODE_STRING  UserName;
+    LSA_UNICODE_STRING  LogonDomain;
+    LSA_UNICODE_STRING  AuthenticationPackage;
+    ULONG               LogonType;
+    ULONG               Session;
+    PSID                Sid;
+    LARGE_INTEGER       LogonTime;
+
+    //
+    // new for whistler:
+    //
+
+    LSA_UNICODE_STRING  LogonServer;
+    LSA_UNICODE_STRING  DnsDomainName;
+    LSA_UNICODE_STRING  Upn;
+
+#if (NTDDI_VERSION >= NTDDI_VISTA)
+
+    //
+    // new for LH
+    //
+
+    ULONG UserFlags;
+
+    LSA_LAST_INTER_LOGON_INFO LastLogonInfo;
+    LSA_UNICODE_STRING LogonScript;
+    LSA_UNICODE_STRING ProfilePath;
+    LSA_UNICODE_STRING HomeDirectory;
+    LSA_UNICODE_STRING HomeDirectoryDrive;
+
+    LARGE_INTEGER LogoffTime;
+    LARGE_INTEGER KickOffTime;
+    LARGE_INTEGER PasswordLastSet;
+    LARGE_INTEGER PasswordCanChange;
+    LARGE_INTEGER PasswordMustChange;
+
+#endif
+} SECURITY_LOGON_SESSION_DATA, * PSECURITY_LOGON_SESSION_DATA;
+
+NTKERNELAPI
+NTSTATUS
+NTAPI
+LsaEnumerateLogonSessions(
+    _Out_ PULONG  LogonSessionCount,
+    _Out_ PLUID* LogonSessionList
+);
+
+NTKERNELAPI
+NTSTATUS
+NTAPI
+LsaGetLogonSessionData(
+    _In_ PLUID    LogonId,
+    _Out_ PSECURITY_LOGON_SESSION_DATA* LogonSessionData
+);
+
+FORCEINLINE
+NTSTATUS
+NTAPI
+LsaFreeReturnBuffer(
+    _In_ PVOID Buffer
+)
+{
+    if (Buffer)
+        return ExFreePool(Buffer), STATUS_SUCCESS;
+    else
+        return STATUS_INVALID_ADDRESS;
+}
+
+#endif // £¡_KERNEL_MODE
+
 //
 // Only Kernel
 //
