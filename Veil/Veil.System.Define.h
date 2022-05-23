@@ -32,6 +32,7 @@
  */
 
 #pragma once
+#include <minwindef.h>
 
 // Warnings which disabled for compiling
 #if _MSC_VER >= 1200
@@ -656,15 +657,16 @@ typedef enum _SUITE_TYPE
 #endif // _NTDEF
 
 #if defined(_KERNEL_MODE) && (WDK_NTDDI_VERSION <= NTDDI_WIN10_19H1)
-typedef STRING UTF8_STRING;
+typedef STRING  UTF8_STRING;
 typedef PSTRING PUTF8_STRING;
 #endif
+
+#ifdef _KERNEL_MODE
 
 //
 // Critical Section
 //
 
-#ifdef _KERNEL_MODE
 typedef struct _RTL_CRITICAL_SECTION_DEBUG
 {
     UINT16  Type;
@@ -732,6 +734,7 @@ typedef struct _RTL_CONDITION_VARIABLE
 //
 
 #ifndef _KERNEL_MODE
+
 typedef struct _CLIENT_ID
 {
     HANDLE UniqueProcess;
@@ -746,15 +749,8 @@ typedef struct _KSYSTEM_TIME
     LONG High2Time;
 } KSYSTEM_TIME, * PKSYSTEM_TIME;
 #include <poppack.h>
-#endif // _KERNEL_MODE
 
-#ifndef _FILETIME_
-#define _FILETIME_
-typedef struct _FILETIME {
-    UINT32 dwLowDateTime;
-    UINT32 dwHighDateTime;
-} FILETIME, * PFILETIME, * LPFILETIME;
-#endif
+#endif // _KERNEL_MODE
 
 //
 // This isn't in NT, but it's useful.

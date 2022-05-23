@@ -5166,7 +5166,148 @@ RtlUnwind(
     _In_ PVOID ReturnValue
 );
 
-#if defined(_M_AMD64) || defined(_M_ARM64) || defined(_M_ARM)
+#if defined(_M_ARM)
+
+//
+// Define unwind information flags.
+//
+
+#define UNW_FLAG_NHANDLER               0x0             /* any handler */
+#define UNW_FLAG_EHANDLER               0x1             /* filter handler */
+#define UNW_FLAG_UHANDLER               0x2             /* unwind handler */
+
+//
+// Define unwind history table structure.
+//
+
+#define UNWIND_HISTORY_TABLE_SIZE 12
+
+typedef struct _UNWIND_HISTORY_TABLE_ENTRY {
+    DWORD ImageBase;
+    PIMAGE_RUNTIME_FUNCTION_ENTRY FunctionEntry;
+} UNWIND_HISTORY_TABLE_ENTRY, * PUNWIND_HISTORY_TABLE_ENTRY;
+
+typedef struct _UNWIND_HISTORY_TABLE {
+    DWORD Count;
+    BYTE  LocalHint;
+    BYTE  GlobalHint;
+    BYTE  Search;
+    BYTE  Once;
+    DWORD LowAddress;
+    DWORD HighAddress;
+    UNWIND_HISTORY_TABLE_ENTRY Entry[UNWIND_HISTORY_TABLE_SIZE];
+} UNWIND_HISTORY_TABLE, * PUNWIND_HISTORY_TABLE;
+
+//
+// Define exception dispatch context structure.
+//
+
+typedef struct _DISPATCHER_CONTEXT {
+    DWORD ControlPc;
+    DWORD ImageBase;
+    PIMAGE_RUNTIME_FUNCTION_ENTRY FunctionEntry;
+    DWORD EstablisherFrame;
+    DWORD TargetPc;
+    PCONTEXT ContextRecord;
+    PEXCEPTION_ROUTINE LanguageHandler;
+    PVOID HandlerData;
+    PUNWIND_HISTORY_TABLE HistoryTable;
+    DWORD ScopeIndex;
+    BOOLEAN ControlPcIsUnwound;
+    PBYTE  NonVolatileRegisters;
+    DWORD Reserved;
+} DISPATCHER_CONTEXT, * PDISPATCHER_CONTEXT;
+
+//
+// Define exception filter and termination handler function types.
+// N.B. These functions use a custom calling convention.
+//
+
+struct _EXCEPTION_POINTERS;
+typedef
+LONG
+(*PEXCEPTION_FILTER) (
+    struct _EXCEPTION_POINTERS* ExceptionPointers,
+    DWORD EstablisherFrame
+    );
+
+typedef
+VOID
+(*PTERMINATION_HANDLER) (
+    BOOLEAN AbnormalTermination,
+    DWORD EstablisherFrame
+    );
+
+//
+// Define dynamic function table entry.
+//
+
+typedef
+_Function_class_(GET_RUNTIME_FUNCTION_CALLBACK)
+PIMAGE_RUNTIME_FUNCTION_ENTRY
+GET_RUNTIME_FUNCTION_CALLBACK(
+    _In_ DWORD ControlPc,
+    _In_opt_ PVOID Context
+);
+typedef GET_RUNTIME_FUNCTION_CALLBACK* PGET_RUNTIME_FUNCTION_CALLBACK;
+
+typedef
+_Function_class_(OUT_OF_PROCESS_FUNCTION_TABLE_CALLBACK)
+DWORD
+OUT_OF_PROCESS_FUNCTION_TABLE_CALLBACK(
+    _In_ HANDLE Process,
+    _In_ PVOID TableAddress,
+    _Out_ PDWORD Entries,
+    _Out_ PIMAGE_RUNTIME_FUNCTION_ENTRY* Functions
+);
+typedef OUT_OF_PROCESS_FUNCTION_TABLE_CALLBACK* POUT_OF_PROCESS_FUNCTION_TABLE_CALLBACK;
+
+#define OUT_OF_PROCESS_FUNCTION_TABLE_CALLBACK_EXPORT_NAME \
+    "OutOfProcessFunctionTableCallback"
+
+//
+// Nonvolatile context pointer record.
+//
+
+typedef struct _KNONVOLATILE_CONTEXT_POINTERS {
+
+    PDWORD R4;
+    PDWORD R5;
+    PDWORD R6;
+    PDWORD R7;
+    PDWORD R8;
+    PDWORD R9;
+    PDWORD R10;
+    PDWORD R11;
+    PDWORD Lr;
+
+    PULONGLONG D8;
+    PULONGLONG D9;
+    PULONGLONG D10;
+    PULONGLONG D11;
+    PULONGLONG D12;
+    PULONGLONG D13;
+    PULONGLONG D14;
+    PULONGLONG D15;
+
+} KNONVOLATILE_CONTEXT_POINTERS, * PKNONVOLATILE_CONTEXT_POINTERS;
+
+#elif defined(_M_X64)
+
+#define RUNTIME_FUNCTION_INDIRECT 0x1
+
+//
+// Define unwind information flags.
+//
+
+#define UNW_FLAG_NHANDLER       0x0
+#define UNW_FLAG_EHANDLER       0x1
+#define UNW_FLAG_UHANDLER       0x2
+#define UNW_FLAG_CHAININFO      0x4
+
+#define UNW_FLAG_NO_EPILOGUE    0x80000000UL    // Software only flag
+
+#define UNWIND_CHAIN_LIMIT      32
 
 //
 // Define unwind history table structure.
@@ -5194,6 +5335,268 @@ typedef struct _UNWIND_HISTORY_TABLE
 
 } UNWIND_HISTORY_TABLE, * PUNWIND_HISTORY_TABLE;
 
+
+//
+// Define dynamic function table entry.
+//
+
+typedef
+_Function_class_(GET_RUNTIME_FUNCTION_CALLBACK)
+PIMAGE_RUNTIME_FUNCTION_ENTRY
+GET_RUNTIME_FUNCTION_CALLBACK(
+    _In_ DWORD64 ControlPc,
+    _In_opt_ PVOID Context
+);
+typedef GET_RUNTIME_FUNCTION_CALLBACK* PGET_RUNTIME_FUNCTION_CALLBACK;
+
+typedef
+_Function_class_(OUT_OF_PROCESS_FUNCTION_TABLE_CALLBACK)
+DWORD
+OUT_OF_PROCESS_FUNCTION_TABLE_CALLBACK(
+    _In_ HANDLE Process,
+    _In_ PVOID TableAddress,
+    _Out_ PDWORD Entries,
+    _Out_ PIMAGE_RUNTIME_FUNCTION_ENTRY* Functions
+);
+typedef OUT_OF_PROCESS_FUNCTION_TABLE_CALLBACK* POUT_OF_PROCESS_FUNCTION_TABLE_CALLBACK;
+
+#define OUT_OF_PROCESS_FUNCTION_TABLE_CALLBACK_EXPORT_NAME \
+    "OutOfProcessFunctionTableCallback"
+
+//
+// Define exception dispatch context structure.
+//
+
+typedef struct _DISPATCHER_CONTEXT {
+    DWORD64 ControlPc;
+    DWORD64 ImageBase;
+    PIMAGE_RUNTIME_FUNCTION_ENTRY FunctionEntry;
+    DWORD64 EstablisherFrame;
+    DWORD64 TargetIp;
+    PCONTEXT ContextRecord;
+    PEXCEPTION_ROUTINE LanguageHandler;
+    PVOID HandlerData;
+    PUNWIND_HISTORY_TABLE HistoryTable;
+    DWORD ScopeIndex;
+    DWORD Fill0;
+} DISPATCHER_CONTEXT, * PDISPATCHER_CONTEXT;
+
+//
+// Define exception filter and termination handler function types.
+//
+
+struct _EXCEPTION_POINTERS;
+typedef
+LONG
+(*PEXCEPTION_FILTER) (
+    struct _EXCEPTION_POINTERS* ExceptionPointers,
+    PVOID EstablisherFrame
+    );
+
+typedef
+VOID
+(*PTERMINATION_HANDLER) (
+    BOOLEAN AbnormalTermination,
+    PVOID EstablisherFrame
+    );
+
+//
+// Nonvolatile context pointer record.
+//
+
+#pragma warning(push)
+#pragma warning(disable: 4201) // nonstandard extension used: nameless struct/union
+typedef struct _KNONVOLATILE_CONTEXT_POINTERS {
+    union {
+        PM128A FloatingContext[16];
+        struct {
+            PM128A Xmm0;
+            PM128A Xmm1;
+            PM128A Xmm2;
+            PM128A Xmm3;
+            PM128A Xmm4;
+            PM128A Xmm5;
+            PM128A Xmm6;
+            PM128A Xmm7;
+            PM128A Xmm8;
+            PM128A Xmm9;
+            PM128A Xmm10;
+            PM128A Xmm11;
+            PM128A Xmm12;
+            PM128A Xmm13;
+            PM128A Xmm14;
+            PM128A Xmm15;
+        } DUMMYSTRUCTNAME;
+    } DUMMYUNIONNAME;
+
+    union {
+        PDWORD64 IntegerContext[16];
+        struct {
+            PDWORD64 Rax;
+            PDWORD64 Rcx;
+            PDWORD64 Rdx;
+            PDWORD64 Rbx;
+            PDWORD64 Rsp;
+            PDWORD64 Rbp;
+            PDWORD64 Rsi;
+            PDWORD64 Rdi;
+            PDWORD64 R8;
+            PDWORD64 R9;
+            PDWORD64 R10;
+            PDWORD64 R11;
+            PDWORD64 R12;
+            PDWORD64 R13;
+            PDWORD64 R14;
+            PDWORD64 R15;
+        } DUMMYSTRUCTNAME;
+    } DUMMYUNIONNAME2;
+
+} KNONVOLATILE_CONTEXT_POINTERS, * PKNONVOLATILE_CONTEXT_POINTERS;
+#pragma warning(pop)
+
+#elif defined(_M_ARM64) || defined(_CHPE_X86_ARM64_EH_)
+
+//
+// Define unwind information flags.
+//
+
+#define UNW_FLAG_NHANDLER               0x0             /* any handler */
+#define UNW_FLAG_EHANDLER               0x1             /* filter handler */
+#define UNW_FLAG_UHANDLER               0x2             /* unwind handler */
+
+//
+// Define unwind history table structure.
+//
+
+#define UNWIND_HISTORY_TABLE_SIZE 12
+
+typedef struct _UNWIND_HISTORY_TABLE_ENTRY {
+    DWORD64 ImageBase;
+    PIMAGE_RUNTIME_FUNCTION_ENTRY FunctionEntry;
+} UNWIND_HISTORY_TABLE_ENTRY, * PUNWIND_HISTORY_TABLE_ENTRY;
+
+typedef struct _UNWIND_HISTORY_TABLE {
+    DWORD Count;
+    BYTE  LocalHint;
+    BYTE  GlobalHint;
+    BYTE  Search;
+    BYTE  Once;
+    DWORD64 LowAddress;
+    DWORD64 HighAddress;
+    UNWIND_HISTORY_TABLE_ENTRY Entry[UNWIND_HISTORY_TABLE_SIZE];
+} UNWIND_HISTORY_TABLE, * PUNWIND_HISTORY_TABLE;
+
+#pragma push_macro("_DISPATCHER_CONTEXT_ARM64")
+#undef _DISPATCHER_CONTEXT_ARM64
+#define _DISPATCHER_CONTEXT_ARM64 _DISPATCHER_CONTEXT
+
+//
+// Define exception dispatch context structure.
+//
+
+typedef struct _DISPATCHER_CONTEXT_ARM64 {
+    ULONG_PTR ControlPc;
+    ULONG_PTR ImageBase;
+    PIMAGE_RUNTIME_FUNCTION_ENTRY FunctionEntry;
+    ULONG_PTR EstablisherFrame;
+    ULONG_PTR TargetPc;
+    PARM64_NT_CONTEXT ContextRecord;
+    PEXCEPTION_ROUTINE LanguageHandler;
+    PVOID HandlerData;
+    PUNWIND_HISTORY_TABLE HistoryTable;
+    DWORD ScopeIndex;
+    BOOLEAN ControlPcIsUnwound;
+    PBYTE  NonVolatileRegisters;
+} DISPATCHER_CONTEXT_ARM64, * PDISPATCHER_CONTEXT_ARM64;
+
+#undef _DISPATCHER_CONTEXT_ARM64
+#pragma pop_macro("_DISPATCHER_CONTEXT_ARM64")
+
+typedef DISPATCHER_CONTEXT_ARM64 DISPATCHER_CONTEXT, * PDISPATCHER_CONTEXT;
+
+//
+// Define exception filter and termination handler function types.
+// N.B. These functions use a custom calling convention.
+//
+
+struct _EXCEPTION_POINTERS;
+typedef
+LONG
+(*PEXCEPTION_FILTER) (
+    struct _EXCEPTION_POINTERS* ExceptionPointers,
+    DWORD64 EstablisherFrame
+    );
+
+typedef
+VOID
+(*PTERMINATION_HANDLER) (
+    BOOLEAN AbnormalTermination,
+    DWORD64 EstablisherFrame
+    );
+
+//
+// Define dynamic function table entry.
+//
+
+typedef
+_Function_class_(GET_RUNTIME_FUNCTION_CALLBACK)
+PIMAGE_RUNTIME_FUNCTION_ENTRY
+GET_RUNTIME_FUNCTION_CALLBACK(
+    _In_ DWORD64 ControlPc,
+    _In_opt_ PVOID Context
+);
+typedef GET_RUNTIME_FUNCTION_CALLBACK* PGET_RUNTIME_FUNCTION_CALLBACK;
+
+typedef
+_Function_class_(OUT_OF_PROCESS_FUNCTION_TABLE_CALLBACK)
+DWORD
+OUT_OF_PROCESS_FUNCTION_TABLE_CALLBACK(
+    _In_ HANDLE Process,
+    _In_ PVOID TableAddress,
+    _Out_ PDWORD Entries,
+    _Out_ PIMAGE_RUNTIME_FUNCTION_ENTRY* Functions
+);
+typedef OUT_OF_PROCESS_FUNCTION_TABLE_CALLBACK* POUT_OF_PROCESS_FUNCTION_TABLE_CALLBACK;
+
+#define OUT_OF_PROCESS_FUNCTION_TABLE_CALLBACK_EXPORT_NAME \
+    "OutOfProcessFunctionTableCallback"
+
+//
+// Nonvolatile context pointer record.
+//
+
+typedef struct _KNONVOLATILE_CONTEXT_POINTERS_ARM64 {
+
+    PDWORD64 X19;
+    PDWORD64 X20;
+    PDWORD64 X21;
+    PDWORD64 X22;
+    PDWORD64 X23;
+    PDWORD64 X24;
+    PDWORD64 X25;
+    PDWORD64 X26;
+    PDWORD64 X27;
+    PDWORD64 X28;
+    PDWORD64 Fp;
+    PDWORD64 Lr;
+
+    PDWORD64 D8;
+    PDWORD64 D9;
+    PDWORD64 D10;
+    PDWORD64 D11;
+    PDWORD64 D12;
+    PDWORD64 D13;
+    PDWORD64 D14;
+    PDWORD64 D15;
+
+} KNONVOLATILE_CONTEXT_POINTERS_ARM64, * PKNONVOLATILE_CONTEXT_POINTERS_ARM64;
+
+typedef KNONVOLATILE_CONTEXT_POINTERS_ARM64 KNONVOLATILE_CONTEXT_POINTERS, * PKNONVOLATILE_CONTEXT_POINTERS;
+
+#endif // _M_ARM64 | _CHPE_X86_ARM64_EH_
+
+#if defined(_M_AMD64) || defined(_M_ARM64) || defined(_M_ARM)
+
 NTSYSAPI
 PIMAGE_RUNTIME_FUNCTION_ENTRY
 NTAPI
@@ -5208,7 +5611,7 @@ VOID
 __cdecl
 RtlRestoreContext(
     _In_ PCONTEXT ContextRecord,
-    _In_opt_ struct _EXCEPTION_RECORD* ExceptionRecord
+    _In_opt_ PEXCEPTION_RECORD ExceptionRecord
 );
 
 NTSYSAPI
@@ -5234,7 +5637,7 @@ RtlVirtualUnwind(
     _Inout_ PCONTEXT ContextRecord,
     _Out_ PVOID* HandlerData,
     _Out_ PSIZE_T EstablisherFrame,
-    _Inout_opt_ /*PKNONVOLATILE_CONTEXT_POINTERS*/ PVOID ContextPointers
+    _Inout_opt_ PKNONVOLATILE_CONTEXT_POINTERS ContextPointers
 );
 
 #endif // _M_AMD64 | _M_ARM64 | _M_ARM
@@ -6860,6 +7263,15 @@ RtlFindMessage(
     _In_ ULONG MessageId,
     _Out_ PMESSAGE_RESOURCE_ENTRY* MessageEntry
 );
+
+#define FORMAT_MESSAGE_ALLOCATE_BUFFER 0x00000100
+#define FORMAT_MESSAGE_IGNORE_INSERTS  0x00000200
+#define FORMAT_MESSAGE_FROM_STRING     0x00000400
+#define FORMAT_MESSAGE_FROM_HMODULE    0x00000800
+#define FORMAT_MESSAGE_FROM_SYSTEM     0x00001000
+#define FORMAT_MESSAGE_ARGUMENT_ARRAY  0x00002000
+#define FORMAT_MESSAGE_ARGUMENT_ANSI   0x00004000
+#define FORMAT_MESSAGE_MAX_WIDTH_MASK  0x000000FF
 
 NTSYSAPI
 NTSTATUS
