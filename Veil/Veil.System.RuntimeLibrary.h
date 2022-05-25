@@ -8881,7 +8881,11 @@ VOID
 NTAPI
 RtlMapGenericMask(
     _Inout_ PACCESS_MASK AccessMask,
+#if (NTDDI_VERSION >= NTDDI_WIN10_NI)
+    _In_ const GENERIC_MAPPING* GenericMapping
+#else
     _In_ PGENERIC_MAPPING GenericMapping
+#endif
 );
 
 //

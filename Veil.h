@@ -139,7 +139,10 @@ struct IUnknown;
 #define NTDDI_WIN10_MN                      0x0A000009      // Windows 10.0.19042 / 20H2 / Manganese
 #define NTDDI_WIN10_FE                      0x0A00000A      // Windows 10.0.19043 / 21H1 / Ferrum
 #define NTDDI_WIN10_CO                      0x0A00000B      // Windows 10.0.19044 / 21H2 / Cobalt
-#define NTDDI_WIN11                         NTDDI_WIN10_CO  // Windows 10.0.22000 / 21H2 / Cobalt
+#define NTDDI_WIN11_CO                      NTDDI_WIN10_CO  // Windows 10.0.22000 / 21H2 / Cobalt
+#define NTDDI_WIN11                         NTDDI_WIN11_CO
+#define NTDDI_WIN10_NI                      0x0A00000C      // Windows 10.0.22621 / 22H2 / Nickel
+#define NTDDI_WIN11_NI                      NTDDI_WIN10_NI  // Windows 10.0.22621 / 22H2 / Nickel
 
 
 #include "Veil/Veil.System.Define.h"
