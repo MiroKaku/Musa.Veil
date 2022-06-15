@@ -4872,6 +4872,14 @@ RtlRemoveVectoredContinueHandler(
 // Runtime exception handling
 //
 
+#if defined(_ARM_)
+typedef struct _IMAGE_ARM_RUNTIME_FUNCTION_ENTRY RUNTIME_FUNCTION, * PRUNTIME_FUNCTION;
+#elif defined(_ARM64_)
+typedef struct _IMAGE_ARM64_RUNTIME_FUNCTION_ENTRY RUNTIME_FUNCTION, * PRUNTIME_FUNCTION;
+#elif defined(_AMD64_)
+typedef struct _IMAGE_RUNTIME_FUNCTION_ENTRY RUNTIME_FUNCTION, * PRUNTIME_FUNCTION;
+#endif
+
 #ifndef _KERNEL_MODE
 
 typedef ULONG(NTAPI* PRTLP_UNHANDLED_EXCEPTION_FILTER)(
@@ -8873,19 +8881,6 @@ NTAPI
 RtlAreAnyAccessesGranted(
     _In_ ACCESS_MASK GrantedAccess,
     _In_ ACCESS_MASK DesiredAccess
-);
-
-_IRQL_requires_max_(APC_LEVEL)
-NTSYSAPI
-VOID
-NTAPI
-RtlMapGenericMask(
-    _Inout_ PACCESS_MASK AccessMask,
-#if (NTDDI_VERSION >= NTDDI_WIN10_NI)
-    _In_ const GENERIC_MAPPING* GenericMapping
-#else
-    _In_ PGENERIC_MAPPING GenericMapping
-#endif
 );
 
 //
