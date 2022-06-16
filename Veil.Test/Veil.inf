@@ -1,9 +1,9 @@
 ;
-; Veil.Test.Kernel.inf
+; Veil.inf
 ;
 
 ;-------------------------------------------------------------------------
-; Veil.Test.Kernel.INF -- Device Driver
+; Veil.INF -- Device Driver
 ;
 ; Copyright (c) 2019, Microsoft.Com LLC.  All rights reserved.
 ;------------------------------------------------------------------------
@@ -17,9 +17,9 @@
 [Version]
 Signature   = "$WINDOWS NT$"
 Class       = System
-ClassGuid   ={4d36e97d-e325-11ce-bfc1-08002be10318}
+ClassGuid   = {4d36e97d-e325-11ce-bfc1-08002be10318}
 Provider    = %ManufacturerName%
-CatalogFile = %DriverName%.cat
+CatalogFile = Veil.cat
 DriverVer   = 
 PnpLockdown = 1
 
@@ -51,14 +51,14 @@ Veil.Test.Kernel.sys    = 1,,
 
 ; Copyfiles MSDN:
 ;     https://docs.microsoft.com/en-us/windows-hardware/drivers/install/inf-copyfiles-directive
-[Install.Copyfiles]
-%DriverName%.sys,%DriverName%.sys,,0x00004022 ; COPYFLG_NOSKIP | COPYFLG_NO_VERSION_DIALOG | COPYFLG_IN_USE_RENAME
+[Install.Drivers]
+Veil.sys,Veil.Test.Kernel.sys,,0x00004022 ; COPYFLG_NOSKIP | COPYFLG_NO_VERSION_DIALOG | COPYFLG_IN_USE_RENAME
 
 
 ; Delfiles MSDN:
 ;     https://docs.microsoft.com/en-us/windows-hardware/drivers/install/inf-delfiles-directive
-[Install.Delfiles]
-%DriverName%.sys
+[Uninstall.Drivers]
+Veil.sys
 
 
 ;-------------------------------------------------------------------------
@@ -66,36 +66,36 @@ Veil.Test.Kernel.sys    = 1,,
 ;-------------------------------------------------------------------------
 
 
-[DefaultInstall]
-CopyFiles       =Install.Copyfiles
+[DefaultInstall.NT$ARCH$]
+CopyFiles       = Install.Drivers
 
 
 ; LegacyUninstall MSDN:
 ;     https://docs.microsoft.com/en-us/windows-hardware/drivers/develop/creating-a-primitive-driver
-[DefaultUninstall]
+[DefaultUninstall.NT$ARCH$]
 LegacyUninstall = 1
-DelFiles        = Install.Delfiles
+DelFiles        = Uninstall.Drivers
 
 
-[DefaultInstall.Services]
+[DefaultInstall.NT$ARCH$.Services]
 ; You may want to add the SPSVCINST_STARTSERVICE flag, like this:
 ;     AddService=%ServiceName%,0x800,InstallService.Arch ; SPSVCINST_STARTSERVICE
 ; AddService MSDN
-; SPSVCINST_STARTSERVICE=0x800
 ;     https://docs.microsoft.com/en-us/windows-hardware/drivers/install/inf-addservice-directive
-AddService      = %ServiceName%,0x000,InstallService
+AddService=%ServiceName%,,InstallService
 
-; SPSVCINST_STOPSERVICE=0x200
+
 ; DelService MSDN:
 ;     https://docs.microsoft.com/en-us/windows-hardware/drivers/install/inf-delservice-directive
-[DefaultUninstall.Services]
-DelService      = %ServiceName%,0x200
+[DefaultUninstall.NT$ARCH$.Services]
+DelService = %ServiceName%,0x200
+
 
 
 [InstallService]
 DisplayName    = %ServiceName%
 Description    = %ServiceDesc%
-ServiceBinary  = %12%\%DriverName%.sys
+ServiceBinary  = %12%\Veil.sys
 ServiceType    = 1                  ; SERVICE_KERNEL_DRIVER
 StartType      = 3                  ; 0 = SERVICE_BOOT_START
                                     ; 1 = SERVICE_SYSTEM_START
@@ -110,8 +110,7 @@ ErrorControl   = 1                  ; SERVICE_ERROR_NORMAL
 
 
 [Strings]
-ManufacturerName        = "Kaku"
-DriverName              = "Veil.Test.Kernel"
+ManufacturerName        = "MiroKaku"
 ServiceName             = "Veil.Test"
 ServiceDesc             = "Veil.Test Driver"
 DiskName                = "Veil.Test.Kernel Source Disk"

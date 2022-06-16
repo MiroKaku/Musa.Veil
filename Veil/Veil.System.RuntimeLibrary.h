@@ -5609,8 +5609,8 @@ NTSYSAPI
 PIMAGE_RUNTIME_FUNCTION_ENTRY
 NTAPI
 RtlLookupFunctionEntry(
-    _In_ DWORD64 ControlPc,
-    _Out_ PDWORD64 ImageBase,
+    _In_ ULONG_PTR ControlPc,
+    _Out_ PULONG_PTR ImageBase,
     _Inout_opt_ PUNWIND_HISTORY_TABLE HistoryTable
 );
 

@@ -12,6 +12,6 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <Inf Include="Veil.Test.Kernel.inf" />
+    <Inf Include="Veil.inf" />
   </ItemGroup>
 </Project>

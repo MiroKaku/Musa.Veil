@@ -122,7 +122,7 @@
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <Inf Include="Veil.Test.Kernel.inf" />
+    <Inf Include="Veil.inf" />
   </ItemGroup>
   <ItemGroup>
     <FilesToPackage Include="$(TargetPath)" />
