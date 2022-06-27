@@ -52,6 +52,78 @@
 #endif
 
 
+#define _VEIL_STRINGIZE_(x) #x
+#define _VEIL_STRINGIZE(x) _CRT_STRINGIZE_(x)
+
+#define _VEIL_CONCATENATE_(a, b) a ## b
+#define _VEIL_CONCATENATE(a, b)  _VEIL_CONCATENATE_(a, b)
+
+
+#if defined _M_IX86
+#if defined _M_HYBRID
+#define _VEIL_DECLARE_ALTERNATE_NAME_PREFIX "#"
+#else
+#define _VEIL_DECLARE_ALTERNATE_NAME_PREFIX "_"
+#endif
+#define _VEIL_DECLARE_ALTERNATE_NAME_PREFIX_DATA "_"
+#elif defined _M_ARM64EC
+#define _VEIL_DECLARE_ALTERNATE_NAME_PREFIX "#"
+#define _VEIL_DECLARE_ALTERNATE_NAME_PREFIX_DATA ""
+#elif defined _M_X64 || defined _M_ARM || defined _M_ARM64
+#define _VEIL_DECLARE_ALTERNATE_NAME_PREFIX ""
+#define _VEIL_DECLARE_ALTERNATE_NAME_PREFIX_DATA ""
+#else
+#error Unsupported architecture
+#endif
+
+#define _VEIL_DECLARE_ALTERNATE_NAME(name, alternate_name)  \
+    __pragma(comment(linker,                                \
+        "/alternatename:"                                   \
+        _VEIL_DECLARE_ALTERNATE_NAME_PREFIX #name           \
+        "="                                                 \
+        _VEIL_DECLARE_ALTERNATE_NAME_PREFIX #alternate_name \
+        ))
+
+#define _VEIL_DECLARE_ALTERNATE_NAME_DATA(name, alternate_name)     \
+    __pragma(comment(linker,                                        \
+        "/alternatename:"                                           \
+        _VEIL_DECLARE_ALTERNATE_NAME_PREFIX_DATA #name              \
+        "="                                                         \
+        _VEIL_DECLARE_ALTERNATE_NAME_PREFIX_DATA #alternate_name    \
+        ))
+
+
+// The _VEIL_DEFINE_IAT_SYMBOL macro provides an architecture-neutral way of
+// defining IAT symbols (__imp_- or _imp__-prefixed symbols).
+#ifdef _M_IX86
+#define _VEIL_DEFINE_IAT_SYMBOL_MAKE_NAME(f) _VEIL_CONCATENATE(_imp__, f)
+#else
+#define _VEIL_DEFINE_IAT_SYMBOL_MAKE_NAME(f) _VEIL_CONCATENATE(__imp_, f)
+#endif
+
+#define _VEIL_DEFINE_IAT_SYMBOL_MAKE_NAME_STR(f) _VEIL_STRINGIZE(_VEIL_DEFINE_IAT_SYMBOL_MAKE_NAME(f))
+
+#ifdef __cplusplus
+#define _VEIL_DEFINE_IAT_SYMBOL(sym, fun) \
+    extern "C" __declspec(selectany) void const* const _VEIL_DEFINE_IAT_SYMBOL_MAKE_NAME(sym) \
+        = reinterpret_cast<void const*>(&fun)
+
+#define _VEIL_DEFINE_IAT_NATIVE_SYMBOL(sym, fun)    \
+    __pragma(warning(suppress:4483))                \
+    extern "C" __declspec(selectany) void const* const __identifier(_VEIL_DEFINE_IAT_SYMBOL_MAKE_NAME_STR(sym)) \
+        = reinterpret_cast<void const*>(&fun)
+#else
+#define _VEIL_DEFINE_IAT_SYMBOL(sym, fun) \
+    extern __declspec(selectany) void const* const _VEIL_DEFINE_IAT_SYMBOL_MAKE_NAME(sym) \
+        = (void const*)(&fun)
+
+#define _VEIL_DEFINE_IAT_NATIVE_SYMBOL(sym, fun)    \
+    __pragma(warning(suppress:4483))                \
+    extern __declspec(selectany) void const* const __identifier(_VEIL_DEFINE_IAT_SYMBOL_MAKE_NAME_STR(sym)) \
+        = (void const*)(&fun)
+#endif
+
+
 #ifndef __cplusplus
 #ifndef CINTERFACE
 #define CINTERFACE
@@ -67,40 +139,6 @@
 #ifndef MICROSOFT_WINDOWS_WINBASE_H_DEFINE_INTERLOCKED_CPLUSPLUS_OVERLOADS
 #define MICROSOFT_WINDOWS_WINBASE_H_DEFINE_INTERLOCKED_CPLUSPLUS_OVERLOADS 0
 #endif
-#endif
-
-#if !defined(_KERNEL_MODE)
-
-//
-// User-Mode
-//
-
-struct IUnknown;
-
-// This header file provides access to Win32, plus NTSTATUS values and some access mask values.
-
-#define  WINDOWS_IGNORE_PACKING_MISMATCH
-#define  UMDF_USING_NTSTATUS
-
-#include <windows.h>
-#include <winioctl.h>
-#include <ntstatus.h>
-
-#pragma comment(lib, "ntdll.lib")
-
-#if _DEBUG
-#define DBG _DEBUG
-#endif
-
-#else
-
-//
-// Kernel-Mode
-//
-
-#include <fltKernel.h>
-#include <ntimage.h>
-
 #endif
 
 
@@ -143,6 +181,41 @@ struct IUnknown;
 #define NTDDI_WIN11                         NTDDI_WIN11_CO
 #define NTDDI_WIN10_NI                      0x0A00000C      // Windows 10.0.22621 / 22H2 / Nickel
 #define NTDDI_WIN11_NI                      NTDDI_WIN10_NI  // Windows 10.0.22621 / 22H2 / Nickel
+
+
+#if !defined(_KERNEL_MODE)
+
+//
+// User-Mode
+//
+
+struct IUnknown;
+
+// This header file provides access to Win32, plus NTSTATUS values and some access mask values.
+
+#define  WINDOWS_IGNORE_PACKING_MISMATCH
+#define  UMDF_USING_NTSTATUS
+
+#include <windows.h>
+#include <winioctl.h>
+#include <ntstatus.h>
+
+#pragma comment(lib, "ntdll.lib")
+
+#if _DEBUG
+#define DBG _DEBUG
+#endif
+
+#else
+
+//
+// Kernel-Mode
+//
+
+#include <fltKernel.h>
+#include <ntimage.h>
+
+#endif
 
 
 #include "Veil/Veil.System.Define.h"

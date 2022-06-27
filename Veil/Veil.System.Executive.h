@@ -6477,6 +6477,135 @@ ExReleaseCacheAwarePushLockExclusive(
 
 #endif // _KERNEL_MODE
 
+#if (NTDDI_VERSION >= NTDDI_WIN10_NI)
+
+__drv_allocatesMem(Mem)
+_IRQL_requires_max_(DISPATCH_LEVEL)
+inline
+_Ret_maybenull_
+_Post_writable_byte_size_(Lookaside->L.Size)
+PVOID
+NTAPI
+#pragma warning(suppress: 28195) // memory is not always allocated here, sometimes we reuse an entry from the list
+_VEIL_IMPL_ExAllocateFromNPagedLookasideList(
+    _Inout_ PNPAGED_LOOKASIDE_LIST Lookaside
+)
+
+/*++
+
+Routine Description:
+
+    This function removes (pops) the first entry from the specified
+    nonpaged lookaside list.
+
+Arguments:
+
+    Lookaside - Supplies a pointer to a nonpaged lookaside list structure.
+
+Return Value:
+
+    If an entry is removed from the specified lookaside list, then the
+    address of the entry is returned as the function value. Otherwise,
+    NULL is returned.
+
+--*/
+
+{
+
+    PVOID Entry;
+
+    Lookaside->L.TotalAllocates += 1;
+
+#if defined(_WIN2K_COMPAT_SLIST_USAGE) && defined(_X86_)
+
+    Entry = ExInterlockedPopEntrySList(&Lookaside->L.ListHead,
+        &Lookaside->Lock__ObsoleteButDoNotDelete);
+
+#else
+
+    Entry = InterlockedPopEntrySList(&Lookaside->L.ListHead);
+
+#endif
+
+    if (Entry == NULL) {
+        Lookaside->L.AllocateMisses += 1;
+        Entry = (Lookaside->L.Allocate)(Lookaside->L.Type,
+            Lookaside->L.Size,
+            Lookaside->L.Tag);
+    }
+
+    return Entry;
+}
+
+_IRQL_requires_max_(DISPATCH_LEVEL)
+inline
+VOID
+NTAPI
+_VEIL_IMPL_ExFreeToNPagedLookasideList(
+    _Inout_ PNPAGED_LOOKASIDE_LIST Lookaside,
+    _In_ __drv_freesMem(Mem) PVOID Entry
+)
+
+/*++
+
+Routine Description:
+
+    This function inserts (pushes) the specified entry into the specified
+    nonpaged lookaside list.
+
+Arguments:
+
+    Lookaside - Supplies a pointer to a nonpaged lookaside list structure.
+
+    Entry - Supples a pointer to the entry that is inserted in the
+        lookaside list.
+
+Return Value:
+
+    None.
+
+--*/
+
+{
+
+    Lookaside->L.TotalFrees += 1;
+    if (ExQueryDepthSList(&Lookaside->L.ListHead) >= Lookaside->L.Depth) {
+        Lookaside->L.FreeMisses += 1;
+        (Lookaside->L.Free)(Entry);
+
+    }
+    else {
+
+#if defined(_WIN2K_COMPAT_SLIST_USAGE) && defined(_X86_)
+
+        ExInterlockedPushEntrySList(&Lookaside->L.ListHead,
+            (PSLIST_ENTRY)Entry,
+            &Lookaside->Lock__ObsoleteButDoNotDelete);
+
+#else
+
+        InterlockedPushEntrySList(&Lookaside->L.ListHead, (PSLIST_ENTRY)Entry);
+
+#endif
+
+    }
+
+    return;
+}
+
+#if defined _M_IX86
+
+_VEIL_DEFINE_IAT_NATIVE_SYMBOL(ExAllocateFromNPagedLookasideList@4, _VEIL_IMPL_ExAllocateFromNPagedLookasideList);
+_VEIL_DEFINE_IAT_NATIVE_SYMBOL(ExFreeToNPagedLookasideList@8, _VEIL_IMPL_ExFreeToNPagedLookasideList);
+
+#elif defined _M_X64 || defined _M_ARM || defined _M_ARM64
+
+_VEIL_DEFINE_IAT_NATIVE_SYMBOL(ExAllocateFromNPagedLookasideList, _VEIL_IMPL_ExAllocateFromNPagedLookasideList);
+_VEIL_DEFINE_IAT_NATIVE_SYMBOL(ExFreeToNPagedLookasideList, _VEIL_IMPL_ExFreeToNPagedLookasideList);
+
+#endif
+
+#endif // (NTDDI_VERSION >= NTDDI_WIN10_NI)
 
 VEIL_END()
 
