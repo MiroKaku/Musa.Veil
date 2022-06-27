@@ -53,7 +53,7 @@
 
 
 #define _VEIL_STRINGIZE_(x) #x
-#define _VEIL_STRINGIZE(x) _CRT_STRINGIZE_(x)
+#define _VEIL_STRINGIZE(x) _VEIL_STRINGIZE_(x)
 
 #define _VEIL_CONCATENATE_(a, b) a ## b
 #define _VEIL_CONCATENATE(a, b)  _VEIL_CONCATENATE_(a, b)
