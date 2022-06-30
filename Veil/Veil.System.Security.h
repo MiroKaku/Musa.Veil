@@ -1317,7 +1317,7 @@ LsaFreeReturnBuffer(
         return STATUS_INVALID_ADDRESS;
 }
 
-#endif // £¡_KERNEL_MODE
+#endif // !_KERNEL_MODE
 
 //
 // Only Kernel
