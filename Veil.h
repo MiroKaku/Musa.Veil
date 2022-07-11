@@ -196,6 +196,7 @@ struct IUnknown;
 #define  WINDOWS_IGNORE_PACKING_MISMATCH
 #define  UMDF_USING_NTSTATUS
 
+#include <stdint.h>
 #include <windows.h>
 #include <winioctl.h>
 #include <ntstatus.h>
@@ -206,16 +207,18 @@ struct IUnknown;
 #define DBG _DEBUG
 #endif
 
-#else
+#else // if !defined(_KERNEL_MODE)
 
 //
 // Kernel-Mode
 //
 
+#include "Veil/Veil.C.stdint.h"
+
 #include <fltKernel.h>
 #include <ntimage.h>
 
-#endif
+#endif // if defined(_KERNEL_MODE)
 
 
 #include "Veil/Veil.System.Define.h"
@@ -233,4 +236,5 @@ struct IUnknown;
 #include "Veil/Veil.System.Nls.h"
 #include "Veil/Veil.System.RuntimeLibrary.h"
 #include "Veil/Veil.System.Security.h"
+#include "Veil/Veil.System.Etw.h"
 #include "Veil/Veil.System.MinCrypt.h"

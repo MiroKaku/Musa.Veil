@@ -6,6 +6,5 @@ EXTERN_C NTSTATUS DriverEntry(PDRIVER_OBJECT /*DriverObject*/, PUNICODE_STRING /
 int main(int /*argc*/, char* /*argv*/[])
 #endif //  _KERNEL_MODE
 {
-
     return STATUS_SUCCESS;
 }

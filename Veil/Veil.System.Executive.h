@@ -6475,8 +6475,6 @@ ExReleaseCacheAwarePushLockExclusive(
     _Inout_ PEX_PUSH_LOCK_CACHE_AWARE CacheAwarePushLock
 );
 
-#endif // _KERNEL_MODE
-
 #if (NTDDI_VERSION >= NTDDI_WIN10_NI)
 
 __drv_allocatesMem(Mem)
@@ -6606,6 +6604,8 @@ _VEIL_DEFINE_IAT_RAW_SYMBOL(ExFreeToNPagedLookasideList, _VEIL_IMPL_ExFreeToNPag
 #endif
 
 #endif // (NTDDI_VERSION >= NTDDI_WIN10_NI)
+
+#endif // _KERNEL_MODE
 
 VEIL_END()
 
