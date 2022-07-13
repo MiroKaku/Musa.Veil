@@ -2490,6 +2490,8 @@ RtlWakeAddressSingle(
 #define ANSI_STRING_MAX_CHARS ANSI_STRING_MAX_BYTES
 #endif
 
+#include <strsafe.h>
+
 #ifdef _KERNEL_MODE
 #include <ntstrsafe.h>
 #endif
