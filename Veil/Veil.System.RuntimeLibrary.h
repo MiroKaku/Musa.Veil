@@ -3047,9 +3047,7 @@ RtlUnicodeToUTF8N(
     _In_reads_bytes_(UnicodeStringByteCount) PCWCH UnicodeStringSource,
     _In_ ULONG UnicodeStringByteCount
 );
-#endif
 
-#if (NTDDI_VERSION >= NTDDI_WIN10_VB)
 _When_(AllocateDestinationString,
     _At_(DestinationString->MaximumLength, _Out_range_(<= , (SourceString->MaximumLength / sizeof(WCHAR)))))
 _When_(!AllocateDestinationString,
@@ -3081,8 +3079,7 @@ RtlUTF8StringToUnicodeString(
     _In_ BOOLEAN AllocateDestinationString
 );
 
-#else // NTDDI_VERSION >= NTDDI_WIN10_VB
-
+#if (NTDDI_VERSION < NTDDI_WIN10_VB)
 _When_(AllocateDestinationString,
 _At_(DestinationString->MaximumLength, _Out_range_(<= , (SourceString->MaximumLength / sizeof(WCHAR)))))
 _When_(!AllocateDestinationString,
@@ -3090,10 +3087,10 @@ _When_(!AllocateDestinationString,
     _At_(DestinationString->MaximumLength, _Const_))
 _IRQL_requires_max_(PASSIVE_LEVEL)
 _When_(AllocateDestinationString, _Must_inspect_result_)
-FORCEINLINE
+inline
 NTSTATUS
 NTAPI
-RtlUnicodeStringToUTF8String(
+_VEIL_IMPL_RtlUnicodeStringToUTF8String(
     _When_(AllocateDestinationString, _Out_ _At_(DestinationString->Buffer, __drv_allocatesMem(Mem)))
     _When_(!AllocateDestinationString, _Inout_)
     PUTF8_STRING DestinationString,
@@ -3172,10 +3169,10 @@ RtlUnicodeStringToUTF8String(
 
 _IRQL_requires_max_(PASSIVE_LEVEL)
 _Must_inspect_result_
-FORCEINLINE
+inline
 NTSTATUS
 NTAPI
-RtlUTF8StringToUnicodeString(
+_VEIL_IMPL_RtlUTF8StringToUnicodeString(
     _When_(AllocateDestinationString, _Out_ _At_(DestinationString->Buffer, __drv_allocatesMem(Mem)))
     _When_(!AllocateDestinationString, _Inout_)
     PUNICODE_STRING DestinationString,
@@ -3252,7 +3249,19 @@ RtlUTF8StringToUnicodeString(
     return Status;
 }
 
-#endif //NTDDI_VERSION < NTDDI_WIN10_VB
+#if defined _M_IX86
+
+_VEIL_DEFINE_IAT_RAW_SYMBOL(RtlUnicodeStringToUTF8String@12, _VEIL_IMPL_RtlUnicodeStringToUTF8String);
+_VEIL_DEFINE_IAT_RAW_SYMBOL(RtlUTF8StringToUnicodeString@12, _VEIL_IMPL_RtlUTF8StringToUnicodeString);
+
+#elif defined _M_X64 || defined _M_ARM || defined _M_ARM64
+
+_VEIL_DEFINE_IAT_RAW_SYMBOL(RtlUnicodeStringToUTF8String, _VEIL_IMPL_RtlUnicodeStringToUTF8String);
+_VEIL_DEFINE_IAT_RAW_SYMBOL(RtlUTF8StringToUnicodeString, _VEIL_IMPL_RtlUTF8StringToUnicodeString);
+
+#endif
+#endif // if (NTDDI_VERSION < NTDDI_WIN10_VB)
+#endif // if (NTDDI_VERSION >= NTDDI_WIN7)
 
 NTSYSAPI
 WCHAR
@@ -5083,8 +5092,6 @@ RtlImageDirectoryEntryToData(
     _Out_ PULONG Size
 );
 
-#ifndef _KERNEL_MODE
-
 NTSYSAPI
 PIMAGE_SECTION_HEADER
 NTAPI
@@ -5101,10 +5108,89 @@ RtlImageRvaToVa(
     _In_ PIMAGE_NT_HEADERS NtHeaders,
     _In_ PVOID BaseOfImage,
     _In_ ULONG Rva,
-    _Out_opt_ PIMAGE_SECTION_HEADER* LastRvaSection
+    _Inout_opt_ PIMAGE_SECTION_HEADER* LastRvaSection
 );
 
-#endif // !_KERNEL_MODE
+#ifdef _KERNEL_MODE
+inline
+PIMAGE_SECTION_HEADER
+NTAPI
+_VEIL_IMPL_RtlImageRvaToSection(
+    _In_ PIMAGE_NT_HEADERS NtHeaders,
+    _In_ PVOID BaseOfImage,
+    _In_ ULONG Rva
+)
+{
+    ULONG i = 0ul;
+    PIMAGE_SECTION_HEADER NtSection = NULL;
+
+    UNREFERENCED_PARAMETER(BaseOfImage);
+
+    NtSection = IMAGE_FIRST_SECTION(NtHeaders);
+    for (i = 0; i < NtHeaders->FileHeader.NumberOfSections; i++) {
+        if (Rva >= NtSection->VirtualAddress &&
+            Rva < NtSection->VirtualAddress + NtSection->SizeOfRawData
+            ) {
+            return NtSection;
+        }
+        ++NtSection;
+    }
+
+    return NULL;
+}
+
+inline
+PVOID
+NTAPI
+_VEIL_IMPL_RtlImageRvaToVa(
+    _In_ PIMAGE_NT_HEADERS NtHeaders,
+    _In_ PVOID BaseOfImage,
+    _In_ ULONG Rva,
+    _Inout_opt_ PIMAGE_SECTION_HEADER* LastRvaSection
+)
+{
+    PIMAGE_SECTION_HEADER NtSection = NULL;
+
+    if (LastRvaSection != NULL)
+    {
+        NtSection = *LastRvaSection;
+    }
+
+    if ((NtSection == NULL) ||
+        (Rva < NtSection->VirtualAddress) ||
+        (Rva >= NtSection->VirtualAddress + NtSection->SizeOfRawData))
+    {
+        NtSection = RtlImageRvaToSection(NtHeaders, BaseOfImage, Rva);
+        if (NtSection == NULL)
+        {
+            return NULL;
+        }
+
+        if (LastRvaSection != NULL)
+        {
+            *LastRvaSection = NtSection;
+        }
+    }
+
+    return (PVOID)((ULONG_PTR)BaseOfImage
+        + Rva
+        + NtSection->PointerToRawData
+        - NtSection->VirtualAddress);
+}
+
+#if defined _M_IX86
+
+_VEIL_DEFINE_IAT_RAW_SYMBOL(RtlImageRvaToSection@12, _VEIL_IMPL_RtlImageRvaToSection);
+_VEIL_DEFINE_IAT_RAW_SYMBOL(RtlImageRvaToVa@16, _VEIL_IMPL_RtlImageRvaToVa);
+
+#elif defined _M_X64 || defined _M_ARM || defined _M_ARM64
+
+_VEIL_DEFINE_IAT_RAW_SYMBOL(RtlImageRvaToSection, _VEIL_IMPL_RtlImageRvaToSection);
+_VEIL_DEFINE_IAT_RAW_SYMBOL(RtlImageRvaToVa, _VEIL_IMPL_RtlImageRvaToVa);
+
+#endif
+
+#endif // if _KERNEL_MODE
 
 #if (NTDDI_VERSION >= NTDDI_WIN10)
 // rev

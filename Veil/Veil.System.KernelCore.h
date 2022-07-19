@@ -47,6 +47,25 @@
 
 VEIL_BEGIN()
 
+//
+// System service table descriptor.
+//
+
+#define NUMBER_SERVICE_TABLES       4
+#define SERVICE_TABLE_MASK          0x0FFF
+#define SERVICE_TABLE_WIN32K_TEST   (~SERVICE_TABLE_MASK)
+
+typedef struct _KSERVICE_TABLE_DESCRIPTOR {
+    INT32* ServiceTable;        // nt!KiServiceTable  (ServiceTable[SystemCallNumber])
+    ULONG* ServiceCallCount;    // unused
+    ULONG  NumberOfServices;    // nt!KiServiceLimit
+    BYTE * ArgumentTable;       // nt!KiArgumentTable (ArgumentTable[SystemCallNumber])
+} KSERVICE_TABLE_DESCRIPTOR, * PKSERVICE_TABLE_DESCRIPTOR;
+
+//
+// Thread State
+//
+
 #ifndef _KERNEL_MODE
 #define LOW_PRIORITY             0 // Lowest thread priority level
 #define LOW_REALTIME_PRIORITY   16 // Lowest realtime priority level
