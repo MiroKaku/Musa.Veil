@@ -723,7 +723,9 @@ LdrDisableThreadCalloutsForDll(
 // Resources
 //
 
+#ifdef _KERNEL_MODE
 #include "Veil.System.VersionResource.h"
+#endif
 
 typedef struct _VS_VERSIONINFO_BLOCK
 {
