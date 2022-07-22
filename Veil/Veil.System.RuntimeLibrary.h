@@ -7319,14 +7319,6 @@ RtlSetProcessDebugInformation(
 
 #ifdef _KERNEL_MODE
 
-#ifndef MAKEINTRESOURCE
-#define MAKEINTRESOURCE(i)  ((LPWSTR)((ULONG_PTR)((WORD)(i))))
-#endif
-
-#ifndef RT_MESSAGETABLE
-#define RT_MESSAGETABLE     MAKEINTRESOURCE(11)
-#endif
-
 typedef struct _MESSAGE_RESOURCE_ENTRY {
     USHORT   Length;
     USHORT   Flags;

@@ -723,6 +723,63 @@ LdrDisableThreadCalloutsForDll(
 // Resources
 //
 
+#include "Veil.System.VersionResource.h"
+
+typedef struct _VS_VERSIONINFO_BLOCK
+{
+    UINT16  TotalLength;
+    UINT16  ValueLength;
+    UINT16  Type;                /* 1:Text, 0:Binary */
+    WCHAR   Key[ANYSIZE_ARRAY];
+
+#if 0   /* variable length structure */
+    /* DWORD aligned */
+    BYTE    Value[ANYSIZE_ARRAY];
+    /* DWORD aligned */
+    VS_VERSIONINFO_BLOCK Children[ANYSIZE_ARRAY];
+#endif
+
+}VS_VERSIONINFO_BLOCK, *PVS_VERSIONINFO_BLOCK;
+
+#define __VS_VERSIONINFO_Type(block) \
+    ((const VS_VERSIONINFO_BLOCK*)(block))->Type
+
+#define __VS_VERSIONINFO_Key(block) \
+    ((const VS_VERSIONINFO_BLOCK*)(block))->Key
+
+#define __VS_VERSIONINFO_TotalLength(block) \
+    ((const VS_VERSIONINFO_BLOCK*)(block))->TotalLength
+
+#define __VS_VERSIONINFO_ValueLength(block) \
+    ((const VS_VERSIONINFO_BLOCK*)(block))->ValueLength
+
+#define __VS_VERSIONINFO_ValueBuffer(block) \
+    ((LPBYTE)ROUND_TO_SIZE(__VS_VERSIONINFO_Key(block) + wcslen(__VS_VERSIONINFO_Key(block)) + 1, sizeof UINT32))
+
+#define __VS_VERSIONINFO_ChildrenFirst(block) \
+    (const VS_VERSIONINFO_BLOCK*)(__VS_VERSIONINFO_ValueBuffer(block) + \
+        ROUND_TO_SIZE(__VS_VERSIONINFO_ValueLength(block) * (__VS_VERSIONINFO_Type(block) ? 2 : 1), sizeof UINT32))
+
+#define __VS_VERSIONINFO_ChildrenNext(block) \
+    (const VS_VERSIONINFO_BLOCK*)((LPBYTE)block + ROUND_TO_SIZE(__VS_VERSIONINFO_TotalLength(block), sizeof UINT32))
+
+typedef struct _VS_VERSIONINFO
+{
+    UINT16  TotalLength;
+    UINT16  ValueLength;
+    UINT16  Type;               /* always 0 */
+    WCHAR   Key[ROUND_TO_SIZE(sizeof("VS_VERSION_INFO"), sizeof UINT32)];
+    VS_FIXEDFILEINFO Value;
+
+}VS_VERSIONINFO, *PVS_VERSIONINFO;
+
+typedef struct _VS_FILEINFO_LANG_CODEPAGE
+{
+    UINT16 Language;
+    UINT16 CodePage;
+
+}VS_FILEINFO_LANG_CODEPAGE, *PVS_FILEINFO_LANG_CODEPAGE;
+
 NTSYSAPI
 NTSTATUS
 NTAPI
@@ -740,10 +797,13 @@ typedef struct _LDR_RESOURCE_INFO
     ULONG_PTR Language;
 } LDR_RESOURCE_INFO, * PLDR_RESOURCE_INFO;
 
-#define RESOURCE_TYPE_LEVEL     0
-#define RESOURCE_NAME_LEVEL     1
-#define RESOURCE_LANGUAGE_LEVEL 2
-#define RESOURCE_DATA_LEVEL     3
+#define LDR_RESOURCE_LEVEL_TYPE     0
+#define LDR_RESOURCE_LEVEL_NAME     1
+#define LDR_RESOURCE_LEVEL_LANGUAGE 2
+#define LDR_RESOURCE_LEVEL_DATA     3
+
+#define LDR_RESOURCE_ID_NAME_MASK   ((~(ULONG_PTR)0) << 16) /* lower 16bits clear */
+#define LDR_RESOURCE_ID_NAME_MINVAL (( (ULONG_PTR)1) << 16) /* 17th bit set */
 
 NTSYSAPI
 NTSTATUS
