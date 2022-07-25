@@ -7425,6 +7425,290 @@ RtlGetFileMUIPath(
 #endif // !_KERNEL_MODE
 
 //
+// RC Resource
+//
+
+#ifdef _KERNEL_MODE
+
+NTSYSAPI
+NTSTATUS
+NTAPI
+RtlLoadLibraryAsDataFile(
+    _In_  PCUNICODE_STRING FileName,
+    _Out_ PVOID* ModBase,
+    _Out_ SIZE_T* ModSize
+);
+
+NTSYSAPI
+NTSTATUS
+NTAPI
+RtlFreeLibraryAsDataFile(
+    _In_ PVOID ModBase
+);
+
+inline
+NTSTATUS
+NTAPI
+_VEIL_IMPL_RtlLoadLibraryAsDataFile(
+    _In_  PCUNICODE_STRING FileName,
+    _Out_ PVOID* ModBase,
+    _Out_ SIZE_T* ModSize
+)
+{
+    return LdrLoadDataFile(FileName, ModBase, ModSize);
+}
+
+inline
+NTSTATUS
+NTAPI
+_VEIL_IMPL_RtlFreeLibraryAsDataFile(
+    _In_ PVOID ModBase
+)
+{
+    return LdrUnloadDataFile(ModBase);
+}
+
+#if defined _M_IX86
+
+_VEIL_DEFINE_IAT_RAW_SYMBOL(RtlLoadLibraryAsDataFile@12, _VEIL_IMPL_RtlLoadLibraryAsDataFile);
+_VEIL_DEFINE_IAT_RAW_SYMBOL(RtlFreeLibraryAsDataFile@4, _VEIL_IMPL_RtlFreeLibraryAsDataFile);
+
+#elif defined _M_X64 || defined _M_ARM || defined _M_ARM64
+
+_VEIL_DEFINE_IAT_RAW_SYMBOL(RtlLoadLibraryAsDataFile, _VEIL_IMPL_RtlLoadLibraryAsDataFile);
+_VEIL_DEFINE_IAT_RAW_SYMBOL(RtlFreeLibraryAsDataFile, _VEIL_IMPL_RtlFreeLibraryAsDataFile);
+
+#endif
+
+NTSYSAPI
+NTSTATUS
+NTAPI
+RtlMapResourceId(
+    _Out_ ULONG_PTR* To,
+    _In_  LPCWSTR    From
+);
+
+NTSYSAPI
+VOID
+NTAPI
+RtlUnmapResourceId(
+    _In_ ULONG_PTR Id
+);
+
+inline
+NTSTATUS
+NTAPI
+_VEIL_IMPL_RtlMapResourceId(
+    _Out_ ULONG_PTR* To,
+    _In_  LPCWSTR    From
+)
+{
+    NTSTATUS Status = STATUS_SUCCESS;
+
+    do
+    {
+        __try
+        {
+            *To = (ULONG_PTR)-1;
+
+            if ((ULONG_PTR)From >= LDR_RESOURCE_ID_NAME_MINVAL)
+            {
+                if (*From == L'#')
+                {
+                    UNICODE_STRING UnicodeString = { 0 };
+                    RtlInitUnicodeString(&UnicodeString, From + 1);
+
+                    ULONG Integer = 0ul;
+                    Status = RtlUnicodeStringToInteger(&UnicodeString, 10, &Integer);
+                    if (!NT_SUCCESS(Status) || Integer > LDR_RESOURCE_ID_NAME_MASK)
+                    {
+                        if (NT_SUCCESS(Status))
+                        {
+                            Status = STATUS_INVALID_PARAMETER;
+                        }
+                    }
+                    else
+                    {
+                        *To = Integer;
+                    }
+                }
+                else
+                {
+#pragma warning(suppress: 4996)
+                    PWSTR String = (PWSTR)ExAllocatePool(PagedPool, (wcslen(From) + 1) * sizeof(WCHAR));
+                    if (String == nullptr)
+                    {
+                        Status = STATUS_INSUFFICIENT_RESOURCES;
+                    }
+                    else
+                    {
+                        *To = (ULONG_PTR)String;
+
+                        while (*From != UNICODE_NULL)
+                        {
+                            *String++ = RtlUpcaseUnicodeChar(*From++);
+                        }
+
+                        *String = UNICODE_NULL;
+                    }
+                }
+            }
+            else
+            {
+                *To = (ULONG_PTR)From;
+            }
+        }
+        __except (EXCEPTION_EXECUTE_HANDLER)
+        {
+            *To = (ULONG_PTR)-1;
+        }
+
+    } while (false);
+
+    return Status;
+}
+
+inline
+VOID
+NTAPI
+_VEIL_IMPL_RtlUnmapResourceId(
+    _In_ ULONG_PTR Id
+)
+{
+    if (Id >= LDR_RESOURCE_ID_NAME_MINVAL && Id != -1)
+    {
+        ExFreePool((PVOID)Id);
+    }
+}
+
+#if defined _M_IX86
+
+_VEIL_DEFINE_IAT_RAW_SYMBOL(RtlMapResourceId@8, _VEIL_IMPL_RtlMapResourceId);
+_VEIL_DEFINE_IAT_RAW_SYMBOL(RtlUnmapResourceId@4, _VEIL_IMPL_RtlUnmapResourceId);
+
+#elif defined _M_X64 || defined _M_ARM || defined _M_ARM64
+
+_VEIL_DEFINE_IAT_RAW_SYMBOL(RtlMapResourceId, _VEIL_IMPL_RtlMapResourceId);
+_VEIL_DEFINE_IAT_RAW_SYMBOL(RtlUnmapResourceId, _VEIL_IMPL_RtlUnmapResourceId);
+
+#endif
+
+NTSYSAPI
+NTSTATUS
+NTAPI
+RtlFindResource(
+    _Out_ HRSRC* ResBase,
+    _In_  PVOID   ModBase,
+    _In_  LPCWSTR Name,
+    _In_  LPCWSTR Type,
+    _In_  UINT16  Language
+);
+
+NTSYSAPI
+NTSTATUS
+NTAPI
+RtlLoadResource(
+    _Out_ PVOID* ResBuff,
+    _Out_ ULONG* ResSize,
+    _In_  HRSRC  ResBase,
+    _In_  PVOID  ModBase
+);
+
+inline
+NTSTATUS
+NTAPI
+_VEIL_IMPL_RtlFindResource(
+    _Out_ HRSRC* ResBase,
+    _In_  PVOID   ModBase,
+    _In_  LPCWSTR Name,
+    _In_  LPCWSTR Type,
+    _In_  UINT16  Language
+)
+{
+    NTSTATUS Status = STATUS_SUCCESS;
+    LDR_RESOURCE_INFO IdPath = { 0 };
+
+    do
+    {
+        __try
+        {
+            Status = RtlMapResourceId(&IdPath.Type, Type);
+            if (!NT_SUCCESS(Status))
+            {
+                break;
+            }
+
+            Status = RtlMapResourceId(&IdPath.Name, Name);
+            if (!NT_SUCCESS(Status))
+            {
+                break;
+            }
+
+            IdPath.Language = Language;
+
+            Status = LdrFindResource_U(ModBase, &IdPath, LDR_RESOURCE_LEVEL_DATA, (PIMAGE_RESOURCE_DATA_ENTRY*)ResBase);
+            if (!NT_SUCCESS(Status))
+            {
+                break;
+            }
+        }
+        __except (EXCEPTION_EXECUTE_HANDLER)
+        {
+            Status = GetExceptionCode();
+        }
+
+    } while (false);
+
+    RtlUnmapResourceId(IdPath.Type);
+    RtlUnmapResourceId(IdPath.Name);
+
+    return Status;
+}
+
+inline
+NTSTATUS
+NTAPI
+_VEIL_IMPL_RtlLoadResource(
+    _Out_ PVOID* ResBuff,
+    _Out_ ULONG* ResSize,
+    _In_  HRSRC  ResBase,
+    _In_  PVOID  ModBase
+)
+{
+    NTSTATUS Status = STATUS_SUCCESS;
+
+    do
+    {
+        __try
+        {
+            Status = LdrAccessResource(ModBase,
+                (PIMAGE_RESOURCE_DATA_ENTRY)ResBase, ResBuff, ResSize);
+        }
+        __except (EXCEPTION_EXECUTE_HANDLER)
+        {
+            Status = GetExceptionCode();
+        }
+
+    } while (false);
+
+    return Status;
+}
+
+#if defined _M_IX86
+
+_VEIL_DEFINE_IAT_RAW_SYMBOL(RtlFindResource@20, _VEIL_IMPL_RtlFindResource);
+_VEIL_DEFINE_IAT_RAW_SYMBOL(RtlLoadResource@16, _VEIL_IMPL_RtlLoadResource);
+
+#elif defined _M_X64 || defined _M_ARM || defined _M_ARM64
+
+_VEIL_DEFINE_IAT_RAW_SYMBOL(RtlFindResource, _VEIL_IMPL_RtlFindResource);
+_VEIL_DEFINE_IAT_RAW_SYMBOL(RtlLoadResource, _VEIL_IMPL_RtlLoadResource);
+
+#endif
+
+#endif // if _KERNEL_MODE
+
+//
 // Errors
 //
 
