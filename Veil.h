@@ -108,8 +108,8 @@
     extern "C" __declspec(selectany) void const* const _VEIL_DEFINE_IAT_SYMBOL_MAKE_NAME(sym) \
         = reinterpret_cast<void const*>(&fun)
 
-#define _VEIL_DEFINE_IAT_RAW_SYMBOL(sym, fun)    \
-    __pragma(warning(suppress:4483))                \
+#define _VEIL_DEFINE_IAT_RAW_SYMBOL(sym, fun) \
+    __pragma(warning(suppress:4483)) \
     extern "C" __declspec(selectany) void const* const __identifier(_VEIL_DEFINE_IAT_SYMBOL_MAKE_NAME_STR(sym)) \
         = reinterpret_cast<void const*>(&fun)
 #else
@@ -117,10 +117,8 @@
     extern __declspec(selectany) void const* const _VEIL_DEFINE_IAT_SYMBOL_MAKE_NAME(sym) \
         = (void const*)(&fun)
 
-#define _VEIL_DEFINE_IAT_RAW_SYMBOL(sym, fun)    \
-    __pragma(warning(suppress:4483))                \
-    extern __declspec(selectany) void const* const __identifier(_VEIL_DEFINE_IAT_SYMBOL_MAKE_NAME_STR(sym)) \
-        = (void const*)(&fun)
+// C don't support __identifier keyword
+#define _VEIL_DEFINE_IAT_RAW_SYMBOL(sym, fun)
 #endif
 
 

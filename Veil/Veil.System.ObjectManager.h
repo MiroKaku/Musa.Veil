@@ -1063,7 +1063,7 @@ FORCEINLINE HANDLE ObMakeKernelHandle(HANDLE Handle)
 #define KERNEL_HANDLE_BIT (0xffffffff80000000)
 #endif
 
-    return ((HANDLE)((ULONG_PTR)(Handle) | KERNEL_HANDLE_BIT));
+    return ((HANDLE)(__int3264)((ULONG_PTR)(Handle) | KERNEL_HANDLE_BIT));
 }
 
 #if (NTDDI_VERSION >= NTDDI_VISTA)

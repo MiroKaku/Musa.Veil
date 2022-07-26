@@ -6598,8 +6598,8 @@ _VEIL_DEFINE_IAT_RAW_SYMBOL(ExFreeToNPagedLookasideList@8, _VEIL_IMPL_ExFreeToNP
 
 #elif defined _M_X64 || defined _M_ARM || defined _M_ARM64
 
-_VEIL_DEFINE_IAT_RAW_SYMBOL(ExAllocateFromNPagedLookasideList, _VEIL_IMPL_ExAllocateFromNPagedLookasideList);
-_VEIL_DEFINE_IAT_RAW_SYMBOL(ExFreeToNPagedLookasideList, _VEIL_IMPL_ExFreeToNPagedLookasideList);
+_VEIL_DEFINE_IAT_SYMBOL(ExAllocateFromNPagedLookasideList, _VEIL_IMPL_ExAllocateFromNPagedLookasideList);
+_VEIL_DEFINE_IAT_SYMBOL(ExFreeToNPagedLookasideList, _VEIL_IMPL_ExFreeToNPagedLookasideList);
 
 #endif
 

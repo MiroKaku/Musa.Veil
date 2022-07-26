@@ -770,7 +770,7 @@ typedef struct _VS_VERSIONINFO
     UINT16  TotalLength;
     UINT16  ValueLength;
     UINT16  Type;               /* always 0 */
-    WCHAR   Key[ROUND_TO_SIZE(sizeof("VS_VERSION_INFO"), sizeof UINT32)];
+    WCHAR   Key[ROUND_TO_SIZE(sizeof("VS_VERSION_INFO"), sizeof(UINT32))];
     VS_FIXEDFILEINFO Value;
 
 }VS_VERSIONINFO, *PVS_VERSIONINFO;
@@ -987,7 +987,7 @@ _VEIL_IMPL_LdrLoadDataFile(
             break;
         }
 
-    } while (false);
+    } while (FALSE);
 
     if (SectionObject)
     {
@@ -1023,8 +1023,8 @@ _VEIL_DEFINE_IAT_RAW_SYMBOL(LdrUnloadDataFile@4, _VEIL_IMPL_LdrUnloadDataFile);
 
 #elif defined _M_X64 || defined _M_ARM || defined _M_ARM64
 
-_VEIL_DEFINE_IAT_RAW_SYMBOL(LdrLoadDataFile, _VEIL_IMPL_LdrLoadDataFile);
-_VEIL_DEFINE_IAT_RAW_SYMBOL(LdrUnloadDataFile, _VEIL_IMPL_LdrUnloadDataFile);
+_VEIL_DEFINE_IAT_SYMBOL(LdrLoadDataFile, _VEIL_IMPL_LdrLoadDataFile);
+_VEIL_DEFINE_IAT_SYMBOL(LdrUnloadDataFile, _VEIL_IMPL_LdrUnloadDataFile);
 
 #endif
 

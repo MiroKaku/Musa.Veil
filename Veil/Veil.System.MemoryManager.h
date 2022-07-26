@@ -829,14 +829,14 @@ ZwFlushVirtualMemory(
 
 // begin_private
 #ifndef _KERNEL_MODE
-typedef enum class _VIRTUAL_MEMORY_INFORMATION_CLASS
+typedef enum _VIRTUAL_MEMORY_INFORMATION_CLASS
 {
-    VmPrefetchInformation, // ULONG
-    VmPagePriorityInformation, // OFFER_PRIORITY
-    VmCfgCallTargetInformation, // CFG_CALL_TARGET_LIST_INFORMATION // REDSTONE2
-    VmPageDirtyStateInformation, // REDSTONE3
-    VmImageHotPatchInformation, // 19H1
-    VmPhysicalContiguityInformation, // 20H1
+    VmPrefetchInformation,                  // ULONG
+    VmPagePriorityInformation,              // OFFER_PRIORITY
+    VmCfgCallTargetInformation,             // CFG_CALL_TARGET_LIST_INFORMATION // REDSTONE2
+    VmPageDirtyStateInformation,            // REDSTONE3
+    VmImageHotPatchInformation,             // 19H1
+    VmPhysicalContiguityInformation,        // 20H1
     VmVirtualMachinePrepopulateInformation,
     VmRemoveFromWorkingSetInformation,
     MaxVmInfoClass

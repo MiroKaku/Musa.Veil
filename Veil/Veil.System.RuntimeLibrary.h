@@ -5185,8 +5185,8 @@ _VEIL_DEFINE_IAT_RAW_SYMBOL(RtlImageRvaToVa@16, _VEIL_IMPL_RtlImageRvaToVa);
 
 #elif defined _M_X64 || defined _M_ARM || defined _M_ARM64
 
-_VEIL_DEFINE_IAT_RAW_SYMBOL(RtlImageRvaToSection, _VEIL_IMPL_RtlImageRvaToSection);
-_VEIL_DEFINE_IAT_RAW_SYMBOL(RtlImageRvaToVa, _VEIL_IMPL_RtlImageRvaToVa);
+_VEIL_DEFINE_IAT_SYMBOL(RtlImageRvaToSection, _VEIL_IMPL_RtlImageRvaToSection);
+_VEIL_DEFINE_IAT_SYMBOL(RtlImageRvaToVa, _VEIL_IMPL_RtlImageRvaToVa);
 
 #endif
 
@@ -7475,8 +7475,8 @@ _VEIL_DEFINE_IAT_RAW_SYMBOL(RtlFreeLibraryAsDataFile@4, _VEIL_IMPL_RtlFreeLibrar
 
 #elif defined _M_X64 || defined _M_ARM || defined _M_ARM64
 
-_VEIL_DEFINE_IAT_RAW_SYMBOL(RtlLoadLibraryAsDataFile, _VEIL_IMPL_RtlLoadLibraryAsDataFile);
-_VEIL_DEFINE_IAT_RAW_SYMBOL(RtlFreeLibraryAsDataFile, _VEIL_IMPL_RtlFreeLibraryAsDataFile);
+_VEIL_DEFINE_IAT_SYMBOL(RtlLoadLibraryAsDataFile, _VEIL_IMPL_RtlLoadLibraryAsDataFile);
+_VEIL_DEFINE_IAT_SYMBOL(RtlFreeLibraryAsDataFile, _VEIL_IMPL_RtlFreeLibraryAsDataFile);
 
 #endif
 
@@ -7536,7 +7536,7 @@ _VEIL_IMPL_RtlMapResourceId(
                 {
 #pragma warning(suppress: 4996)
                     PWSTR String = (PWSTR)ExAllocatePool(PagedPool, (wcslen(From) + 1) * sizeof(WCHAR));
-                    if (String == nullptr)
+                    if (String == NULL)
                     {
                         Status = STATUS_INSUFFICIENT_RESOURCES;
                     }
@@ -7563,7 +7563,7 @@ _VEIL_IMPL_RtlMapResourceId(
             *To = (ULONG_PTR)-1;
         }
 
-    } while (false);
+    } while (FALSE);
 
     return Status;
 }
@@ -7588,8 +7588,8 @@ _VEIL_DEFINE_IAT_RAW_SYMBOL(RtlUnmapResourceId@4, _VEIL_IMPL_RtlUnmapResourceId)
 
 #elif defined _M_X64 || defined _M_ARM || defined _M_ARM64
 
-_VEIL_DEFINE_IAT_RAW_SYMBOL(RtlMapResourceId, _VEIL_IMPL_RtlMapResourceId);
-_VEIL_DEFINE_IAT_RAW_SYMBOL(RtlUnmapResourceId, _VEIL_IMPL_RtlUnmapResourceId);
+_VEIL_DEFINE_IAT_SYMBOL(RtlMapResourceId, _VEIL_IMPL_RtlMapResourceId);
+_VEIL_DEFINE_IAT_SYMBOL(RtlUnmapResourceId, _VEIL_IMPL_RtlUnmapResourceId);
 
 #endif
 
@@ -7657,7 +7657,7 @@ _VEIL_IMPL_RtlFindResource(
             Status = GetExceptionCode();
         }
 
-    } while (false);
+    } while (FALSE);
 
     RtlUnmapResourceId(IdPath.Type);
     RtlUnmapResourceId(IdPath.Name);
@@ -7689,7 +7689,7 @@ _VEIL_IMPL_RtlLoadResource(
             Status = GetExceptionCode();
         }
 
-    } while (false);
+    } while (FALSE);
 
     return Status;
 }
@@ -7701,8 +7701,8 @@ _VEIL_DEFINE_IAT_RAW_SYMBOL(RtlLoadResource@16, _VEIL_IMPL_RtlLoadResource);
 
 #elif defined _M_X64 || defined _M_ARM || defined _M_ARM64
 
-_VEIL_DEFINE_IAT_RAW_SYMBOL(RtlFindResource, _VEIL_IMPL_RtlFindResource);
-_VEIL_DEFINE_IAT_RAW_SYMBOL(RtlLoadResource, _VEIL_IMPL_RtlLoadResource);
+_VEIL_DEFINE_IAT_SYMBOL(RtlFindResource, _VEIL_IMPL_RtlFindResource);
+_VEIL_DEFINE_IAT_SYMBOL(RtlLoadResource, _VEIL_IMPL_RtlLoadResource);
 
 #endif
 
