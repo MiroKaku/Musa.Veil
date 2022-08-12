@@ -180,6 +180,15 @@
 #define NTDDI_WIN10_NI                      0x0A00000C      // Windows 10.0.22621 / 22H2 / Nickel
 #define NTDDI_WIN11_NI                      NTDDI_WIN10_NI  // Windows 10.0.22621 / 22H2 / Nickel
 
+#ifndef __cplusplus
+#ifndef __bool_true_false_are_defined
+#define __bool_true_false_are_defined 1
+#define bool  _Bool
+#define false 0
+#define true  1
+#endif
+#define  nullptr NULL
+#endif
 
 #if !defined(_KERNEL_MODE)
 

@@ -100,31 +100,6 @@ VEIL_BEGIN()
         ((((ULONG_PTR) (_pointer)) & ((_alignment) - 1)) == 0)
 #endif
 
-#ifndef _KERNEL_MODE
-typedef struct _PEB* PPEB;  // ntddk.h
-typedef LONG KPRIORITY;     // wdm.h
-
-typedef struct _IO_STATUS_BLOCK
-{
-    union
-    {
-        NTSTATUS Status;
-        PVOID Pointer;
-    };
-    ULONG_PTR Information;
-} IO_STATUS_BLOCK, * PIO_STATUS_BLOCK;
-
-typedef VOID(NTAPI* PIO_APC_ROUTINE)(
-    _In_ PVOID ApcContext,
-    _In_ PIO_STATUS_BLOCK IoStatusBlock,
-    _In_ ULONG Reserved
-    );
-#else
-typedef int BOOL;
-#endif // !_KERNEL_MODE
-
-typedef USHORT RTL_ATOM, * PRTL_ATOM;
-
 //
 // RC Resource
 //
@@ -371,6 +346,33 @@ typedef long SECURITY_STATUS;
 //
 
 typedef LARGE_INTEGER PHYSICAL_ADDRESS, * PPHYSICAL_ADDRESS;
+
+//
+// Kernel
+//
+
+#ifndef _KERNEL_MODE
+typedef struct _PEB* PPEB;  // ntddk.h
+typedef LONG KPRIORITY;     // wdm.h
+
+typedef struct _IO_STATUS_BLOCK
+{
+    union
+    {
+        NTSTATUS Status;
+        PVOID Pointer;
+    };
+    ULONG_PTR Information;
+} IO_STATUS_BLOCK, * PIO_STATUS_BLOCK;
+
+typedef VOID(NTAPI* PIO_APC_ROUTINE)(
+    _In_ PVOID ApcContext,
+    _In_ PIO_STATUS_BLOCK IoStatusBlock,
+    _In_ ULONG Reserved
+    );
+#else
+typedef int BOOL;
+#endif // !_KERNEL_MODE
 
 //
 // Event type
@@ -728,6 +730,8 @@ typedef enum _SUITE_TYPE
 typedef STRING  UTF8_STRING;
 typedef PSTRING PUTF8_STRING;
 #endif
+
+typedef USHORT RTL_ATOM, * PRTL_ATOM;
 
 #ifdef _KERNEL_MODE
 
