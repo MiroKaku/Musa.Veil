@@ -160,24 +160,24 @@ typedef enum _SYSDBG_COMMAND
     SysDbgQueryModuleInformation,
     SysDbgQueryTraceInformation,
     SysDbgSetTracepoint,
-    SysDbgSetSpecialCall,
-    SysDbgClearSpecialCalls,
+    SysDbgSetSpecialCall, // PVOID
+    SysDbgClearSpecialCalls, // void
     SysDbgQuerySpecialCalls,
     SysDbgBreakPoint,
-    SysDbgQueryVersion,
-    SysDbgReadVirtual,
-    SysDbgWriteVirtual,
-    SysDbgReadPhysical,
-    SysDbgWritePhysical,
-    SysDbgReadControlSpace,
-    SysDbgWriteControlSpace,
-    SysDbgReadIoSpace,
-    SysDbgWriteIoSpace,
-    SysDbgReadMsr,
-    SysDbgWriteMsr,
-    SysDbgReadBusData,
-    SysDbgWriteBusData,
-    SysDbgCheckLowMemory,
+    SysDbgQueryVersion, // DBGKD_GET_VERSION64
+    SysDbgReadVirtual, // SYSDBG_VIRTUAL
+    SysDbgWriteVirtual, // SYSDBG_VIRTUAL
+    SysDbgReadPhysical, // SYSDBG_PHYSICAL // 10
+    SysDbgWritePhysical, // SYSDBG_PHYSICAL
+    SysDbgReadControlSpace, // SYSDBG_CONTROL_SPACE
+    SysDbgWriteControlSpace, // SYSDBG_CONTROL_SPACE
+    SysDbgReadIoSpace, // SYSDBG_IO_SPACE
+    SysDbgWriteIoSpace, // SYSDBG_IO_SPACE
+    SysDbgReadMsr, // SYSDBG_MSR
+    SysDbgWriteMsr, // SYSDBG_MSR
+    SysDbgReadBusData, // SYSDBG_BUS_DATA
+    SysDbgWriteBusData, // SYSDBG_BUS_DATA
+    SysDbgCheckLowMemory, // 20
     SysDbgEnableKernelDebugger,
     SysDbgDisableKernelDebugger,
     SysDbgGetAutoKdEnable,
@@ -186,15 +186,17 @@ typedef enum _SYSDBG_COMMAND
     SysDbgSetPrintBufferSize,
     SysDbgGetKdUmExceptionEnable,
     SysDbgSetKdUmExceptionEnable,
-    SysDbgGetTriageDump,
-    SysDbgGetKdBlockEnable,
+    SysDbgGetTriageDump, // SYSDBG_TRIAGE_DUMP
+    SysDbgGetKdBlockEnable, // 30
     SysDbgSetKdBlockEnable,
     SysDbgRegisterForUmBreakInfo,
     SysDbgGetUmBreakPid,
     SysDbgClearUmBreakPid,
     SysDbgGetUmAttachPid,
     SysDbgClearUmAttachPid,
-    SysDbgGetLiveKernelDump
+    SysDbgGetLiveKernelDump, // SYSDBG_LIVEDUMP_CONTROL
+    SysDbgKdPullRemoteFile, // SYSDBG_KD_PULL_REMOTE_FILE
+    SysDbgMaxInfoClass
 } SYSDBG_COMMAND, * PSYSDBG_COMMAND;
 
 typedef struct _SYSDBG_VIRTUAL
@@ -268,7 +270,8 @@ typedef union _SYSDBG_LIVEDUMP_CONTROL_FLAGS
         ULONG CompressMemoryPagesData : 1;
         ULONG IncludeUserSpaceMemoryPages : 1;
         ULONG AbortIfMemoryPressure : 1; // REDSTONE4
-        ULONG Reserved : 28;
+        ULONG SelectiveDump : 1; // WIN11
+        ULONG Reserved : 27;
     };
     ULONG AsUlong;
 } SYSDBG_LIVEDUMP_CONTROL_FLAGS, * PSYSDBG_LIVEDUMP_CONTROL_FLAGS;
@@ -279,12 +282,33 @@ typedef union _SYSDBG_LIVEDUMP_CONTROL_ADDPAGES
     struct
     {
         ULONG HypervisorPages : 1;
-        ULONG Reserved : 31;
+        ULONG NonEssentialHypervisorPages : 1; // since WIN11
+        ULONG Reserved : 30;
     };
     ULONG AsUlong;
 } SYSDBG_LIVEDUMP_CONTROL_ADDPAGES, * PSYSDBG_LIVEDUMP_CONTROL_ADDPAGES;
 
+#define SYSDBG_LIVEDUMP_SELECTIVE_CONTROL_VERSION 1
+
+// rev
+typedef struct _SYSDBG_LIVEDUMP_SELECTIVE_CONTROL
+{
+    ULONG Version;
+    ULONG Size;
+    union
+    {
+        ULONGLONG Flags;
+        struct
+        {
+            ULONGLONG ThreadKernelStacks : 1;
+            ULONGLONG ReservedFlags : 63;
+        };
+    };
+    ULONGLONG Reserved[4];
+} SYSDBG_LIVEDUMP_SELECTIVE_CONTROL, * PSYSDBG_LIVEDUMP_SELECTIVE_CONTROL;
+
 #define SYSDBG_LIVEDUMP_CONTROL_VERSION 1
+#define SYSDBG_LIVEDUMP_CONTROL_VERSION_WIN11 2
 
 // private
 typedef struct _SYSDBG_LIVEDUMP_CONTROL
@@ -299,7 +323,17 @@ typedef struct _SYSDBG_LIVEDUMP_CONTROL
     HANDLE CancelEventHandle;
     SYSDBG_LIVEDUMP_CONTROL_FLAGS Flags;
     SYSDBG_LIVEDUMP_CONTROL_ADDPAGES AddPagesControl;
+    PSYSDBG_LIVEDUMP_SELECTIVE_CONTROL SelectiveControl; // since WIN11
 } SYSDBG_LIVEDUMP_CONTROL, * PSYSDBG_LIVEDUMP_CONTROL;
+
+#define SYSDBG_LIVEDUMP_CONTROL_SIZE RTL_SIZEOF_THROUGH_FIELD(SYSDBG_LIVEDUMP_CONTROL, AddPagesControl)
+#define SYSDBG_LIVEDUMP_CONTROL_SIZE_WIN11 sizeof(SYSDBG_LIVEDUMP_CONTROL)
+
+// private
+typedef struct _SYSDBG_KD_PULL_REMOTE_FILE
+{
+    UNICODE_STRING ImageFileName;
+} SYSDBG_KD_PULL_REMOTE_FILE, * PSYSDBG_KD_PULL_REMOTE_FILE;
 
 __kernel_entry NTSYSCALLAPI
 NTSTATUS

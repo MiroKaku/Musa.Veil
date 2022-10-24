@@ -697,6 +697,7 @@ ZwQuerySymbolicLinkObject(
     _Out_opt_ PULONG ReturnedLength
 );
 
+#if (NTDDI_VERSION >= NTDDI_WIN10)
 typedef enum _SYMBOLIC_LINK_INFORMATION_CLASS
 {
     SymbolicLinkGlobalInformation = 1, // s: ULONG
@@ -724,6 +725,7 @@ ZwSetInformationSymbolicLink(
     _In_reads_bytes_(SymbolicLinkInformationLength) PVOID SymbolicLinkInformation,
     _In_ ULONG SymbolicLinkInformationLength
 );
+#endif // (NTDDI_VERSION >= NTDDI_WIN10)
 
 //
 // Only Kernel

@@ -47,6 +47,75 @@
 
 VEIL_BEGIN()
 
+#define PAGE_NOACCESS           0x01    
+#define PAGE_READONLY           0x02    
+#define PAGE_READWRITE          0x04    
+#define PAGE_WRITECOPY          0x08    
+#define PAGE_EXECUTE            0x10    
+#define PAGE_EXECUTE_READ       0x20    
+#define PAGE_EXECUTE_READWRITE  0x40    
+#define PAGE_EXECUTE_WRITECOPY  0x80    
+#define PAGE_GUARD             0x100    
+#define PAGE_NOCACHE           0x200    
+#define PAGE_WRITECOMBINE      0x400    
+#define PAGE_GRAPHICS_NOACCESS           0x0800    
+#define PAGE_GRAPHICS_READONLY           0x1000    
+#define PAGE_GRAPHICS_READWRITE          0x2000    
+#define PAGE_GRAPHICS_EXECUTE            0x4000    
+#define PAGE_GRAPHICS_EXECUTE_READ       0x8000    
+#define PAGE_GRAPHICS_EXECUTE_READWRITE 0x10000    
+#define PAGE_GRAPHICS_COHERENT          0x20000    
+#define PAGE_GRAPHICS_NOCACHE           0x40000    
+#define PAGE_ENCLAVE_THREAD_CONTROL 0x80000000  
+#define PAGE_REVERT_TO_FILE_MAP     0x80000000  
+#define PAGE_TARGETS_NO_UPDATE      0x40000000  
+#define PAGE_TARGETS_INVALID        0x40000000  
+#define PAGE_ENCLAVE_UNVALIDATED    0x20000000  
+#define PAGE_ENCLAVE_MASK           0x10000000  
+#define PAGE_ENCLAVE_DECOMMIT       (PAGE_ENCLAVE_MASK | 0) 
+#define PAGE_ENCLAVE_SS_FIRST       (PAGE_ENCLAVE_MASK | 1) 
+#define PAGE_ENCLAVE_SS_REST        (PAGE_ENCLAVE_MASK | 2) 
+
+#define MEM_COMMIT                      0x00001000  
+#define MEM_RESERVE                     0x00002000  
+#define MEM_DECOMMIT                    0x00004000  
+#define MEM_RELEASE                     0x00008000  
+#define MEM_FREE                        0x00010000  
+#define MEM_PRIVATE                     0x00020000  
+#define MEM_MAPPED                      0x00040000  
+#define MEM_RESET                       0x00080000  
+#define MEM_TOP_DOWN                    0x00100000  
+#define MEM_WRITE_WATCH                 0x00200000  
+#define MEM_PHYSICAL                    0x00400000  
+#define MEM_ROTATE                      0x00800000  
+#define MEM_DIFFERENT_IMAGE_BASE_OK     0x00800000  
+#define MEM_RESET_UNDO                  0x01000000  
+#define MEM_LARGE_PAGES                 0x20000000  
+#define MEM_DOS_LIM                     0x40000000  
+#define MEM_4MB_PAGES                   0x80000000  
+#define MEM_64K_PAGES                   (MEM_LARGE_PAGES | MEM_PHYSICAL)  
+#define MEM_UNMAP_WITH_TRANSIENT_BOOST  0x00000001  
+#define MEM_COALESCE_PLACEHOLDERS       0x00000001  
+#define MEM_PRESERVE_PLACEHOLDER        0x00000002  
+#define MEM_REPLACE_PLACEHOLDER         0x00004000  
+#define MEM_RESERVE_PLACEHOLDER         0x00040000  
+
+#define SEC_HUGE_PAGES                  0x00020000  
+#define SEC_PARTITION_OWNER_HANDLE      0x00040000  
+#define SEC_64K_PAGES                   0x00080000  
+#define SEC_BASED                       0x00200000  
+#define SEC_NO_CHANGE                   0x00400000  
+#define SEC_FILE                        0x00800000  
+#define SEC_IMAGE                       0x01000000  
+#define SEC_PROTECTED_IMAGE             0x02000000  
+#define SEC_RESERVE                     0x04000000  
+#define SEC_COMMIT                      0x08000000  
+#define SEC_NOCACHE                     0x10000000  
+#define SEC_GLOBAL                      0x20000000  
+#define SEC_WRITECOMBINE                0x40000000  
+#define SEC_LARGE_PAGES                 0x80000000  
+#define SEC_IMAGE_NO_EXECUTE (SEC_IMAGE | SEC_NOCACHE)  
+
 #ifdef _KERNEL_MODE
 #define MEM_IMAGE SEC_IMAGE
 #endif
@@ -59,8 +128,8 @@ typedef enum _MEMORY_INFORMATION_CLASS
     MemoryWorkingSetInformation,            // MEMORY_WORKING_SET_INFORMATION
     MemoryMappedFileNameInformation,        // UNICODE_STRING
     MemoryRegionInformation,                // MEMORY_REGION_INFORMATION
-    MemoryWorkingSetExInformation,          // MEMORY_WORKING_SET_EX_INFORMATION
-    MemorySharedCommitInformation,          // MEMORY_SHARED_COMMIT_INFORMATION
+    MemoryWorkingSetExInformation,          // MEMORY_WORKING_SET_EX_INFORMATION // since VISTA
+    MemorySharedCommitInformation,          // MEMORY_SHARED_COMMIT_INFORMATION // since WIN8
     MemoryImageInformation,                 // MEMORY_IMAGE_INFORMATION
     MemoryRegionInformationEx,              // MEMORY_REGION_INFORMATION
     MemoryPrivilegedBasicInformation,
@@ -372,7 +441,7 @@ typedef enum _SECTION_INFORMATION_CLASS
 {
     SectionBasicInformation, // q; SECTION_BASIC_INFORMATION
     SectionImageInformation, // q; SECTION_IMAGE_INFORMATION
-    SectionRelocationInformation, // q; PVOID RelocationAddress // name:wow64:whNtQuerySection_SectionRelocationInformation
+    SectionRelocationInformation, // q; PVOID RelocationAddress // name:wow64:whNtQuerySection_SectionRelocationInformation // since WIN7
     SectionOriginalBaseInformation, // PVOID BaseAddress
     SectionInternalImageInformation, // SECTION_INTERNAL_IMAGE_INFORMATION // since REDSTONE2
     MaxSectionInfoClass

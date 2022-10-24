@@ -2127,11 +2127,15 @@ ZwNotifyChangeDirectoryFile(
 );
 
 #ifndef _KERNEL_MODE
-// private
 typedef enum _DIRECTORY_NOTIFY_INFORMATION_CLASS
 {
-    DirectoryNotifyInformation = 1, // FILE_NOTIFY_INFORMATION
-    DirectoryNotifyExtendedInformation = 2 // FILE_NOTIFY_EXTENDED_INFORMATION
+    DirectoryNotifyInformation = 1,     // FILE_NOTIFY_INFORMATION
+    DirectoryNotifyExtendedInformation, // FILE_NOTIFY_EXTENDED_INFORMATION
+#if (NTDDI_VERSION >= NTDDI_WIN10_NI)
+    DirectoryNotifyFullInformation,     // since 22H2
+#endif
+    // add new classes above
+    DirectoryNotifyMaximumInformation
 } DIRECTORY_NOTIFY_INFORMATION_CLASS, * PDIRECTORY_NOTIFY_INFORMATION_CLASS;
 #endif // !_KERNEL_MODE
 
@@ -2204,17 +2208,9 @@ ZwUnloadDriver(
 // I/O completion port
 //
 
-#ifndef IO_COMPLETION_QUERY_STATE
-#define IO_COMPLETION_QUERY_STATE 0x0001
-#endif
-
-#ifndef IO_COMPLETION_MODIFY_STATE
-#define IO_COMPLETION_MODIFY_STATE 0x0002
-#endif
-
-#ifndef IO_COMPLETION_ALL_ACCESS
-#define IO_COMPLETION_ALL_ACCESS (IO_COMPLETION_QUERY_STATE|IO_COMPLETION_MODIFY_STATE|STANDARD_RIGHTS_REQUIRED|SYNCHRONIZE) 
-#endif
+#define IO_COMPLETION_QUERY_STATE   0x0001
+#define IO_COMPLETION_MODIFY_STATE  0x0002
+#define IO_COMPLETION_ALL_ACCESS (STANDARD_RIGHTS_REQUIRED|SYNCHRONIZE|0x3) 
 
 typedef enum _IO_COMPLETION_INFORMATION_CLASS
 {

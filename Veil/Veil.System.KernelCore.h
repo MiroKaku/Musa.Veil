@@ -98,7 +98,7 @@ typedef enum _KHETERO_CPU_POLICY
     KHeteroCpuPolicySmall,
     KHeteroCpuPolicySmallOrIdle,
     KHeteroCpuPolicyDynamic,
-    KHeteroCpuPolicyStaticMax,
+    KHeteroCpuPolicyStaticMax = 5, // valid
     KHeteroCpuPolicyBiasedSmall,
     KHeteroCpuPolicyBiasedLarge,
     KHeteroCpuPolicyDefault,
