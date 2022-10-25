@@ -5078,7 +5078,7 @@ NTAPI
 RtlGetFunctionTableListHead(
     VOID
 );
-#endif
+#endif // _WIN64
 
 // Activation Contexts
 
@@ -5106,6 +5106,7 @@ RtlReleaseActivationContext(
     _In_ HANDLE ActCtx
 );
 
+// kernel32!FindActCtxSectionString
 NTSYSAPI
 NTSTATUS
 NTAPI
