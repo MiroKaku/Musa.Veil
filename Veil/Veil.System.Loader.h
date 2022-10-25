@@ -347,6 +347,17 @@ LdrGetDllFullName(
 NTSYSAPI
 NTSTATUS
 NTAPI
+LdrGetDllPath(
+    _In_  PCWSTR DllName,
+    _In_  ULONG  Flags, // LOAD_LIBRARY_SEARCH_*
+    _Out_ PWSTR* DllPath,
+    _Out_ PWSTR* SearchPaths
+);
+
+// rev
+NTSYSAPI
+NTSTATUS
+NTAPI
 LdrGetDllDirectory(
     _Out_ PUNICODE_STRING DllDirectory
 );
@@ -902,6 +913,24 @@ LdrLoadAlternateResourceModuleEx(
     _Out_opt_ ULONG_PTR* ResourceOffset,
     _In_ ULONG Flags
 );
+
+// ros
+NTSYSAPI
+BOOLEAN
+NTAPI
+LdrUnloadAlternateResourceModule(
+    _In_ PVOID BaseAddress
+);
+
+// rev
+NTSYSAPI
+BOOLEAN
+NTAPI
+LdrUnloadAlternateResourceModuleEx(
+    _In_ PVOID BaseAddress,
+    _In_opt_ ULONG Flags
+);
+
 #endif // if !_KERNEL_MODE
 
 #ifdef _KERNEL_MODE
