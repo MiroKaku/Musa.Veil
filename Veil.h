@@ -190,7 +190,7 @@
 #define  nullptr NULL
 #endif
 
-#if !defined(_KERNEL_MODE)
+#if !defined(_KERNEL_MODE) && !defined(__KERNEL_MODE)
 
 //
 // User-Mode
