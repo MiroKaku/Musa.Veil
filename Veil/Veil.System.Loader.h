@@ -1007,7 +1007,7 @@ _VEIL_IMPL_LdrLoadDataFile(
         LARGE_INTEGER MaximumSize = { 0 };
 
         Status = MmCreateSection(&SectionObject, SECTION_MAP_READ, NULL,
-            &MaximumSize, PAGE_READONLY, SEC_IMAGE_NO_EXECUTE, FileHandle, NULL);
+            &MaximumSize, PAGE_READONLY, SEC_IMAGE | SEC_NOCACHE, FileHandle, NULL);
         if (!NT_SUCCESS(Status))
         {
             break;
