@@ -43,7 +43,6 @@
     <ProjectGuid>{5e94fd3f-3f19-4c3e-b7de-43cb0877224f}</ProjectGuid>
     <RootNamespace>VeilTest</RootNamespace>
     <ProjectName>Veil.Test.UserMode</ProjectName>
-    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">

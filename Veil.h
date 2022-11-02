@@ -230,10 +230,10 @@ struct IUnknown;
 
 #include "Veil/Veil.System.Define.h"
 #include "Veil/Veil.System.KernelCore.h"
-#include "Veil/Veil.System.Loader.h"
-#include "Veil/Veil.System.Executive.h"
 #include "Veil/Veil.System.MemoryManager.h"
 #include "Veil/Veil.System.ObjectManager.h"
+#include "Veil/Veil.System.Loader.h"
+#include "Veil/Veil.System.Executive.h"
 #include "Veil/Veil.System.Process.h"
 #include "Veil/Veil.System.Debug.h"
 #include "Veil/Veil.System.IOManager.h"
