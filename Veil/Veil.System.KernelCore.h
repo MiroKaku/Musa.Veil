@@ -369,6 +369,47 @@ KeSignalCallDpcSynchronize(
     _In_ PVOID SystemArgument2
 );
 
+// Fix: unresolved external symbol 'KeInitializeSpinLock'
+#if ((defined(_X86_) && (defined(_WDM_INCLUDED_) || defined(WIN9X_COMPAT_SPINLOCK))) || \
+     ((NTDDI_VERSION > NTDDI_WIN7) && !defined(WIN9X_COMPAT_SPINLOCK) && \
+      (defined(_NTDRIVER_) || defined(_NTDDK_) || defined(_NTIFS_) || defined(_NTHAL_) || defined(_NTOSP_) || defined(_BLDR_))))
+
+#ifndef KeInitializeSpinLock
+
+inline
+VOID
+NTAPI
+_VEIL_IMPL_KeInitializeSpinLock(
+    _Out_ PKSPIN_LOCK SpinLock
+)
+
+/*++
+
+Routine Description:
+
+    This function initializes a spinlock.
+
+Arguments:
+
+    SpinLock - Supplies a pointer to a spinlock.
+
+Return Value:
+
+    None.
+
+--*/
+
+{
+    *SpinLock = 0;
+    return;
+}
+
+#if defined _M_X64 || defined _M_ARM || defined _M_ARM64
+_VEIL_DEFINE_IAT_SYMBOL(KeInitializeSpinLock, _VEIL_IMPL_KeInitializeSpinLock);
+#endif
+
+#endif // KeInitializeSpinLock
+#endif
 
 #endif // _KERNEL_MODE
 
