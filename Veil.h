@@ -245,3 +245,4 @@ struct IUnknown;
 #include "Veil/Veil.System.Security.h"
 #include "Veil/Veil.System.Etw.h"
 #include "Veil/Veil.System.MinCrypt.h"
+#include "Veil/Veil.System.VirtualDesktop.h"
