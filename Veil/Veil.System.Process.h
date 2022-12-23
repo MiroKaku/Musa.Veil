@@ -1569,7 +1569,7 @@ typedef struct _THREAD_BASIC_INFORMATION
     CLIENT_ID ClientId;
     KAFFINITY AffinityMask;
     KPRIORITY Priority;
-    KAFFINITY BasePriority;
+    ULONG BasePriority;
 } THREAD_BASIC_INFORMATION, * PTHREAD_BASIC_INFORMATION;
 
 // private
