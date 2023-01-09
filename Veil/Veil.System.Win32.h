@@ -45,7 +45,22 @@
 #pragma warning(disable:4471)
 #endif
 
+#include <windef.h>
+
 VEIL_BEGIN()
+
+#if defined(_KERNEL_MODE)
+
+typedef struct tagPAINTSTRUCT {
+    HDC         hdc;
+    BOOL        fErase;
+    RECT        rcPaint;
+    BOOL        fRestore;
+    BOOL        fIncUpdate;
+    BYTE        rgbReserved[32];
+} PAINTSTRUCT, * PPAINTSTRUCT, * NPPAINTSTRUCT, * LPPAINTSTRUCT;
+
+#endif
 
 
 __kernel_entry

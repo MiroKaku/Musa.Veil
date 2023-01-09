@@ -1564,13 +1564,17 @@ ZwQueryDirectoryFile(
 );
 
 #if (NTDDI_VERSION >= NTDDI_WIN10_RS3)
-// QueryFlags values for NtQueryDirectoryFileEx
-#define FILE_QUERY_RESTART_SCAN                 0x00000001
-#define FILE_QUERY_RETURN_SINGLE_ENTRY          0x00000002
-#define FILE_QUERY_INDEX_SPECIFIED              0x00000004
-#define FILE_QUERY_RETURN_ON_DISK_ENTRIES_ONLY  0x00000008
+
+//
+// QueryDirectory / QueryEa / QueryQuota (IRP_MJ_DIRECTORY_CONTROL/IRP_MJ_QUERY_EA/IRP_MJ_QUERY_QUOTA))
+//
+
+#define SL_RESTART_SCAN                 0x01
+#define SL_RETURN_SINGLE_ENTRY          0x02
+#define SL_INDEX_SPECIFIED              0x04
+#define SL_RETURN_ON_DISK_ENTRIES_ONLY  0x08 // RS2
 #if (NTDDI_VERSION >= NTDDI_WIN10_RS5)
-#define FILE_QUERY_NO_CURSOR_UPDATE             0x00000010
+#define SL_NO_CURSOR_UPDATE             0x10
 #endif
 
 __kernel_entry NTSYSCALLAPI
