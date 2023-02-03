@@ -55,12 +55,13 @@ VEIL_BEGIN()
 #define SERVICE_TABLE_MASK          0x0FFF
 #define SERVICE_TABLE_WIN32K_TEST   (~SERVICE_TABLE_MASK)
 
-typedef struct _KSERVICE_TABLE_DESCRIPTOR {
+typedef struct _KKSYSTEM_SERVICE_TABLE
+{
     INT32* ServiceTable;        // nt!KiServiceTable  (ServiceTable[SystemCallNumber])
     ULONG* ServiceCallCount;    // unused
     ULONG  NumberOfServices;    // nt!KiServiceLimit
     BYTE * ArgumentTable;       // nt!KiArgumentTable (ArgumentTable[SystemCallNumber])
-} KSERVICE_TABLE_DESCRIPTOR, * PKSERVICE_TABLE_DESCRIPTOR;
+} KSYSTEM_SERVICE_TABLE, * PKSYSTEM_SERVICE_TABLE;
 
 //
 // Thread State
