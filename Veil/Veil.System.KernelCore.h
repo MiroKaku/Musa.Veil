@@ -51,16 +51,16 @@ VEIL_BEGIN()
 // System service table descriptor.
 //
 
-#define NUMBER_SERVICE_TABLES       4
+#define NUMBER_SERVICE_TABLES       2
 #define SERVICE_TABLE_MASK          0x0FFF
 #define SERVICE_TABLE_WIN32K_TEST   (~SERVICE_TABLE_MASK)
 
 typedef struct _KKSYSTEM_SERVICE_TABLE
 {
-    INT32* ServiceTable;        // nt!KiServiceTable  (ServiceTable[SystemCallNumber])
+    INT32* ServiceTable;        // nt!KiServiceTable /win32k!W32pServiceTable  (ServiceTable[SystemCallNumber])
     ULONG* ServiceCallCount;    // unused
     ULONG  NumberOfServices;    // nt!KiServiceLimit
-    BYTE * ArgumentTable;       // nt!KiArgumentTable (ArgumentTable[SystemCallNumber])
+    BYTE * ArgumentTable;       // nt!KiArgumentTable/win32k!W32pArgumentTable (ArgumentTable[SystemCallNumber])
 } KSYSTEM_SERVICE_TABLE, * PKSYSTEM_SERVICE_TABLE;
 
 //
