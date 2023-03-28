@@ -247,6 +247,100 @@ NtUserUnregisterClass(
     _Out_ PCLSMENUNAME ClassMenuName
 );
 
+/*
+ * Extended Window Styles
+ */
+#if defined(_KERNEL_MODE)
+
+#define WS_EX_DLGMODALFRAME     0x00000001L
+#define WS_EX_NOPARENTNOTIFY    0x00000004L
+#define WS_EX_TOPMOST           0x00000008L
+#define WS_EX_ACCEPTFILES       0x00000010L
+#define WS_EX_TRANSPARENT       0x00000020L
+
+#define WS_EX_MDICHILD          0x00000040L
+#define WS_EX_TOOLWINDOW        0x00000080L
+#define WS_EX_WINDOWEDGE        0x00000100L
+#define WS_EX_CLIENTEDGE        0x00000200L
+#define WS_EX_CONTEXTHELP       0x00000400L
+
+#define WS_EX_RIGHT             0x00001000L
+#define WS_EX_LEFT              0x00000000L
+#define WS_EX_RTLREADING        0x00002000L
+#define WS_EX_LTRREADING        0x00000000L
+#define WS_EX_LEFTSCROLLBAR     0x00004000L
+#define WS_EX_RIGHTSCROLLBAR    0x00000000L
+
+#define WS_EX_CONTROLPARENT     0x00010000L
+#define WS_EX_STATICEDGE        0x00020000L
+#define WS_EX_APPWINDOW         0x00040000L
+
+#define WS_EX_OVERLAPPEDWINDOW  (WS_EX_WINDOWEDGE | WS_EX_CLIENTEDGE)
+#define WS_EX_PALETTEWINDOW     (WS_EX_WINDOWEDGE | WS_EX_TOOLWINDOW | WS_EX_TOPMOST)
+
+#define WS_EX_LAYERED           0x00080000
+#define WS_EX_NOINHERITLAYOUT   0x00100000L // Disable inheritence of mirroring by children
+#define WS_EX_NOREDIRECTIONBITMAP 0x00200000L
+#define WS_EX_LAYOUTRTL         0x00400000L // Right to left mirroring
+
+#define WS_EX_COMPOSITED        0x02000000L
+#define WS_EX_NOACTIVATE        0x08000000L
+
+#endif // _KERNEL_MODE
+
+#define WS_EX_EXTREDIRECTED     0x01000000L
+#define WS_EX_ANSICREATOR       0x80000000L
+
+/*
+ * Version macros
+ */
+#define VERMAX          0x9900  // ignore the version
+
+#define VER51           0x0501
+#define VER50           0x0500
+#define VER40           0x0400
+#define VER31           0x030A
+#define VER30           0x0300
+
+#define Is510Compat(ExpWinVer)  (LOWORD(ExpWinVer) >= VER51)
+#define Is500Compat(ExpWinVer)  (LOWORD(ExpWinVer) >= VER50)
+#define Is400Compat(ExpWinVer)  (LOWORD(ExpWinVer) >= VER40)
+#define Is310Compat(ExpWinVer)  (LOWORD(ExpWinVer) >= VER31)
+#define Is300Compat(ExpWinVer)  (LOWORD(ExpWinVer) >= VER30)
+
+/*
+ * This is used by CreateWindow() flags.
+ */
+#define CW_FLAGS_ANSI           0x00000001
+#define CW_FLAGS_DIFFHMOD       0x80000000
+#define CW_FLAGS_VERSIONCLASS   0x40000000
+
+// https://blog.adeltax.com/window-z-order-in-windows-10/
+enum ZBID
+{
+    ZBID_DEFAULT = 0,
+    ZBID_DESKTOP = 1,
+    ZBID_UIACCESS = 2,
+    ZBID_IMMERSIVE_IHM = 3,
+    ZBID_IMMERSIVE_NOTIFICATION = 4,
+    ZBID_IMMERSIVE_APPCHROME = 5,
+    ZBID_IMMERSIVE_MOGO = 6,
+    ZBID_IMMERSIVE_EDGY = 7,
+    ZBID_IMMERSIVE_INACTIVEMOBODY = 8,
+    ZBID_IMMERSIVE_INACTIVEDOCK = 9,
+    ZBID_IMMERSIVE_ACTIVEMOBODY = 10,
+    ZBID_IMMERSIVE_ACTIVEDOCK = 11,
+    ZBID_IMMERSIVE_BACKGROUND = 12,
+    ZBID_IMMERSIVE_SEARCH = 13,
+    ZBID_GENUINE_WINDOWS = 14,
+    ZBID_IMMERSIVE_RESTRICTED = 15,
+    ZBID_SYSTEM_TOOLS = 16,
+
+    //Windows 10+
+    ZBID_LOCK = 17,
+    ZBID_ABOVELOCK_UX = 18,
+};
+
 __kernel_entry W32KAPI
 HWND
 NTAPI
@@ -262,12 +356,12 @@ NtUserCreateWindowEx(
     _In_ INT Height,
     _In_ HWND Parent,
     _In_ HMENU Menu,
-    _In_ HANDLE Module,
+    _In_ HMODULE Instance,
     _In_ LPVOID Param,
-    _In_ DWORD Flags,
-    _In_ /*PACTIVATION_CONTEXT*/ PVOID ActCtx,
-    _In_ PVOID Unknown1,
-    _In_ PVOID Unknown2
+    _In_ DWORD Band,                // ZBID_xxx
+    _In_ DWORD ExpWinVerAndFlags,   // CW_FLAGS_xxx | VERxx | IsANSI
+    _In_ DWORD TypeFlags,
+    _In_ HANDLE ActCtx              // PACTIVATION_CONTEXT ActivationContext
 );
 
 __kernel_entry W32KAPI
