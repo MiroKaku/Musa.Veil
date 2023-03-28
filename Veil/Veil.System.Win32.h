@@ -359,7 +359,7 @@ NtUserCreateWindowEx(
     _In_ HMODULE Instance,
     _In_ LPVOID Param,
     _In_ DWORD Band,                // ZBID_xxx
-    _In_ DWORD ExpWinVerAndFlags,   // CW_FLAGS_xxx | VERxx | IsANSI
+    _In_ DWORD ExpWinVerAndFlags,   // CW_FLAGS_xxx | VERxx
     _In_ DWORD TypeFlags,
     _In_ HANDLE ActCtx              // PACTIVATION_CONTEXT ActivationContext
 );
