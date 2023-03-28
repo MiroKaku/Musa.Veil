@@ -230,8 +230,8 @@ ATOM
 NTAPI
 NtUserRegisterClassExWOW(
     _In_ WNDCLASSEX* WndClass,
-    _In_ PUNICODE_STRING ClassName,
-    _In_ PUNICODE_STRING ClassNameVer,
+    _In_ PUNICODE_STRING ClassName,     // E.g. "ToolbarWindow32"
+    _In_ PUNICODE_STRING ClassNameVer,  // E.g. "6.0.22621.608!ToolbarWindow32"
     _In_ PCLSMENUNAME ClassMenuName,
     _In_ WORD  FnId, // FNID_xxxx
     _In_ DWORD Flags,
