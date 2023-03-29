@@ -2680,7 +2680,7 @@ RtlUpperString(
 FORCEINLINE
 BOOLEAN
 RtlIsNullOrEmptyUnicodeString(
-    _In_opt_ PUNICODE_STRING String
+    _In_opt_ PCUNICODE_STRING String
 )
 {
     return !String || String->Length == 0;
@@ -3843,7 +3843,7 @@ BOOLEAN
 NTAPI
 RtlInsertUnicodePrefix(
     _In_ PUNICODE_PREFIX_TABLE PrefixTable,
-    _In_ __drv_aliasesMem PCUNICODE_STRING Prefix,
+    _In_ __drv_aliasesMem PUNICODE_STRING Prefix,
     _Out_ PUNICODE_PREFIX_TABLE_ENTRY PrefixTableEntry
 );
 
@@ -9159,7 +9159,7 @@ NTSYSAPI
 NTSTATUS
 NTAPI
 RtlCreateServiceSid(
-    _In_ PCUNICODE_STRING ServiceName,
+    _In_ PUNICODE_STRING ServiceName,
     _Out_writes_bytes_opt_(*ServiceSidLength) PSID ServiceSid,
     _Inout_ PULONG ServiceSidLength
 );

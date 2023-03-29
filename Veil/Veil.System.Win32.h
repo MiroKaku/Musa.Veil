@@ -142,6 +142,7 @@ typedef struct _LARGE_STRING
     ULONG bAnsi : 1;
     KERNEL_PVOID Buffer;
 } LARGE_STRING, * PLARGE_STRING;
+typedef const LARGE_STRING* PCLARGE_STRING;
 
 typedef struct _LARGE_ANSI_STRING
 {
@@ -150,6 +151,7 @@ typedef struct _LARGE_ANSI_STRING
     ULONG bAnsi : 1;
     KPSTR Buffer;
 } LARGE_ANSI_STRING, * PLARGE_ANSI_STRING;
+typedef const LARGE_ANSI_STRING* PCLARGE_ANSI_STRING;
 
 typedef struct _LARGE_UNICODE_STRING
 {
@@ -158,6 +160,7 @@ typedef struct _LARGE_UNICODE_STRING
     ULONG bAnsi : 1;
     KPWSTR Buffer;
 } LARGE_UNICODE_STRING, * PLARGE_UNICODE_STRING;
+typedef const LARGE_UNICODE_STRING* PCLARGE_UNICODE_STRING;
 
 // Win32k
 
@@ -395,10 +398,10 @@ __kernel_entry W32KAPI
 HWND
 NTAPI
 NtUserFindWindowEx(
-    _In_ HWND Parent,
-    _In_ HWND Child,
-    _In_ PUNICODE_STRING ClassName,
-    _In_ PUNICODE_STRING WindowName,
+    _In_opt_ HWND Parent,
+    _In_opt_ HWND Child,
+    _In_opt_ PCUNICODE_STRING ClassName,
+    _In_opt_ PCUNICODE_STRING WindowName,
     _In_opt_ DWORD Type
 );
 
