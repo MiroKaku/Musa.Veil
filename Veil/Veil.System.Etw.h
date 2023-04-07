@@ -33,7 +33,7 @@
 
 #pragma once
 
-   // Warnings which disabled for compiling
+// Warnings which disabled for compiling
 #if _MSC_VER >= 1200
 #pragma warning(push)
 // nonstandard extension used : nameless struct/union

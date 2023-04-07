@@ -122,6 +122,13 @@
 #endif
 
 
+#define VEIL_DECLARE_STRUCT(name) \
+    typedef struct _VEIL_CONCATENATE(_, name) name; \
+    typedef struct _VEIL_CONCATENATE(_, name) * _VEIL_CONCATENATE(P, name); \
+    typedef struct _VEIL_CONCATENATE(_, name) const * _VEIL_CONCATENATE(PC, name); \
+    struct _VEIL_CONCATENATE(_, name)
+
+
 #ifndef __cplusplus
 #ifndef CINTERFACE
 #define CINTERFACE
@@ -247,3 +254,5 @@ struct IUnknown;
 #include "Veil/Veil.System.MinCrypt.h"
 #include "Veil/Veil.System.VirtualDesktop.h"
 #include "Veil/Veil.System.Win32.h"
+#include "Veil/Veil.System.Device.h"
+#include "Veil/Veil.System.Xusb.h"
