@@ -33,9 +33,10 @@ VEIL_BEGIN()
 // Device VendorId(VID) & ProductId(PID)
 //
 
-#define DEVICE_VID_MICROSOFT    ((UINT16)0x045E)
+#define DEVICE_VID_MICROSOFT        ((UINT16)0x045E)
 
-#define DEVICE_PID_XUSB         ((UINT16)0x028E)    /* Xbox 360 Controller for Windows */
+#define DEVICE_PID_XUSB             ((UINT16)0x028E)    /* Xbox 360 Wired Common Controller */
+#define DEVICE_PID_XUSB_WIRELESS    ((UINT16)0x0719)    /* Xbox 360 Wireless Common Controller Reciever */
 
 //
 // Device Setup Classes
