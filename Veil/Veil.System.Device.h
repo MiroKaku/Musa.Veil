@@ -33,10 +33,14 @@ VEIL_BEGIN()
 // Device VendorId(VID) & ProductId(PID)
 //
 
+// Microsoft
 #define DEVICE_VID_MICROSOFT        ((UINT16)0x045E)
-
 #define DEVICE_PID_XUSB             ((UINT16)0x028E)    /* Xbox 360 Wired Common Controller */
 #define DEVICE_PID_XUSB_WIRELESS    ((UINT16)0x0719)    /* Xbox 360 Wireless Common Controller Reciever */
+
+// Rapoo
+#define DEVICE_VID_RAPOO            ((UINT16)0x0079)
+#define DEVICE_PID_RAPOO_XUSB       ((UINT16)0x188E)
 
 //
 // Device Setup Classes
@@ -551,3 +555,5 @@ VEIL_END()
 #if _MSC_VER >= 1200
 #pragma warning(pop)
 #endif
+
+#include "Veil/Veil.System.Device.Xusb.h"
