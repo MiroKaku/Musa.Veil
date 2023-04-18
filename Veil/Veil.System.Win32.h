@@ -440,6 +440,49 @@ NtUserEndPaint(
     _In_  const PAINTSTRUCT* Paint
 );
 
+#if defined(_KERNEL_MODE)
+typedef struct tagRAWINPUTDEVICELIST
+{
+    HANDLE hDevice;
+    DWORD  dwType;
+} RAWINPUTDEVICELIST, * PRAWINPUTDEVICELIST;
+#endif
+
+__kernel_entry W32KAPI
+UINT NTAPI NtUserGetRawInputDeviceList(
+    _Out_writes_opt_(*NumDevices) PRAWINPUTDEVICELIST RawInputDeviceList,
+    _Inout_ PUINT NumDevices,
+    _In_ UINT Size
+);
+
+__kernel_entry W32KAPI
+UINT NTAPI NtUserGetRawInputDeviceInfo(
+    _In_opt_ HANDLE Handle,
+    _In_ UINT Command,
+    _Inout_updates_bytes_to_opt_(*Size, *Size) LPVOID Data,
+    _Inout_ PUINT Size
+);
+
+#if defined(_KERNEL_MODE)
+typedef struct tagRAWINPUTDEVICE
+{
+    USHORT usUsagePage; // Toplevel collection UsagePage
+    USHORT usUsage;     // Toplevel collection Usage
+    DWORD  dwFlags;
+    HWND   hwndTarget;  // Target hwnd. NULL = follows keyboard focus
+} RAWINPUTDEVICE, * PRAWINPUTDEVICE, * LPRAWINPUTDEVICE;
+
+typedef CONST RAWINPUTDEVICE* PCRAWINPUTDEVICE;
+#endif
+
+__kernel_entry W32KAPI
+BOOL NTAPI NtUserRegisterRawInputDevices(
+    _In_reads_(NumDevices) PCRAWINPUTDEVICE RawInputDevices,
+    _In_ UINT NumDevices,
+    _In_ UINT Size
+);
+
+
 VEIL_END()
 
 #pragma pop_macro("UNICODE")
