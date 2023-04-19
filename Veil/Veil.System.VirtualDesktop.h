@@ -26,6 +26,7 @@
 
 #if !defined(_KERNEL_MODE) && (NTDDI_VERSION >= NTDDI_WIN10)
 
+#include <combaseapi.h>
 #include <objectarray.h>
 #include <inspectable.h>
 
@@ -110,6 +111,9 @@ typedef enum APPLICATION_VIEW_CHANGE
 
 // 10.0.10240~10.0.17134 = "{2C08ADF0-A386-4B35-9250-0FE183476FCC}"
 DEFINE_GUID(IID_IApplicationViewCollection, 0x2C08ADF0, 0xA386, 0x4B35, 0x92, 0x50, 0x0F, 0xE1, 0x83, 0x47, 0x6F, 0xCC);
+
+#undef  INTERFACE
+#define INTERFACE IApplicationViewCollection
 
 DECLARE_INTERFACE_IID_(IApplicationViewCollection, IUnknown, "2C08ADF0-A386-4B35-9250-0FE183476FCC")
 {
@@ -273,6 +277,9 @@ DECLARE_INTERFACE_IID_(IApplicationViewCollection, IUnknown, "2C08ADF0-A386-4B35
 
 // 10.0.17763~10.0.22621 = "{1841C6D7-4F9D-42C0-AF41-8747538F10E5}"
 DEFINE_GUID(IID_IApplicationViewCollection2, 0x1841C6D7, 0x4F9D, 0x42C0, 0xAF, 0x41, 0x87, 0x47, 0x53, 0x8F, 0x10, 0xE5);
+
+#undef  INTERFACE
+#define INTERFACE IApplicationViewCollection2
 
 DECLARE_INTERFACE_IID_(IApplicationViewCollection2, IUnknown, "1841C6D7-4F9D-42C0-AF41-8747538F10E5")
 {
@@ -442,6 +449,9 @@ DECLARE_INTERFACE_IID_(IApplicationViewCollection2, IUnknown, "1841C6D7-4F9D-42C
 // 10.0.10240~10.0.19045 = "{FF72FFDD-BE7E-43FC-9C03-AD81681E88E4}"
 DEFINE_GUID(IID_IVirtualDesktop, 0xFF72FFDD, 0xBE7E, 0x43FC, 0x9C, 0x03, 0xAD, 0x81, 0x68, 0x1E, 0x88, 0xE4);
 
+#undef  INTERFACE
+#define INTERFACE IVirtualDesktop
+
 DECLARE_INTERFACE_IID_(IVirtualDesktop, IUnknown, "FF72FFDD-BE7E-43FC-9C03-AD81681E88E4")
 {
     /*** IUnknown methods ***/
@@ -505,6 +515,9 @@ DECLARE_INTERFACE_IID_(IVirtualDesktop, IUnknown, "FF72FFDD-BE7E-43FC-9C03-AD816
 
 // 10.0.22000~10.0.22621 = "{536D3495-B208-4CC9-AE26-DE8111275BF8}"
 DEFINE_GUID(IID_IVirtualDesktop2, 0x536D3495, 0xB208, 0x4CC9, 0xAE, 0x26, 0xDE, 0x81, 0x11, 0x27, 0x5B, 0xF8);
+
+#undef  INTERFACE
+#define INTERFACE IVirtualDesktop2
 
 DECLARE_INTERFACE_IID_(IVirtualDesktop2, IUnknown, "536D3495-B208-4CC9-AE26-DE8111275BF8")
 {
@@ -581,6 +594,9 @@ DECLARE_INTERFACE_IID_(IVirtualDesktop2, IUnknown, "536D3495-B208-4CC9-AE26-DE81
 
 // 10.0.10240~10.0.10586 = "{AF8DA486-95BB-4460-B3B7-6E7A6B2962B5}"
 DEFINE_GUID(IID_IVirtualDesktopManagerInternal, 0xAF8DA486, 0x95BB, 0x4460, 0xB3, 0xB7, 0x6E, 0x7A, 0x6B, 0x29, 0x62, 0xB5);
+
+#undef  INTERFACE
+#define INTERFACE IVirtualDesktopManagerInternal
 
 DECLARE_INTERFACE_IID_(IVirtualDesktopManagerInternal, IUnknown, "AF8DA486-95BB-4460-B3B7-6E7A6B2962B5")
 {
@@ -692,6 +708,9 @@ DECLARE_INTERFACE_IID_(IVirtualDesktopManagerInternal, IUnknown, "AF8DA486-95BB-
 
 // 10.0.14393~10.0.19045 = "{F31574D6-B682-4CDC-BD56-1827860ABEC6}"
 DEFINE_GUID(IID_IVirtualDesktopManagerInternal2, 0xF31574D6, 0xB682, 0x4CDC, 0xBD, 0x56, 0x18, 0x27, 0x86, 0x0A, 0xBE, 0xC6);
+
+#undef  INTERFACE
+#define INTERFACE IVirtualDesktopManagerInternal2
 
 DECLARE_INTERFACE_IID_(IVirtualDesktopManagerInternal2, IUnknown, "F31574D6-B682-4CDC-BD56-1827860ABEC6")
 {
@@ -810,6 +829,9 @@ DECLARE_INTERFACE_IID_(IVirtualDesktopManagerInternal2, IUnknown, "F31574D6-B682
 
 // 10.0.22000~10.0.22000 = "{B2F925B9-5A0F-4D2E-9F4D-2B1507593C10}"
 DEFINE_GUID(IID_IVirtualDesktopManagerInternal3, 0xB2F925B9, 0x5A0F, 0x4D2E, 0x9F, 0x4D, 0x2B, 0x15, 0x07, 0x59, 0x3C, 0x10);
+
+#undef  INTERFACE
+#define INTERFACE IVirtualDesktopManagerInternal3
 
 DECLARE_INTERFACE_IID_(IVirtualDesktopManagerInternal3, IUnknown, "B2F925B9-5A0F-4D2E-9F4D-2B1507593C10")
 {
@@ -980,6 +1002,9 @@ DECLARE_INTERFACE_IID_(IVirtualDesktopManagerInternal3, IUnknown, "B2F925B9-5A0F
 
 // 10.0.22621~10.0.22621 = "{B2F925B9-5A0F-4D2E-9F4D-2B1507593C10}"
 DEFINE_GUID(IID_IVirtualDesktopManagerInternal4, 0xB2F925B9, 0x5A0F, 0x4D2E, 0x9F, 0x4D, 0x2B, 0x15, 0x07, 0x59, 0x3C, 0x10);
+
+#undef  INTERFACE
+#define INTERFACE IVirtualDesktopManagerInternal4
 
 DECLARE_INTERFACE_IID_(IVirtualDesktopManagerInternal4, IUnknown, "B2F925B9-5A0F-4D2E-9F4D-2B1507593C10")
 {
@@ -1157,6 +1182,9 @@ DECLARE_INTERFACE_IID_(IVirtualDesktopManagerInternal4, IUnknown, "B2F925B9-5A0F
 // 10.0.10240~10.0.19045 = "{C179334C-4295-40D3-BEA1-C654D965605A}"
 DEFINE_GUID(IID_IVirtualDesktopNotification, 0xC179334C, 0x4295, 0x40D3, 0xBE, 0xA1, 0xC6, 0x54, 0xD9, 0x65, 0x60, 0x5A);
 
+#undef  INTERFACE
+#define INTERFACE IVirtualDesktopNotification
+
 DECLARE_INTERFACE_IID_(IVirtualDesktopNotification, IUnknown, "C179334C-4295-40D3-BEA1-C654D965605A")
 {
     /*** IUnknown methods ***/
@@ -1241,6 +1269,9 @@ DECLARE_INTERFACE_IID_(IVirtualDesktopNotification, IUnknown, "C179334C-4295-40D
 
 // 10.0.22000~10.0.22621 = "{CD403E52-DEED-4C13-B437-B98380F2B1E8}"
 DEFINE_GUID(IID_IVirtualDesktopNotification2, 0xCD403E52, 0xDEED, 0x4C13, 0xB4, 0x37, 0xB9, 0x83, 0x80, 0xF2, 0xB1, 0xE8);
+
+#undef  INTERFACE
+#define INTERFACE IVirtualDesktopNotification2
 
 DECLARE_INTERFACE_IID_(IVirtualDesktopNotification2, IUnknown, "CD403E52-DEED-4C13-B437-B98380F2B1E8")
 {
@@ -1361,6 +1392,9 @@ DECLARE_INTERFACE_IID_(IVirtualDesktopNotification2, IUnknown, "CD403E52-DEED-4C
 // 10.0.10240~10.0.22621 = "{0CD45E71-D927-4F15-8B0A-8FEF525337BF}"
 DEFINE_GUID(IID_IVirtualDesktopNotificationService, 0x0CD45E71, 0xD927, 0x4F15, 0x8B, 0x0A, 0x8F, 0xEF, 0x52, 0x53, 0x37, 0xBF);
 
+#undef  INTERFACE
+#define INTERFACE IVirtualDesktopNotificationService
+
 DECLARE_INTERFACE_IID_(IVirtualDesktopNotificationService, IUnknown, "0CD45E71-D927-4F15-8B0A-8FEF525337BF")
 {
     /*** IUnknown methods ***/
@@ -1418,6 +1452,9 @@ DECLARE_INTERFACE_IID_(IVirtualDesktopNotificationService, IUnknown, "0CD45E71-D
 
 // 10.0.14393~10.0.22621 = "{4CE81583-1E4C-4632-A621-07A53543148F}"
 DEFINE_GUID(IID_IVirtualDesktopPinnedApps, 0x4CE81583, 0x1E4C, 0x4632, 0xA6, 0x21, 0x07, 0xA5, 0x35, 0x43, 0x14, 0x8F);
+
+#undef  INTERFACE
+#define INTERFACE IVirtualDesktopPinnedApps
 
 DECLARE_INTERFACE_IID_(IVirtualDesktopPinnedApps, IUnknown, "4CE81583-1E4C-4632-A621-07A53543148F")
 {

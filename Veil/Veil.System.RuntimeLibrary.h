@@ -2680,7 +2680,7 @@ RtlUpperString(
 FORCEINLINE
 BOOLEAN
 RtlIsNullOrEmptyUnicodeString(
-    _In_opt_ PUNICODE_STRING String
+    _In_opt_ PCUNICODE_STRING String
 )
 {
     return !String || String->Length == 0;
@@ -2899,8 +2899,8 @@ NTSYSAPI
 PWCHAR
 NTAPI
 RtlFindUnicodeSubstring(
-    _In_ PUNICODE_STRING FullString,
-    _In_ PUNICODE_STRING SearchString,
+    _In_ PCUNICODE_STRING FullString,
+    _In_ PCUNICODE_STRING SearchString,
     _In_ BOOLEAN CaseInSensitive
 );
 #endif
@@ -2915,8 +2915,8 @@ NTSTATUS
 NTAPI
 RtlFindCharInUnicodeString(
     _In_ ULONG Flags,
-    _In_ PUNICODE_STRING StringToSearch,
-    _In_ PUNICODE_STRING CharSet,
+    _In_ PCUNICODE_STRING StringToSearch,
+    _In_ PCUNICODE_STRING CharSet,
     _Out_ PUSHORT NonInclusivePrefixLength
 );
 
@@ -3275,7 +3275,7 @@ NTSTATUS
 NTAPI
 RtlUpcaseUnicodeStringToAnsiString(
     _Inout_ PANSI_STRING DestinationString,
-    _In_ PUNICODE_STRING SourceString,
+    _In_ PCUNICODE_STRING SourceString,
     _In_ BOOLEAN AllocateDestinationString
 );
 
@@ -3591,8 +3591,8 @@ NTSYSAPI
 BOOLEAN
 NTAPI
 RtlIsNameInExpression(
-    _In_ PUNICODE_STRING Expression,
-    _In_ PUNICODE_STRING Name,
+    _In_ PCUNICODE_STRING Expression,
+    _In_ PCUNICODE_STRING Name,
     _In_ BOOLEAN IgnoreCase,
     _In_opt_ PWCH UpcaseTable
 );
@@ -3604,8 +3604,8 @@ NTSYSAPI
 BOOLEAN
 NTAPI
 RtlIsNameInUnUpcasedExpression(
-    _In_ PUNICODE_STRING Expression,
-    _In_ PUNICODE_STRING Name,
+    _In_ PCUNICODE_STRING Expression,
+    _In_ PCUNICODE_STRING Name,
     _In_ BOOLEAN IgnoreCase,
     _In_opt_ PWCH UpcaseTable
 );
@@ -3617,7 +3617,7 @@ NTSYSAPI
 BOOLEAN
 NTAPI
 RtlDoesNameContainWildCards(
-    _In_ PUNICODE_STRING Name
+    _In_ PCUNICODE_STRING Name
 );
 #endif
 
@@ -3625,16 +3625,16 @@ NTSYSAPI
 BOOLEAN
 NTAPI
 RtlEqualDomainName(
-    _In_ PUNICODE_STRING String1,
-    _In_ PUNICODE_STRING String2
+    _In_ PCUNICODE_STRING String1,
+    _In_ PCUNICODE_STRING String2
 );
 
 NTSYSAPI
 BOOLEAN
 NTAPI
 RtlEqualComputerName(
-    _In_ PUNICODE_STRING String1,
-    _In_ PUNICODE_STRING String2
+    _In_ PCUNICODE_STRING String1,
+    _In_ PCUNICODE_STRING String2
 );
 
 NTSYSAPI
@@ -3642,7 +3642,7 @@ NTSTATUS
 NTAPI
 RtlDnsHostNameToComputerName(
     _Out_ PUNICODE_STRING ComputerNameString,
-    _In_ PUNICODE_STRING DnsHostNameString,
+    _In_ PCUNICODE_STRING DnsHostNameString,
     _In_ BOOLEAN AllocateComputerNameString
 );
 
@@ -4197,7 +4197,7 @@ NTSYSAPI
 BOOLEAN
 NTAPI
 RtlCultureNameToLCID(
-    _In_ PUNICODE_STRING String,
+    _In_ PCUNICODE_STRING String,
     _Out_ PLCID Lcid
 );
 
@@ -4376,15 +4376,15 @@ NTSTATUS
 NTAPI
 RtlCreateProcessParameters(
     _Out_ PRTL_USER_PROCESS_PARAMETERS* pProcessParameters,
-    _In_ PUNICODE_STRING ImagePathName,
-    _In_opt_ PUNICODE_STRING DllPath,
-    _In_opt_ PUNICODE_STRING CurrentDirectory,
-    _In_opt_ PUNICODE_STRING CommandLine,
+    _In_ PCUNICODE_STRING ImagePathName,
+    _In_opt_ PCUNICODE_STRING DllPath,
+    _In_opt_ PCUNICODE_STRING CurrentDirectory,
+    _In_opt_ PCUNICODE_STRING CommandLine,
     _In_opt_ PVOID Environment,
-    _In_opt_ PUNICODE_STRING WindowTitle,
-    _In_opt_ PUNICODE_STRING DesktopInfo,
-    _In_opt_ PUNICODE_STRING ShellInfo,
-    _In_opt_ PUNICODE_STRING RuntimeData
+    _In_opt_ PCUNICODE_STRING WindowTitle,
+    _In_opt_ PCUNICODE_STRING DesktopInfo,
+    _In_opt_ PCUNICODE_STRING ShellInfo,
+    _In_opt_ PCUNICODE_STRING RuntimeData
 );
 
 #if (NTDDI_VERSION >= NTDDI_VISTA)
@@ -4394,15 +4394,15 @@ NTSTATUS
 NTAPI
 RtlCreateProcessParametersEx(
     _Out_ PRTL_USER_PROCESS_PARAMETERS* pProcessParameters,
-    _In_ PUNICODE_STRING ImagePathName,
-    _In_opt_ PUNICODE_STRING DllPath,
-    _In_opt_ PUNICODE_STRING CurrentDirectory,
-    _In_opt_ PUNICODE_STRING CommandLine,
+    _In_ PCUNICODE_STRING ImagePathName,
+    _In_opt_ PCUNICODE_STRING DllPath,
+    _In_opt_ PCUNICODE_STRING CurrentDirectory,
+    _In_opt_ PCUNICODE_STRING CommandLine,
     _In_opt_ PVOID Environment,
-    _In_opt_ PUNICODE_STRING WindowTitle,
-    _In_opt_ PUNICODE_STRING DesktopInfo,
-    _In_opt_ PUNICODE_STRING ShellInfo,
-    _In_opt_ PUNICODE_STRING RuntimeData,
+    _In_opt_ PCUNICODE_STRING WindowTitle,
+    _In_opt_ PCUNICODE_STRING DesktopInfo,
+    _In_opt_ PCUNICODE_STRING ShellInfo,
+    _In_opt_ PCUNICODE_STRING RuntimeData,
     _In_ ULONG Flags // pass RTL_USER_PROC_PARAMS_NORMALIZED to keep parameters normalized
 );
 #endif
@@ -4442,7 +4442,7 @@ NTSYSAPI
 NTSTATUS
 NTAPI
 RtlCreateUserProcess(
-    _In_ PUNICODE_STRING NtImagePathName,
+    _In_ PCUNICODE_STRING NtImagePathName,
     _In_ ULONG AttributesDeprecated,
     _In_ PRTL_USER_PROCESS_PARAMETERS ProcessParameters,
     _In_opt_ PSECURITY_DESCRIPTOR ProcessSecurityDescriptor,
@@ -4474,7 +4474,7 @@ NTSYSAPI
 NTSTATUS
 NTAPI
 RtlCreateUserProcessEx(
-    _In_ PUNICODE_STRING NtImagePathName,
+    _In_ PCUNICODE_STRING NtImagePathName,
     _In_ PRTL_USER_PROCESS_PARAMETERS ProcessParameters,
     _In_ BOOLEAN InheritHandles,
     _In_opt_ PRTL_USER_PROCESS_EXTENDED_PARAMETERS ProcessExtendedParameters,
@@ -6000,8 +6000,8 @@ NTSTATUS
 NTAPI
 RtlSetEnvironmentVariable(
     _Inout_opt_ PVOID* Environment,
-    _In_ PUNICODE_STRING Name,
-    _In_opt_ PUNICODE_STRING Value
+    _In_ PCUNICODE_STRING Name,
+    _In_opt_ PCUNICODE_STRING Value
 );
 
 #if (NTDDI_VERSION >= NTDDI_VISTA)
@@ -6024,8 +6024,8 @@ NTSTATUS
 NTAPI
 RtlQueryEnvironmentVariable_U(
     _In_opt_ PVOID Environment,
-    _In_ PUNICODE_STRING Name,
-    _Inout_ PUNICODE_STRING Value
+    _In_ PCUNICODE_STRING Name,
+    _Inout_ PCUNICODE_STRING Value
 );
 
 #if (NTDDI_VERSION >= NTDDI_VISTA)
@@ -6048,7 +6048,7 @@ NTSTATUS
 NTAPI
 RtlExpandEnvironmentStrings_U(
     _In_opt_ PVOID Environment,
-    _In_ PUNICODE_STRING Source,
+    _In_ PCUNICODE_STRING Source,
     _Inout_ PUNICODE_STRING Destination,
     _Out_opt_ PULONG ReturnedLength
 );
@@ -6146,7 +6146,7 @@ NTSYSAPI
 NTSTATUS
 NTAPI
 RtlGetFullPathName_UstrEx(
-    _In_ PUNICODE_STRING FileName,
+    _In_ PCUNICODE_STRING FileName,
     _Inout_ PUNICODE_STRING StaticString,
     _Out_opt_ PUNICODE_STRING DynamicString,
     _Out_opt_ PUNICODE_STRING* StringUsed,
@@ -6169,7 +6169,7 @@ NTSYSAPI
 NTSTATUS
 NTAPI
 RtlSetCurrentDirectory_U(
-    _In_ PUNICODE_STRING PathName
+    _In_ PCUNICODE_STRING PathName
 );
 
 NTSYSAPI
@@ -6281,12 +6281,12 @@ NTSTATUS
 NTAPI
 RtlDosSearchPath_Ustr(
     _In_ ULONG Flags,
-    _In_ PUNICODE_STRING Path,
-    _In_ PUNICODE_STRING FileName,
-    _In_opt_ PUNICODE_STRING DefaultExtension,
+    _In_ PCUNICODE_STRING Path,
+    _In_ PCUNICODE_STRING FileName,
+    _In_opt_ PCUNICODE_STRING DefaultExtension,
     _Out_opt_ PUNICODE_STRING StaticString,
     _Out_opt_ PUNICODE_STRING DynamicString,
-    _Out_opt_ PCUNICODE_STRING* FullFileNameOut,
+    _Out_opt_ PUNICODE_STRING* FullFileNameOut,
     _Out_opt_ SIZE_T* FilePartPrefixCch,
     _Out_opt_ SIZE_T* BytesRequired
 );
@@ -6297,11 +6297,11 @@ NTSTATUS
 NTAPI
 RtlDosApplyFileIsolationRedirection_Ustr(
     _In_ ULONG                  Flags,
-    _In_ PUNICODE_STRING        OriginalName,
-    _In_ PUNICODE_STRING        Extension,
-    _In_opt_ PUNICODE_STRING    StaticString,
-    _In_opt_ PUNICODE_STRING    DynamicString,
-    _In_opt_ PUNICODE_STRING*   NewName,
+    _In_ PCUNICODE_STRING       OriginalName,
+    _In_ PCUNICODE_STRING       Extension,
+    _In_opt_ PCUNICODE_STRING   StaticString,
+    _In_opt_ PCUNICODE_STRING   DynamicString,
+    _In_opt_ PCUNICODE_STRING*  NewName,
     _In_ PULONG                 NewFlags,
     _In_ PSIZE_T                FileNameSize,
     _In_ PSIZE_T                RequiredLength
@@ -6319,7 +6319,7 @@ NTSTATUS
 NTAPI
 RtlGetLengthWithoutLastFullDosOrNtPathElement(
     _Reserved_ ULONG Flags,
-    _In_ PUNICODE_STRING PathString,
+    _In_ PCUNICODE_STRING PathString,
     _Out_ PULONG Length
 );
 
@@ -6328,7 +6328,7 @@ NTSTATUS
 NTAPI
 RtlGetLengthWithoutTrailingPathSeperators(
     _Reserved_ ULONG Flags,
-    _In_ PUNICODE_STRING PathString,
+    _In_ PCUNICODE_STRING PathString,
     _Out_ PULONG Length
 );
 
@@ -6348,7 +6348,7 @@ NTSYSAPI
 NTSTATUS
 NTAPI
 RtlGenerate8dot3Name(
-    _In_ PUNICODE_STRING Name,
+    _In_ PCUNICODE_STRING Name,
     _In_ BOOLEAN AllowExtendedCharacters,
     _Inout_ PGENERATE_NAME_CONTEXT Context,
     _Inout_ PUNICODE_STRING Name8dot3
@@ -6360,7 +6360,7 @@ NTSYSAPI
 NTSTATUS
 NTAPI
 RtlComputePrivatizedDllName_U(
-    _In_ PUNICODE_STRING DllName,
+    _In_ PCUNICODE_STRING DllName,
     _Out_ PUNICODE_STRING RealName,
     _Out_ PUNICODE_STRING LocalName
 );
@@ -10209,7 +10209,7 @@ NTSYSAPI
 POBJECT_BOUNDARY_DESCRIPTOR
 NTAPI
 RtlCreateBoundaryDescriptor(
-    _In_ PUNICODE_STRING Name,
+    _In_ PCUNICODE_STRING Name,
     _In_ ULONG Flags
 );
 
@@ -11468,7 +11468,7 @@ NTSTATUS
 NTAPI
 RtlCapabilityCheck(
     _In_opt_ HANDLE TokenHandle,
-    _In_ PUNICODE_STRING CapabilityName,
+    _In_ PCUNICODE_STRING CapabilityName,
     _Out_ PBOOLEAN HasCapability
 );
 #endif
