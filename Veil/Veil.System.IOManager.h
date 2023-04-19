@@ -291,8 +291,8 @@ typedef enum _FILE_INFORMATION_CLASS
     FileHardLinkFullIdInformation, // FILE_LINK_ENTRY_FULL_ID_INFORMATION // FILE_LINKS_FULL_ID_INFORMATION
     FileIdExtdBothDirectoryInformation, // FILE_ID_EXTD_BOTH_DIR_INFORMATION // since THRESHOLD
     FileDispositionInformationEx, // FILE_DISPOSITION_INFO_EX // since REDSTONE
-    FileRenameInformationEx, // FILE_RENAME_INFORMATION_EX
-    FileRenameInformationExBypassAccessCheck, // (kernel-mode only); FILE_RENAME_INFORMATION_EX
+    FileRenameInformationEx, // FILE_RENAME_INFORMATION
+    FileRenameInformationExBypassAccessCheck, // (kernel-mode only); FILE_RENAME_INFORMATION
     FileDesiredStorageClassInformation, // FILE_DESIRED_STORAGE_CLASS_INFORMATION // since REDSTONE2
     FileStatInformation, // FILE_STAT_INFORMATION
     FileMemoryPartitionInformation, // FILE_MEMORY_PARTITION_INFORMATION // since REDSTONE3
@@ -498,14 +498,6 @@ typedef struct _FILE_MOVE_CLUSTER_INFORMATION
     WCHAR FileName[1];
 } FILE_MOVE_CLUSTER_INFORMATION, * PFILE_MOVE_CLUSTER_INFORMATION;
 
-typedef struct _FILE_RENAME_INFORMATION
-{
-    BOOLEAN ReplaceIfExists;
-    HANDLE RootDirectory;
-    ULONG FileNameLength;
-    WCHAR FileName[1];
-} FILE_RENAME_INFORMATION, * PFILE_RENAME_INFORMATION;
-
 #if (NTDDI_VERSION >= NTDDI_WIN10_RS1)
 #define FILE_RENAME_REPLACE_IF_EXISTS               0x00000001
 #define FILE_RENAME_POSIX_SEMANTICS                 0x00000002
@@ -529,13 +521,21 @@ typedef struct _FILE_RENAME_INFORMATION
 #define FILE_RENAME_FORCE_RESIZE_SR                 0x00000180
 #endif
 
-typedef struct _FILE_RENAME_INFORMATION_EX
+typedef struct _FILE_RENAME_INFORMATION
 {
-    ULONG Flags;
+#if (NTDDI_VERSION >= NTDDI_WIN10_RS1)
+    union
+    {
+        BOOLEAN ReplaceIfExists;  // FileRenameInformation
+        ULONG Flags;              // FileRenameInformationEx
+    } DUMMYUNIONNAME;
+#else
+    BOOLEAN ReplaceIfExists;
+#endif
     HANDLE RootDirectory;
     ULONG FileNameLength;
     WCHAR FileName[1];
-} FILE_RENAME_INFORMATION_EX, * PFILE_RENAME_INFORMATION_EX;
+} FILE_RENAME_INFORMATION, * PFILE_RENAME_INFORMATION;
 
 typedef struct _FILE_STREAM_INFORMATION
 {

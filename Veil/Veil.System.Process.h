@@ -1984,7 +1984,7 @@ NTSTATUS
 NTAPI
 ZwGetNextThread(
     _In_ HANDLE ProcessHandle,
-    _In_ HANDLE ThreadHandle,
+    _In_opt_ HANDLE ThreadHandle,
     _In_ ACCESS_MASK DesiredAccess,
     _In_ ULONG HandleAttributes,
     _In_ ULONG Flags,

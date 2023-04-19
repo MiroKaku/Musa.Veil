@@ -312,24 +312,24 @@ NTSYSAPI
 VOID
 NTAPI
 KeInitializeApc(
-    _Out_ PRKAPC aApc,
-    _In_ PRKTHREAD aThread,
-    _In_ KAPC_ENVIRONMENT aEnvironment,
-    _In_ PKKERNEL_ROUTINE aKernelRoutine,
-    _In_opt_ PKRUNDOWN_ROUTINE aRundownRoutine,
-    _In_opt_ PKNORMAL_ROUTINE aNormalRoutine,
-    _In_opt_ KPROCESSOR_MODE aProcessorMode,
-    _In_opt_ PVOID aNormalContext
+    _Out_    PRKAPC             Apc,
+    _In_     PRKTHREAD          Thread,
+    _In_     KAPC_ENVIRONMENT   Environment,
+    _In_     PKKERNEL_ROUTINE   KernelRoutine,
+    _In_opt_ PKRUNDOWN_ROUTINE  RundownRoutine,
+    _In_opt_ PKNORMAL_ROUTINE   NormalRoutine,
+    _In_opt_ KPROCESSOR_MODE    ProcessorMode,
+    _In_opt_ PVOID              NormalContext
 );
 
 NTSYSAPI
 BOOLEAN
 NTAPI
 KeInsertQueueApc(
-    _Inout_ PRKAPC aApc,
-    _In_opt_ PVOID aSystemArgument1,
-    _In_opt_ PVOID aSystemArgument2,
-    _In_ KPRIORITY aIncrement
+    _Inout_ PRKAPC Apc,
+    _In_opt_ PVOID SystemArgument1,
+    _In_opt_ PVOID SystemArgument2,
+    _In_ KPRIORITY Increment
 );
 
 NTSYSAPI
