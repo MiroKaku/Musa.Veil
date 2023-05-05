@@ -3983,7 +3983,7 @@ FORCEINLINE BOOLEAN NTAPI PsIs32bitProcess(
     return !!PsGetProcessWow64Process(Process);
 #else
     UNREFERENCED_PARAMETER(Process);
-    return FALSE;
+    return TRUE;
 #endif
 }
 
