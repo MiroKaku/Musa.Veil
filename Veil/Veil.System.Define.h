@@ -162,6 +162,11 @@ VEIL_BEGIN()
 #endif /* RC_INVOKED */
 
 #endif /* !NORESOURCE */
+
+#ifndef INFINITE
+#define INFINITE            0xFFFFFFFF  // Infinite timeout
+#endif
+
 #endif // if _KERNEL_MODE
 
 //
