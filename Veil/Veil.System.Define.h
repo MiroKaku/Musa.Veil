@@ -163,8 +163,16 @@ VEIL_BEGIN()
 
 #endif /* !NORESOURCE */
 
+//
+// Misc
+//
+
 #ifndef INFINITE
 #define INFINITE            0xFFFFFFFF  // Infinite timeout
+#endif
+
+#ifndef INVALID_HANDLE_VALUE
+#define INVALID_HANDLE_VALUE ((HANDLE)(LONG_PTR)-1)
 #endif
 
 #endif // if _KERNEL_MODE
