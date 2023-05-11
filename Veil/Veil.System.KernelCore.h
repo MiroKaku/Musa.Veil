@@ -272,41 +272,29 @@ typedef enum _KAPC_ENVIRONMENT
     InsertApcEnvironment
 } KAPC_ENVIRONMENT;
 
-typedef
-VOID
-(*PKNORMAL_ROUTINE) (
-    IN PVOID NormalContext,
-    IN PVOID SystemArgument1,
-    IN PVOID SystemArgument2
+typedef VOID (*PKNORMAL_ROUTINE) (
+    _In_ PVOID NormalContext,
+    _In_ PVOID SystemArgument1,
+    _In_ PVOID SystemArgument2
     );
 
-typedef
-VOID
-(*PKKERNEL_ROUTINE) (
-    IN struct _KAPC* Apc,
-    IN OUT PKNORMAL_ROUTINE* NormalRoutine,
-    IN OUT PVOID* NormalContext,
-    IN OUT PVOID* SystemArgument1,
-    IN OUT PVOID* SystemArgument2
+typedef VOID (*PKKERNEL_ROUTINE) (
+    _In_ struct _KAPC* Apc,
+    _Inout_ PKNORMAL_ROUTINE* NormalRoutine,
+    _Inout_ PVOID* NormalContext,
+    _Inout_ PVOID* SystemArgument1,
+    _Inout_ PVOID* SystemArgument2
     );
 
-typedef
-VOID
-(*PKRUNDOWN_ROUTINE) (
-    IN struct _KAPC* Apc
+typedef VOID (*PKRUNDOWN_ROUTINE) (
+    _In_ struct _KAPC* Apc
     );
 
-typedef
-BOOLEAN
-(*PKSYNCHRONIZE_ROUTINE) (
-    IN PVOID SynchronizeContext
+typedef BOOLEAN (*PKSYNCHRONIZE_ROUTINE) (
+    _In_ PVOID SynchronizeContext
     );
 
-typedef
-BOOLEAN
-(*PKTRANSFER_ROUTINE) (
-    VOID
-    );
+typedef BOOLEAN (*PKTRANSFER_ROUTINE)(VOID);
 
 NTSYSAPI
 VOID
