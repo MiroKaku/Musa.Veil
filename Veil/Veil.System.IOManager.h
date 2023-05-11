@@ -332,8 +332,8 @@ typedef enum _FILE_INFORMATION_CLASS
     FileMemoryPartitionInformation, // FILE_MEMORY_PARTITION_INFORMATION // since REDSTONE3
     FileStatLxInformation, // FILE_STAT_LX_INFORMATION // since REDSTONE4 // 70
     FileCaseSensitiveInformation, // FILE_CASE_SENSITIVE_INFORMATION
-    FileLinkInformationEx, // FILE_LINK_INFORMATION_EX // since REDSTONE5
-    FileLinkInformationExBypassAccessCheck, // (kernel-mode only); FILE_LINK_INFORMATION_EX
+    FileLinkInformationEx, // FILE_LINK_INFORMATION // since REDSTONE5
+    FileLinkInformationExBypassAccessCheck, // (kernel-mode only); FILE_LINK_INFORMATION
     FileStorageReserveIdInformation, // FILE_SET_STORAGE_RESERVE_ID_INFORMATION
     FileCaseSensitiveInformationForceAccessCheck, // FILE_CASE_SENSITIVE_INFORMATION
     FileKnownFolderInformation, // FILE_KNOWN_FOLDER_INFORMATION // since WIN11
@@ -534,14 +534,6 @@ typedef struct _FILE_LINK_INFORMATION
     ULONG FileNameLength;
     WCHAR FileName[1];
 } FILE_LINK_INFORMATION, * PFILE_LINK_INFORMATION;
-
-typedef struct _FILE_LINK_INFORMATION_EX
-{
-    ULONG Flags;
-    HANDLE RootDirectory;
-    ULONG FileNameLength;
-    WCHAR FileName[1];
-} FILE_LINK_INFORMATION_EX, * PFILE_LINK_INFORMATION_EX;
 
 typedef struct _FILE_MOVE_CLUSTER_INFORMATION
 {
