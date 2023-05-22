@@ -652,8 +652,6 @@ typedef enum _MEM_DEDICATED_ATTRIBUTE_TYPE {
     MemDedicatedAttributeMax
 } MEM_DEDICATED_ATTRIBUTE_TYPE, * PMEM_DEDICATED_ATTRIBUTE_TYPE;
 
-
-
 typedef struct _MEMORY_PARTITION_DEDICATED_MEMORY_OPEN_INFORMATION {
 
     //
@@ -677,16 +675,6 @@ typedef struct _MEMORY_PARTITION_DEDICATED_MEMORY_OPEN_INFORMATION {
     HANDLE DedicatedMemoryPartitionHandle;
 
 } MEMORY_PARTITION_DEDICATED_MEMORY_OPEN_INFORMATION, * PMEMORY_PARTITION_DEDICATED_MEMORY_OPEN_INFORMATION;
-
-#define SEC_HUGE_PAGES              0x00020000  
-#define SEC_64K_PAGES               0x00080000  
-#define SEC_FILE                    0x00800000  
-#define SEC_IMAGE                   0x01000000  
-#define SEC_RESERVE                 0x04000000  
-#define SEC_COMMIT                  0x08000000  
-#define SEC_NOCACHE                 0x10000000  
-#define SEC_LARGE_PAGES             0x80000000  
-#define SEC_IMAGE_NO_EXECUTE (SEC_IMAGE | SEC_NOCACHE)  
 
 typedef enum MEM_SECTION_EXTENDED_PARAMETER_TYPE {
     MemSectionExtendedParameterInvalidType = 0,
