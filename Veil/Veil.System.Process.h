@@ -126,6 +126,21 @@ typedef struct _PEB_LDR_DATA
     HANDLE ShutdownThreadId;
 } PEB_LDR_DATA, * PPEB_LDR_DATA;
 
+typedef struct _PEB_LDR_DATA32
+{
+    ULONG Length;
+    BOOLEAN Initialized;
+    HANDLE32 SsHandle;
+    LIST_ENTRY32 InLoadOrderModuleList;
+    LIST_ENTRY32 InMemoryOrderModuleList;
+    LIST_ENTRY32 InInitializationOrderModuleList;
+    PVOID32 EntryInProgress;
+    BOOLEAN ShutdownInProgress;
+    HANDLE32 ShutdownThreadId;
+} PEB_LDR_DATA32, * POINTER_32 PPEB_LDR_DATA32;
+
+STATIC_ASSERT(sizeof(PEB_LDR_DATA32) == 48);
+
 typedef struct _INITIAL_TEB
 {
     struct
@@ -372,6 +387,184 @@ C_ASSERT(FIELD_OFFSET(PEB, SessionId) == 0x1D4);
 C_ASSERT(sizeof(PEB) == 0x488); // WIN11
 #endif
 
+typedef struct _PEB32
+{
+    BOOLEAN InheritedAddressSpace;
+    BOOLEAN ReadImageFileExecOptions;
+    BOOLEAN BeingDebugged;
+    union
+    {
+        BOOLEAN BitField;
+        struct
+        {
+            BOOLEAN ImageUsesLargePages : 1;
+            BOOLEAN IsProtectedProcess : 1;
+            BOOLEAN IsImageDynamicallyRelocated : 1;
+            BOOLEAN SkipPatchingUser32Forwarders : 1;
+            BOOLEAN IsPackagedProcess : 1;
+            BOOLEAN IsAppContainer : 1;
+            BOOLEAN IsProtectedProcessLight : 1;
+            BOOLEAN IsLongPathAwareProcess : 1;
+        };
+    };
+
+    HANDLE32 Mutant;
+
+    PVOID32 ImageBaseAddress;
+    PPEB_LDR_DATA32 Ldr;
+    struct _RTL_USER_PROCESS_PARAMETERS32* POINTER_32 ProcessParameters;
+    PVOID32 SubSystemData;
+    PVOID32 ProcessHeap;
+    struct _RTL_CRITICAL_SECTION32* POINTER_32 FastPebLock;
+    union _SLIST_HEADER* POINTER_32 AtlThunkSListPtr;
+    PVOID32 IFEOKey;
+
+    union
+    {
+        ULONG CrossProcessFlags;
+        struct
+        {
+            ULONG ProcessInJob : 1;
+            ULONG ProcessInitializing : 1;
+            ULONG ProcessUsingVEH : 1;
+            ULONG ProcessUsingVCH : 1;
+            ULONG ProcessUsingFTH : 1;
+            ULONG ProcessPreviouslyThrottled : 1;
+            ULONG ProcessCurrentlyThrottled : 1;
+            ULONG ProcessImagesHotPatched : 1; // REDSTONE5
+            ULONG ReservedBits0 : 24;
+        };
+    };
+    union
+    {
+        PVOID32 KernelCallbackTable;
+        PVOID32 UserSharedInfoPtr;
+    };
+    ULONG SystemReserved;
+    ULONG AtlThunkSListPtr32;
+    struct _API_SET_NAMESPACE* POINTER_32 ApiSetMap;
+    ULONG TlsExpansionCounter;
+    PVOID32 TlsBitmap;
+    ULONG TlsBitmapBits[2];
+
+    PVOID32 ReadOnlySharedMemoryBase;
+    struct _SILO_USER_SHARED_DATA* POINTER_32 SharedData; // HotpatchInformation
+    PVOID32* POINTER_32 ReadOnlyStaticServerData;
+
+    PVOID32 AnsiCodePageData; // PCPTABLEINFO
+    PVOID32 OemCodePageData; // PCPTABLEINFO
+    PVOID32 UnicodeCaseTableData; // PNLSTABLEINFO
+
+    ULONG NumberOfProcessors;
+    ULONG NtGlobalFlag;
+
+    ULARGE_INTEGER CriticalSectionTimeout;
+    SIZE_T32 HeapSegmentReserve;
+    SIZE_T32 HeapSegmentCommit;
+    SIZE_T32 HeapDeCommitTotalFreeThreshold;
+    SIZE_T32 HeapDeCommitFreeBlockThreshold;
+
+    ULONG NumberOfHeaps;
+    ULONG MaximumNumberOfHeaps;
+    PVOID32* POINTER_32 ProcessHeaps; // PHEAP
+
+    PVOID32 GdiSharedHandleTable; // PGDI_SHARED_MEMORY
+    PVOID32 ProcessStarterHelper;
+    ULONG GdiDCAttributeList;
+
+    struct _RTL_CRITICAL_SECTION32* POINTER_32 LoaderLock;
+
+    ULONG OSMajorVersion;
+    ULONG OSMinorVersion;
+    USHORT OSBuildNumber;
+    USHORT OSCSDVersion;
+    ULONG OSPlatformId;
+    ULONG ImageSubsystem;
+    ULONG ImageSubsystemMajorVersion;
+    ULONG ImageSubsystemMinorVersion;
+    KAFFINITY32 ActiveProcessAffinityMask;
+    GDI_HANDLE_BUFFER32 GdiHandleBuffer;
+    PVOID32 PostProcessInitRoutine;
+
+    PVOID32 TlsExpansionBitmap;
+    ULONG TlsExpansionBitmapBits[32];
+
+    ULONG SessionId;
+
+    ULARGE_INTEGER AppCompatFlags;
+    ULARGE_INTEGER AppCompatFlagsUser;
+    PVOID32 pShimData;
+    PVOID32 AppCompatInfo; // APPCOMPAT_EXE_DATA
+
+    UNICODE_STRING32 CSDVersion;
+
+    struct _ACTIVATION_CONTEXT_DATA* POINTER_32 ActivationContextData;
+    struct ASSEMBLY_STORAGE_MAP32* POINTER_32 ProcessAssemblyStorageMap;
+    struct _ACTIVATION_CONTEXT_DATA* POINTER_32 SystemDefaultActivationContextData;
+    struct _ASSEMBLY_STORAGE_MAP32* POINTER_32 SystemAssemblyStorageMap;
+
+    SIZE_T32 MinimumStackCommit;
+
+    PVOID32 SparePointers[2]; // 19H1 (previously FlsCallback to FlsHighIndex)
+    PVOID32 PatchLoaderData;
+    PVOID32 ChpeV2ProcessInfo; // _CHPEV2_PROCESS_INFO
+
+    ULONG AppModelFeatureState;
+    ULONG SpareUlongs[2];
+
+    USHORT ActiveCodePage;
+    USHORT OemCodePage;
+    USHORT UseCaseMapping;
+    USHORT UnusedNlsField;
+
+    PVOID32 WerRegistrationData;
+    PVOID32 WerShipAssertPtr;
+
+    union
+    {
+        PVOID32 pContextData; // WIN7
+        PVOID32 pUnused; // WIN10
+        PVOID32 EcCodeBitMap; // WIN11
+    };
+
+    PVOID32 pImageHeaderHash;
+    union
+    {
+        ULONG TracingFlags;
+        struct
+        {
+            ULONG HeapTracingEnabled : 1;
+            ULONG CritSecTracingEnabled : 1;
+            ULONG LibLoaderTracingEnabled : 1;
+            ULONG SpareTracingBits : 29;
+        };
+    };
+    ULONGLONG CsrServerReadOnlySharedMemoryBase;
+    struct _RTL_CRITICAL_SECTION32* POINTER_32 TppWorkerpListLock;
+    LIST_ENTRY32 TppWorkerpList;
+    PVOID32 WaitOnAddressHashTable[128];
+    PVOID32 TelemetryCoverageHeader; // REDSTONE3
+    ULONG CloudFileFlags;
+    ULONG CloudFileDiagFlags; // REDSTONE4
+    CHAR PlaceholderCompatibilityMode;
+    CHAR PlaceholderCompatibilityModeReserved[7];
+    struct _LEAP_SECOND_DATA* POINTER_32 LeapSecondData; // REDSTONE5
+    union
+    {
+        ULONG LeapSecondFlags;
+        struct
+        {
+            ULONG SixtySecondEnabled : 1;
+            ULONG Reserved : 31;
+        };
+    };
+    ULONG NtGlobalFlag2;
+    ULONGLONG ExtendedFeatureDisableMask; // since WIN11
+
+} PEB32, * POINTER_32 PPEB32;
+
+STATIC_ASSERT(sizeof(PEB32) == 0x488); // WIN11
+
 #define GDI_BATCH_BUFFER_SIZE 310
 
 typedef struct _GDI_TEB_BATCH
@@ -381,11 +574,26 @@ typedef struct _GDI_TEB_BATCH
     ULONG Buffer[GDI_BATCH_BUFFER_SIZE];
 } GDI_TEB_BATCH, * PGDI_TEB_BATCH;
 
+typedef struct _GDI_TEB_BATCH32
+{
+    ULONG Offset;
+    ULONG_PTR32 HDC;
+    ULONG Buffer[GDI_BATCH_BUFFER_SIZE];
+} GDI_TEB_BATCH32, * POINTER_32 PGDI_TEB_BATCH32;
+
+STATIC_ASSERT(sizeof(GDI_TEB_BATCH32) == 1248);
+
 typedef struct _TEB_ACTIVE_FRAME_CONTEXT
 {
     ULONG Flags;
     PSTR FrameName;
 } TEB_ACTIVE_FRAME_CONTEXT, * PTEB_ACTIVE_FRAME_CONTEXT;
+
+typedef struct _TEB_ACTIVE_FRAME_CONTEXT32
+{
+    ULONG Flags;
+    char * POINTER_32 FrameName;
+} TEB_ACTIVE_FRAME_CONTEXT32, * POINTER_32 PTEB_ACTIVE_FRAME_CONTEXT32;
 
 typedef struct _TEB_ACTIVE_FRAME
 {
@@ -393,6 +601,13 @@ typedef struct _TEB_ACTIVE_FRAME
     struct _TEB_ACTIVE_FRAME* Previous;
     PTEB_ACTIVE_FRAME_CONTEXT Context;
 } TEB_ACTIVE_FRAME, * PTEB_ACTIVE_FRAME;
+
+typedef struct _TEB_ACTIVE_FRAME32
+{
+    ULONG Flags;
+    struct _TEB_ACTIVE_FRAME* POINTER_32 Previous;
+    PTEB_ACTIVE_FRAME_CONTEXT32 Context;
+} TEB_ACTIVE_FRAME32, * POINTER_32 PTEB_ACTIVE_FRAME32;
 
 typedef struct _TEB
 {
@@ -569,6 +784,164 @@ typedef struct _TEB
     ULONG SpinCallCount;
     ULONGLONG ExtendedFeatureDisableMask;
 } TEB, * PTEB;
+
+typedef struct _TEB32
+{
+    NT_TIB32 NtTib;
+
+    PVOID32 EnvironmentPointer;
+    CLIENT_ID32 ClientId;
+    PVOID32 ActiveRpcHandle;
+    PVOID32 ThreadLocalStoragePointer;
+    PPEB32 ProcessEnvironmentBlock;
+
+    ULONG LastErrorValue;
+    ULONG CountOfOwnedCriticalSections;
+    PVOID32 CsrClientThread;
+    PVOID32 Win32ThreadInfo;
+    ULONG User32Reserved[26];
+    ULONG UserReserved[5];
+    PVOID32 WOW32Reserved;
+    LCID CurrentLocale;
+    ULONG FpSoftwareStatusRegister;
+    PVOID32 ReservedForDebuggerInstrumentation[16];
+    PVOID32 SystemReserved1[26];
+
+    CHAR PlaceholderCompatibilityMode;
+    BOOLEAN PlaceholderHydrationAlwaysExplicit;
+    CHAR PlaceholderReserved[10];
+
+    ULONG ProxiedProcessId;
+    ACTIVATION_CONTEXT_STACK32 ActivationStack;
+
+    UCHAR WorkingOnBehalfTicket[8];
+    NTSTATUS ExceptionCode;
+
+    PACTIVATION_CONTEXT_STACK32 ActivationContextStackPointer;
+    ULONG_PTR32 InstrumentationCallbackSp;
+    ULONG_PTR32 InstrumentationCallbackPreviousPc;
+    ULONG_PTR32 InstrumentationCallbackPreviousSp;
+
+    BOOLEAN InstrumentationCallbackDisabled;
+    UCHAR SpareBytes[23];
+    ULONG TxFsContext;
+    GDI_TEB_BATCH32 GdiTebBatch;
+    CLIENT_ID32 RealClientId;
+    HANDLE32 GdiCachedProcessHandle;
+    ULONG GdiClientPID;
+    ULONG GdiClientTID;
+    PVOID32 GdiThreadLocalInfo;
+    ULONG_PTR32 Win32ClientInfo[62];
+    PVOID32 glDispatchTable[233];
+    ULONG_PTR32 glReserved1[29];
+    PVOID32 glReserved2;
+    PVOID32 glSectionInfo;
+    PVOID32 glSection;
+    PVOID32 glTable;
+    PVOID32 glCurrentRC;
+    PVOID32 glContext;
+
+    NTSTATUS LastStatusValue;
+    UNICODE_STRING32 StaticUnicodeString;
+    WCHAR StaticUnicodeBuffer[261];
+
+    PVOID32 DeallocationStack;
+    PVOID32 TlsSlots[64];
+    LIST_ENTRY32 TlsLinks;
+
+    PVOID32 Vdm;
+    PVOID32 ReservedForNtRpc;
+    PVOID32 DbgSsReserved[2];
+
+    ULONG HardErrorMode;
+    PVOID32 Instrumentation[9];
+    GUID ActivityId;
+
+    PVOID32 SubProcessTag;
+    PVOID32 PerflibData;
+    PVOID32 EtwTraceData;
+    PVOID32 WinSockData;
+    ULONG GdiBatchCount;
+
+    union
+    {
+        PROCESSOR_NUMBER CurrentIdealProcessor;
+        ULONG IdealProcessorValue;
+        struct
+        {
+            UCHAR ReservedPad0;
+            UCHAR ReservedPad1;
+            UCHAR ReservedPad2;
+            UCHAR IdealProcessor;
+        };
+    };
+
+    ULONG GuaranteedStackBytes;
+    PVOID32 ReservedForPerf;
+    PVOID32 ReservedForOle; // tagSOleTlsData
+    ULONG WaitingOnLoaderLock;
+    PVOID32 SavedPriorityState;
+    ULONG_PTR32 ReservedForCodeCoverage;
+    PVOID32 ThreadPoolData;
+    PVOID32* POINTER_32 TlsExpansionSlots;
+    ULONG MuiGeneration;
+    ULONG IsImpersonating;
+    PVOID32 NlsCache;
+    PVOID32 pShimData;
+    ULONG HeapData;
+    HANDLE32 CurrentTransactionHandle;
+    PTEB_ACTIVE_FRAME32 ActiveFrame;
+    PVOID32 FlsData;
+
+    PVOID32 PreferredLanguages;
+    PVOID32 UserPrefLanguages;
+    PVOID32 MergedPrefLanguages;
+    ULONG MuiImpersonation;
+
+    union
+    {
+        USHORT CrossTebFlags;
+        USHORT SpareCrossTebBits : 16;
+    };
+    union
+    {
+        USHORT SameTebFlags;
+        struct
+        {
+            USHORT SafeThunkCall : 1;
+            USHORT InDebugPrint : 1;
+            USHORT HasFiberData : 1;
+            USHORT SkipThreadAttach : 1;
+            USHORT WerInShipAssertCode : 1;
+            USHORT RanProcessInit : 1;
+            USHORT ClonedThread : 1;
+            USHORT SuppressDebugMsg : 1;
+            USHORT DisableUserStackWalk : 1;
+            USHORT RtlExceptionAttached : 1;
+            USHORT InitialThread : 1;
+            USHORT SessionAware : 1;
+            USHORT LoadOwner : 1;
+            USHORT LoaderWorker : 1;
+            USHORT SkipLoaderInit : 1;
+            USHORT SkipFileAPIBrokering : 1;
+        };
+    };
+
+    PVOID32 TxnScopeEnterCallback;
+    PVOID32 TxnScopeExitCallback;
+    PVOID32 TxnScopeContext;
+    ULONG LockCount;
+    LONG WowTebOffset;
+    PVOID32 ResourceRetValue;
+    PVOID32 ReservedForWdf;
+    ULONGLONG ReservedForCrt;
+    GUID EffectiveContainerId;
+    ULONGLONG LastSleepCounter; // Win11
+    ULONG SpinCallCount;
+    ULONGLONG ExtendedFeatureDisableMask;
+} TEB32, * POINTER_32 PTEB32;
+
+STATIC_ASSERT(sizeof(TEB32) == 4120);
 
 typedef struct _WOW64_PROCESS
 {

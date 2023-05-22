@@ -4365,6 +4365,14 @@ typedef struct _CURDIR
     HANDLE Handle;
 } CURDIR, * PCURDIR;
 
+typedef struct _CURDIR32
+{
+    UNICODE_STRING32 DosPath;
+    HANDLE32 Handle;
+} CURDIR32, * POINTER_32 PCURDIR32;
+
+STATIC_ASSERT(sizeof(CURDIR32) == 12);
+
 #define RTL_USER_PROC_CURDIR_CLOSE      0x00000002
 #define RTL_USER_PROC_CURDIR_INHERIT    0x00000003
 
@@ -4375,6 +4383,16 @@ typedef struct _RTL_DRIVE_LETTER_CURDIR
     ULONG TimeStamp;
     STRING DosPath;
 } RTL_DRIVE_LETTER_CURDIR, * PRTL_DRIVE_LETTER_CURDIR;
+
+typedef struct _RTL_DRIVE_LETTER_CURDIR32
+{
+    USHORT Flags;
+    USHORT Length;
+    ULONG TimeStamp;
+    STRING32 DosPath;
+} RTL_DRIVE_LETTER_CURDIR32, * POINTER_32 PRTL_DRIVE_LETTER_CURDIR32;
+
+STATIC_ASSERT(sizeof(RTL_DRIVE_LETTER_CURDIR32) == 16);
 
 #define RTL_MAX_DRIVE_LETTERS 32
 #define RTL_DRIVE_LETTER_VALID (USHORT)0x0001
@@ -4429,6 +4447,59 @@ typedef struct _RTL_USER_PROCESS_PARAMETERS
     ULONG DefaultThreadpoolThreadMaximum;
     ULONG HeapMemoryTypeMask; // WIN11
 } RTL_USER_PROCESS_PARAMETERS, * PRTL_USER_PROCESS_PARAMETERS;
+
+typedef struct _RTL_USER_PROCESS_PARAMETERS32
+{
+    ULONG MaximumLength;
+    ULONG Length;
+
+    ULONG Flags;
+    ULONG DebugFlags;
+
+    HANDLE32 ConsoleHandle;
+    ULONG ConsoleFlags;
+    HANDLE32 StandardInput;
+    HANDLE32 StandardOutput;
+    HANDLE32 StandardError;
+
+    CURDIR32 CurrentDirectory;
+    UNICODE_STRING32 DllPath;
+    UNICODE_STRING32 ImagePathName;
+    UNICODE_STRING32 CommandLine;
+    PVOID32 Environment;
+
+    ULONG StartingX;
+    ULONG StartingY;
+    ULONG CountX;
+    ULONG CountY;
+    ULONG CountCharsX;
+    ULONG CountCharsY;
+    ULONG FillAttribute;
+
+    ULONG WindowFlags;
+    ULONG ShowWindowFlags;
+    UNICODE_STRING32 WindowTitle;
+    UNICODE_STRING32 DesktopInfo;
+    UNICODE_STRING32 ShellInfo;
+    UNICODE_STRING32 RuntimeData;
+    RTL_DRIVE_LETTER_CURDIR32 CurrentDirectories[RTL_MAX_DRIVE_LETTERS];
+
+    ULONG_PTR32 EnvironmentSize;
+    ULONG_PTR32 EnvironmentVersion;
+
+    PVOID32 PackageDependencyData;
+    ULONG ProcessGroupId;
+    ULONG LoaderThreads;
+
+    UNICODE_STRING32 RedirectionDllName; // REDSTONE4
+    UNICODE_STRING32 HeapPartitionName; // 19H1
+    ULONG_PTR32 DefaultThreadpoolCpuSetMasks;
+    ULONG DefaultThreadpoolCpuSetMaskCount;
+    ULONG DefaultThreadpoolThreadMaximum;
+    ULONG HeapMemoryTypeMask; // WIN11
+} RTL_USER_PROCESS_PARAMETERS32, * POINTER_32 PRTL_USER_PROCESS_PARAMETERS32;
+
+STATIC_ASSERT(sizeof(RTL_USER_PROCESS_PARAMETERS32) == 708);
 
 #define RTL_USER_PROC_PARAMS_NORMALIZED     0x00000001
 #define RTL_USER_PROC_PROFILE_USER          0x00000002

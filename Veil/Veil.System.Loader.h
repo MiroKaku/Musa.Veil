@@ -64,11 +64,26 @@ typedef struct _LDR_SERVICE_TAG_RECORD
     ULONG ServiceTag;
 } LDR_SERVICE_TAG_RECORD, * PLDR_SERVICE_TAG_RECORD;
 
+typedef struct _LDR_SERVICE_TAG_RECORD32
+{
+    struct _LDR_SERVICE_TAG_RECORD32* POINTER_32 Next;
+    ULONG ServiceTag;
+} LDR_SERVICE_TAG_RECORD32, * POINTER_32 PLDR_SERVICE_TAG_RECORD32;
+
+STATIC_ASSERT(sizeof(LDR_SERVICE_TAG_RECORD32) == 8);
+
 // symbols
 typedef struct _LDRP_CSLIST
 {
     PSINGLE_LIST_ENTRY Tail;
 } LDRP_CSLIST, * PLDRP_CSLIST;
+
+typedef struct _LDRP_CSLIST32
+{
+    struct _SINGLE_LIST_ENTRY32* POINTER_32 Tail;
+} LDRP_CSLIST32, * POINTER_32 PLDRP_CSLIST32;
+
+STATIC_ASSERT(sizeof(LDRP_CSLIST32) == 4);
 
 // symbols
 typedef enum _LDR_DDAG_STATE
@@ -108,6 +123,26 @@ typedef struct _LDR_DDAG_NODE
     SINGLE_LIST_ENTRY CondenseLink;
     ULONG PreorderNumber;
 } LDR_DDAG_NODE, * PLDR_DDAG_NODE;
+
+typedef struct _LDR_DDAG_NODE32
+{
+    LIST_ENTRY32 Modules;
+    PLDR_SERVICE_TAG_RECORD32 ServiceTagList;
+    ULONG LoadCount;
+    ULONG LoadWhileUnloadingCount;
+    ULONG LowestLink;
+    union
+    {
+        LDRP_CSLIST32 Dependencies;
+        SINGLE_LIST_ENTRY32 RemovalLink;
+    };
+    LDRP_CSLIST32 IncomingDependencies;
+    LDR_DDAG_STATE State;
+    SINGLE_LIST_ENTRY32 CondenseLink;
+    ULONG PreorderNumber;
+} LDR_DDAG_NODE32, * POINTER_32 PLDR_DDAG_NODE32;
+
+STATIC_ASSERT(sizeof(LDR_DDAG_NODE32) == 44);
 
 // rev
 typedef struct _LDR_DEPENDENCY_RECORD
@@ -261,6 +296,85 @@ typedef struct _LDR_DATA_TABLE_ENTRY
 #define LDR_DATAFILE_TO_MAPPEDVIEW(DllHandle) ((PVOID)(((ULONG_PTR)(DllHandle)) & ~(ULONG_PTR)1))
 #define LDR_IMAGEMAPPING_TO_MAPPEDVIEW(DllHandle) ((PVOID)(((ULONG_PTR)(DllHandle)) & ~(ULONG_PTR)2))
 #define LDR_IS_RESOURCE(DllHandle) (LDR_IS_IMAGEMAPPING(DllHandle) || LDR_IS_DATAFILE(DllHandle))
+
+typedef struct _LDR_DATA_TABLE_ENTRY32
+{
+    LIST_ENTRY32 InLoadOrderLinks;
+    LIST_ENTRY32 InMemoryOrderLinks;
+    union
+    {
+        LIST_ENTRY32 InInitializationOrderLinks;
+        LIST_ENTRY32 InProgressLinks;
+    };
+    PVOID32 DllBase;
+    PVOID32 /*PLDR_INIT_ROUTINE*/ EntryPoint;
+    ULONG SizeOfImage;
+    UNICODE_STRING32 FullDllName;
+    UNICODE_STRING32 BaseDllName;
+    union
+    {
+        UCHAR FlagGroup[4];
+        ULONG Flags;
+        struct
+        {
+            ULONG PackagedBinary : 1;
+            ULONG MarkedForRemoval : 1;
+            ULONG ImageDll : 1;
+            ULONG LoadNotificationsSent : 1;
+            ULONG TelemetryEntryProcessed : 1;
+            ULONG ProcessStaticImport : 1;
+            ULONG InLegacyLists : 1;
+            ULONG InIndexes : 1;
+            ULONG ShimDll : 1;
+            ULONG InExceptionTable : 1;
+            ULONG ReservedFlags1 : 2;
+            ULONG LoadInProgress : 1;
+            ULONG LoadConfigProcessed : 1;
+            ULONG EntryProcessed : 1;
+            ULONG ProtectDelayLoad : 1;
+            ULONG ReservedFlags3 : 2;
+            ULONG DontCallForThreads : 1;
+            ULONG ProcessAttachCalled : 1;
+            ULONG ProcessAttachFailed : 1;
+            ULONG CorDeferredValidate : 1;
+            ULONG CorImage : 1;
+            ULONG DontRelocate : 1;
+            ULONG CorILOnly : 1;
+            ULONG ChpeImage : 1;
+            ULONG ChpeEmulatorImage : 1;
+            ULONG ReservedFlags5 : 1;
+            ULONG Redirected : 1;
+            ULONG ReservedFlags6 : 2;
+            ULONG CompatDatabaseProcessed : 1;
+        };
+    };
+    USHORT ObsoleteLoadCount;
+    USHORT TlsIndex;
+    LIST_ENTRY32 HashLinks;
+    ULONG TimeDateStamp;
+    struct _ACTIVATION_CONTEXT* POINTER_32 EntryPointActivationContext;
+    PVOID32 Lock; // RtlAcquireSRWLockExclusive
+    PLDR_DDAG_NODE32 DdagNode;
+    LIST_ENTRY32 NodeModuleLink;
+    struct _LDRP_LOAD_CONTEXT* POINTER_32 LoadContext;
+    PVOID32 ParentDllBase;
+    PVOID32 SwitchBackContext;
+    RTL_BALANCED_NODE32 BaseAddressIndexNode;
+    RTL_BALANCED_NODE32 MappingInfoIndexNode;
+    ULONG_PTR32 OriginalBase;
+    LARGE_INTEGER LoadTime;
+    ULONG BaseNameHashValue;
+    LDR_DLL_LOAD_REASON LoadReason; // since WIN8
+    ULONG ImplicitPathOptions;
+    ULONG ReferenceCount; // since WIN10
+    ULONG DependentLoadFlags;
+    UCHAR SigningLevel; // since REDSTONE2
+    ULONG CheckSum; // since 22H1
+    PVOID32 ActivePatchImageBase;
+    LDR_HOT_PATCH_STATE HotPatchState;
+} LDR_DATA_TABLE_ENTRY32, * POINTER_32 PLDR_DATA_TABLE_ENTRY32;
+
+STATIC_ASSERT(sizeof(LDR_DATA_TABLE_ENTRY32) == 184);
 
 #ifndef _KERNEL_MODE
 NTSYSAPI
@@ -667,6 +781,23 @@ typedef struct _PS_MITIGATION_AUDIT_OPTIONS_MAP
 {
     ULONG_PTR Map[3]; // 2 < 20H1
 } PS_MITIGATION_AUDIT_OPTIONS_MAP, * PPS_MITIGATION_AUDIT_OPTIONS_MAP;
+
+// private
+typedef enum _WOW64_SHARED_INFORMATION
+{
+    SharedNtdll32LdrInitializeThunk,
+    SharedNtdll32KiUserExceptionDispatcher,
+    SharedNtdll32KiUserApcDispatcher,
+    SharedNtdll32KiUserCallbackDispatcher,
+    SharedNtdll32ExpInterlockedPopEntrySListFault,
+    SharedNtdll32ExpInterlockedPopEntrySListResume,
+    SharedNtdll32ExpInterlockedPopEntrySListEnd,
+    SharedNtdll32RtlUserThreadStart,
+    SharedNtdll32pQueryProcessDebugInformationRemote,
+    SharedNtdll32BaseAddress,
+    SharedNtdll32LdrSystemDllInitBlock,
+    Wow64SharedPageEntriesCount
+} WOW64_SHARED_INFORMATION;
 
 // private
 typedef struct _PS_SYSTEM_DLL_INIT_BLOCK

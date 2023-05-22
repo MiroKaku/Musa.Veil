@@ -104,6 +104,40 @@ VEIL_BEGIN()
 #define STATIC_ASSERT(expr) typedef char __static_assert_t[ (expr) ]
 #endif
 
+typedef void* POINTER_32    PVOID32;
+typedef int                 INT_PTR32;
+typedef unsigned int        UINT_PTR32;
+typedef long                LONG_PTR32;
+typedef unsigned long       ULONG_PTR32;
+
+typedef short               HALF_PTR32, * POINTER_32 PHALF_PTR32;
+typedef unsigned short      UHALF_PTR32, * POINTER_32 PUHALF_PTR32;
+typedef long                SHANDLE_PTR32;
+typedef unsigned long       HANDLE_PTR32;
+
+typedef ULONG_PTR32 SIZE_T32, * POINTER_32 PSIZE_T32;
+typedef LONG_PTR32 SSIZE_T32, * POINTER_32 PSSIZE_T32;
+
+#ifdef STRICT
+typedef void* POINTER_32 HANDLE32;
+#if 0 && (_MSC_VER > 1000)
+#define DECLARE_HANDLE32(name) struct name##__; typedef struct name##__ * POINTER_32 name
+#else
+#define DECLARE_HANDLE32(name) struct name##__{int unused;}; typedef struct name##__ * POINTER_32 name
+#endif
+#else
+typedef PVOID32 HANDLE32;
+#define DECLARE_HANDLE32(name) typedef HANDLE32 name
+#endif
+typedef HANDLE32* POINTER_32 PHANDLE32;
+
+//
+// Legacy thread affinity.
+//
+
+typedef ULONG_PTR32 KAFFINITY32;
+typedef KAFFINITY32* POINTER_32 PKAFFINITY32;
+
 //
 // RC Resource
 //
@@ -542,6 +576,11 @@ typedef struct _RTL_BALANCED_NODE {
     ((PRTL_BALANCED_NODE)((Node)->ParentValue & \
                           ~RTL_BALANCED_NODE_RESERVED_PARENT_MASK))
 
+typedef struct _SINGLE_LIST_ENTRY32
+{
+    ULONG Next;
+} SINGLE_LIST_ENTRY32, * POINTER_32 PSINGLE_LIST_ENTRY32;
+
 typedef struct _RTL_RB_TREE
 {
     PRTL_BALANCED_NODE Root;
@@ -750,6 +789,36 @@ typedef PSTRING PUTF8_STRING;
 #endif
 
 typedef USHORT RTL_ATOM, * PRTL_ATOM;
+
+typedef struct _RTL_BALANCED_NODE32
+{
+    union
+    {
+        struct _RTL_BALANCED_NODE32* POINTER_32 Children[2];
+        struct
+        {
+            struct _RTL_BALANCED_NODE32* POINTER_32 Left;
+            struct _RTL_BALANCED_NODE32* POINTER_32 Right;
+        } DUMMYSTRUCTNAME;
+    } DUMMYUNIONNAME;
+
+    union
+    {
+        UCHAR Red : 1;
+        UCHAR Balance : 2;
+        ULONG_PTR32 ParentValue;
+    } DUMMYUNIONNAME2;
+} RTL_BALANCED_NODE32, * POINTER_32 PRTL_BALANCED_NODE32;
+
+STATIC_ASSERT(sizeof(RTL_BALANCED_NODE32) == 12);
+
+typedef struct _RTL_RB_TREE32
+{
+    PRTL_BALANCED_NODE32 Root;
+    PRTL_BALANCED_NODE32 Min;
+} RTL_RB_TREE32, * POINTER_32 PRTL_RB_TREE32;
+
+STATIC_ASSERT(sizeof(RTL_RB_TREE32) == 8);
 
 #ifdef _KERNEL_MODE
 
