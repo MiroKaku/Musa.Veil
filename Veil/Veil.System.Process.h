@@ -32,6 +32,7 @@
  */
 
 #pragma once
+#include "Veil.System.SxS.h"
 
 // Warnings which disabled for compiling
 #if _MSC_VER >= 1200
@@ -141,16 +142,6 @@ typedef struct _RTL_USER_PROCESS_PARAMETERS* PRTL_USER_PROCESS_PARAMETERS;
 typedef struct _RTL_CRITICAL_SECTION* PRTL_CRITICAL_SECTION;
 
 // private
-typedef struct _ACTIVATION_CONTEXT_STACK
-{
-    struct _RTL_ACTIVATION_CONTEXT_STACK_FRAME* ActiveFrame;
-    LIST_ENTRY FrameListCache;
-    ULONG Flags;
-    ULONG NextCookieSequenceNumber;
-    ULONG StackId;
-} ACTIVATION_CONTEXT_STACK, * PACTIVATION_CONTEXT_STACK;
-
-// private
 typedef struct _API_SET_NAMESPACE
 {
     ULONG Version;
@@ -252,7 +243,7 @@ typedef struct _PEB
     ULONG TlsBitmapBits[2];
 
     PVOID ReadOnlySharedMemoryBase;
-    PVOID SharedData; // HotpatchInformation
+    struct _SILO_USER_SHARED_DATA* SharedData; // HotpatchInformation
     PVOID* ReadOnlyStaticServerData;
 
     PVOID AnsiCodePageData; // PCPTABLEINFO
@@ -272,7 +263,7 @@ typedef struct _PEB
     ULONG MaximumNumberOfHeaps;
     PVOID* ProcessHeaps; // PHEAP
 
-    PVOID GdiSharedHandleTable;
+    PVOID GdiSharedHandleTable; // PGDI_SHARED_MEMORY
     PVOID ProcessStarterHelper;
     ULONG GdiDCAttributeList;
 
@@ -302,10 +293,10 @@ typedef struct _PEB
 
     UNICODE_STRING CSDVersion;
 
-    PVOID ActivationContextData; // ACTIVATION_CONTEXT_DATA
-    PVOID ProcessAssemblyStorageMap; // ASSEMBLY_STORAGE_MAP
-    PVOID SystemDefaultActivationContextData; // ACTIVATION_CONTEXT_DATA
-    PVOID SystemAssemblyStorageMap; // ASSEMBLY_STORAGE_MAP
+    PACTIVATION_CONTEXT_DATA ActivationContextData;
+    PASSEMBLY_STORAGE_MAP ProcessAssemblyStorageMap;
+    PACTIVATION_CONTEXT_DATA SystemDefaultActivationContextData;
+    PASSEMBLY_STORAGE_MAP SystemAssemblyStorageMap;
 
     SIZE_T MinimumStackCommit;
 
@@ -512,7 +503,7 @@ typedef struct _TEB
 
     ULONG GuaranteedStackBytes;
     PVOID ReservedForPerf;
-    PVOID ReservedForOle;
+    PVOID ReservedForOle; // tagSOleTlsData
     ULONG WaitingOnLoaderLock;
     PVOID SavedPriorityState;
     ULONG_PTR ReservedForCodeCoverage;
@@ -639,7 +630,7 @@ typedef enum _PROCESSINFOCLASS
     ProcessMemoryAllocationMode, // qs: PROCESS_MEMORY_ALLOCATION_MODE
     ProcessGroupInformation, // q: USHORT[]
     ProcessTokenVirtualizationEnabled, // s: ULONG
-    ProcessConsoleHostProcess, // q: ULONG_PTR // ProcessOwnerInformation
+    ProcessConsoleHostProcess, // qs: ULONG_PTR // ProcessOwnerInformation
     ProcessWindowInformation, // q: PROCESS_WINDOW_INFORMATION // 50
     ProcessHandleInformation, // q: PROCESS_HANDLE_SNAPSHOT_INFORMATION // since WIN8
     ProcessMitigationPolicy, // s: PROCESS_MITIGATION_POLICY_INFORMATION
@@ -647,7 +638,7 @@ typedef enum _PROCESSINFOCLASS
     ProcessHandleCheckingMode, // qs: ULONG; s: 0 disables, otherwise enables
     ProcessKeepAliveCount, // q: PROCESS_KEEPALIVE_COUNT_INFORMATION
     ProcessRevokeFileHandles, // s: PROCESS_REVOKE_FILE_HANDLES_INFORMATION
-    ProcessWorkingSetControl, // s: PROCESS_WORKING_SET_CONTROL
+    ProcessWorkingSetControl, // s: PROCESS_WORKING_SET_CONTROL (requires SeDebugPrivilege)
     ProcessHandleTable, // q: ULONG[] // since WINBLUE
     ProcessCheckStackExtentsMode, // qs: ULONG // KPROCESS->CheckStackExtents (CFG)
     ProcessCommandLineInformation, // q: UNICODE_STRING // 60
@@ -672,7 +663,7 @@ typedef enum _PROCESSINFOCLASS
     ProcessWin32kSyscallFilterInformation, // q: WIN32K_SYSCALL_FILTER
     ProcessDisableSystemAllowedCpuSets, // 80
     ProcessWakeInformation, // PROCESS_WAKE_INFORMATION
-    ProcessEnergyTrackingState, // PROCESS_ENERGY_TRACKING_STATE
+    ProcessEnergyTrackingState, // qs: PROCESS_ENERGY_TRACKING_STATE
     ProcessManageWritesToExecutableMemory, // MANAGE_WRITES_TO_EXECUTABLE_MEMORY // since REDSTONE3
     ProcessCaptureTrustletLiveDump,
     ProcessTelemetryCoverage,
@@ -690,16 +681,16 @@ typedef enum _PROCESSINFOCLASS
     ProcessLeapSecondInformation, // PROCESS_LEAP_SECOND_INFORMATION
     ProcessFiberShadowStackAllocation, // PROCESS_FIBER_SHADOW_STACK_ALLOCATION_INFORMATION // since 19H1
     ProcessFreeFiberShadowStackAllocation, // PROCESS_FREE_FIBER_SHADOW_STACK_ALLOCATION_INFORMATION
-    ProcessAltSystemCallInformation, // qs: BOOLEAN (kernel-mode only) // INT2E // since 20H1 // 100
+    ProcessAltSystemCallInformation, // since 20H1 // 100
     ProcessDynamicEHContinuationTargets, // PROCESS_DYNAMIC_EH_CONTINUATION_TARGETS_INFORMATION
     ProcessDynamicEnforcedCetCompatibleRanges, // PROCESS_DYNAMIC_ENFORCED_ADDRESS_RANGE_INFORMATION // since 20H2
     ProcessCreateStateChange, // since WIN11
     ProcessApplyStateChange,
-    ProcessEnableOptionalXStateFeatures,
+    ProcessEnableOptionalXStateFeatures, // ULONG64 // optional XState feature bitmask
     ProcessAltPrefetchParam, // since 22H1
     ProcessAssignCpuPartitions,
     ProcessPriorityClassEx, // s: PROCESS_PRIORITY_CLASS_EX
-    ProcessMembershipInformation,
+    ProcessMembershipInformation, // PROCESS_MEMBERSHIP_INFORMATION
     ProcessEffectiveIoPriority, // q: IO_PRIORITY_HINT
     ProcessEffectivePagePriority, // q: ULONG
     MaxProcessInfoClass
@@ -740,7 +731,7 @@ typedef enum _THREADINFOCLASS
     ThreadTebInformation, // q: THREAD_TEB_INFORMATION (requires THREAD_GET_CONTEXT + THREAD_SET_CONTEXT)
     ThreadCSwitchMon,
     ThreadCSwitchPmu,
-    ThreadWow64Context, // qs: WOW64_CONTEXT
+    ThreadWow64Context, // qs: WOW64_CONTEX, ARM_NT_CONTEXT since 20H1
     ThreadGroupInformation, // qs: GROUP_AFFINITY // 30
     ThreadUmsInformation, // q: THREAD_UMS_INFORMATION
     ThreadCounterProfiling, // q: BOOLEAN; s: THREAD_PROFILING_INFORMATION?
@@ -1224,6 +1215,10 @@ typedef struct _PROCESS_MITIGATION_POLICY_INFORMATION
         PROCESS_MITIGATION_REDIRECTION_TRUST_POLICY RedirectionTrustPolicy;
 #endif // NTDDI_VERSION >= NTDDI_WIN10_MN
 
+#if (NTDDI_VERSION >= NTDDI_WIN11_NI)
+        PROCESS_MITIGATION_USER_POINTER_AUTH_POLICY UserPointerAuthPolicy;
+        PROCESS_MITIGATION_SEHOP_POLICY SEHOPPolicy;
+#endif // NTDDI_VERSION >= NTDDI_WIN10_MN
     };
 } PROCESS_MITIGATION_POLICY_INFORMATION, * PPROCESS_MITIGATION_POLICY_INFORMATION;
 
@@ -1556,7 +1551,30 @@ typedef struct _PROCESS_FREE_FIBER_SHADOW_STACK_ALLOCATION_INFORMATION
 //    PPROCESS_DYNAMIC_ENFORCED_ADDRESS_RANGE Ranges;
 //} PROCESS_DYNAMIC_ENFORCED_ADDRESS_RANGES_INFORMATION, *PPROCESS_DYNAMIC_ENFORCED_ADDRESS_RANGES_INFORMATION;
 
+#ifndef _KERNEL_MODE
+// private
+typedef struct _PROCESS_MEMBERSHIP_INFORMATION
+{
+    ULONG ServerSiloId;
+} PROCESS_MEMBERSHIP_INFORMATION, * PPROCESS_MEMBERSHIP_INFORMATION;
+#endif
+
 // end_private
+
+__kernel_entry NTSYSCALLAPI
+NTSTATUS
+NTAPI
+NtQueryPortInformationProcess(
+    VOID
+);
+
+_IRQL_requires_max_(PASSIVE_LEVEL)
+NTSYSAPI
+NTSTATUS
+NTAPI
+ZwQueryPortInformationProcess(
+    VOID
+);
 
 //
 // Thread information structures
@@ -2608,9 +2626,16 @@ ZwQueueApcThreadEx(
 #if (NTDDI_VERSION >= NTDDI_WIN10_CO)
 
 #ifdef _KERNEL_MODE
-typedef enum _QUEUE_USER_APC_FLAGS {
-    QUEUE_USER_APC_FLAGS_NONE = 0x0,
-    QUEUE_USER_APC_FLAGS_SPECIAL_USER_APC = 0x1,
+typedef enum _QUEUE_USER_APC_FLAGS
+{
+    QUEUE_USER_APC_FLAGS_NONE = 0x00000000,
+    QUEUE_USER_APC_FLAGS_SPECIAL_USER_APC = 0x00000001,
+
+    //
+    // Used for requesting additional callback data.
+    //
+
+    QUEUE_USER_APC_CALLBACK_DATA_CONTEXT = 0x00010000,
 } QUEUE_USER_APC_FLAGS;
 #endif // !_KERNEL_MODE
 
@@ -3317,13 +3342,13 @@ ZwCreateUserProcess(
 #endif
 
 // begin_rev
+#define THREAD_CREATE_FLAGS_NONE                    0x00000000
 #define THREAD_CREATE_FLAGS_CREATE_SUSPENDED        0x00000001 // NtCreateUserProcess & NtCreateThreadEx
 #define THREAD_CREATE_FLAGS_SKIP_THREAD_ATTACH      0x00000002 // NtCreateThreadEx only
 #define THREAD_CREATE_FLAGS_HIDE_FROM_DEBUGGER      0x00000004 // NtCreateThreadEx only
 #define THREAD_CREATE_FLAGS_LOADER_WORKER           0x00000010 // NtCreateThreadEx only
 #define THREAD_CREATE_FLAGS_SKIP_LOADER_INIT        0x00000020 // NtCreateThreadEx only
 #define THREAD_CREATE_FLAGS_BYPASS_PROCESS_FREEZE   0x00000040 // NtCreateThreadEx only
-#define THREAD_CREATE_FLAGS_INITIAL_THREAD          0x00000080 // ?
 // end_rev
 
 #if (NTDDI_VERSION >= NTDDI_VISTA)
@@ -3570,15 +3595,20 @@ typedef struct _JOBOBJECT_MEMORY_USAGE_INFORMATION_V2
 //
 typedef struct _SILO_USER_SHARED_DATA
 {
-    ULONG64 ServiceSessionId;
+    ULONG ServiceSessionId;
     ULONG ActiveConsoleId;
     LONGLONG ConsoleSessionForegroundProcessId;
     NT_PRODUCT_TYPE NtProductType;
     ULONG SuiteMask;
-    ULONG SharedUserSessionId;
+    ULONG SharedUserSessionId; // since RS2
     BOOLEAN IsMultiSessionSku;
     WCHAR NtSystemRoot[260];
     USHORT UserModeGlobalLogger[16];
+    ULONG TimeZoneId; // since 21H2
+    LONG TimeZoneBiasStamp;
+    KSYSTEM_TIME TimeZoneBias;
+    LARGE_INTEGER TimeZoneBiasEffectiveStart;
+    LARGE_INTEGER TimeZoneBiasEffectiveEnd;
 } SILO_USER_SHARED_DATA, * PSILO_USER_SHARED_DATA;
 #endif // WDK_NTDDI_VERSION != NTDDI_WIN10_RS1
 

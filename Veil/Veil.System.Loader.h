@@ -455,7 +455,7 @@ NTSTATUS
 NTAPI
 LdrUnlockLoaderLock(
     _In_ ULONG Flags,
-    _Inout_ PVOID Cookie
+    _In_opt_ PVOID Cookie
 );
 
 NTSYSAPI
@@ -490,6 +490,19 @@ LdrProcessRelocationBlock(
     _In_ PUSHORT NextOffset,
     _In_ LONG_PTR Diff
 );
+
+#if (NTDDI_VERSION >= NTDDI_WIN8)
+NTSYSAPI
+PIMAGE_BASE_RELOCATION
+NTAPI
+LdrProcessRelocationBlockEx(
+    _In_ ULONG Machine, // IMAGE_FILE_MACHINE_AMD64|IMAGE_FILE_MACHINE_ARM|IMAGE_FILE_MACHINE_THUMB|IMAGE_FILE_MACHINE_ARMNT
+    _In_ ULONG_PTR VA,
+    _In_ ULONG SizeOfBlock,
+    _In_ PUSHORT NextOffset,
+    _In_ LONG_PTR Diff
+);
+#endif
 
 NTSYSAPI
 BOOLEAN
@@ -701,7 +714,7 @@ LdrAddLoadAsDataTable(
     _In_ PWSTR FilePath,
     _In_ SIZE_T Size,
     _In_ HANDLE Handle,
-    _In_opt_ HANDLE ActCtx
+    _In_opt_ struct _ACTIVATION_CONTEXT* ActCtx
 );
 
 // private
@@ -1205,11 +1218,24 @@ typedef PVOID(NTAPI* PDELAYLOAD_FAILURE_DLL_CALLBACK)(
 // rev
 typedef PVOID(NTAPI* PDELAYLOAD_FAILURE_SYSTEM_ROUTINE)(
     _In_ PCSTR DllName,
-    _In_ PCSTR ProcName
+    _In_ PCSTR ProcedureName
     );
 
+#if (NTDDI_VERSION >= NTDDI_WIN10)
+// rev from QueryOptionalDelayLoadedAPI
+NTSYSAPI
+NTSTATUS
+NTAPI
+LdrQueryOptionalDelayLoadedAPI(
+    _In_ PVOID ParentModuleBase,
+    _In_ PCSTR DllName,
+    _In_ PCSTR ProcedureName,
+    _Reserved_ ULONG Flags
+);
+#endif
+
 #if (NTDDI_VERSION >= NTDDI_WIN8)
-// rev
+// rev from ResolveDelayLoadedAPI
 NTSYSAPI
 PVOID
 NTAPI
@@ -1222,22 +1248,39 @@ LdrResolveDelayLoadedAPI(
     _Reserved_ ULONG Flags
 );
 
-// rev
+// rev from ResolveDelayLoadsFromDll
 NTSYSAPI
 NTSTATUS
 NTAPI
 LdrResolveDelayLoadsFromDll(
-    _In_ PVOID ParentBase,
+    _In_ PVOID ParentModuleBase,
     _In_ PCSTR TargetDllName,
     _Reserved_ ULONG Flags
 );
 
-// rev
+// rev from SetDefaultDllDirectories
 NTSYSAPI
 NTSTATUS
 NTAPI
 LdrSetDefaultDllDirectories(
     _In_ ULONG DirectoryFlags
+);
+
+// rev from AddDllDirectory
+NTSYSAPI
+NTSTATUS
+NTAPI
+LdrAddDllDirectory(
+    _In_ PUNICODE_STRING NewDirectory,
+    _Out_ PDLL_DIRECTORY_COOKIE Cookie
+);
+
+// rev from RemoveDllDirectory
+NTSYSAPI
+NTSTATUS
+NTAPI
+LdrRemoveDllDirectory(
+    _In_ DLL_DIRECTORY_COOKIE Cookie
 );
 #endif // (NTDDI_VERSION >= NTDDI_WIN8)
 
@@ -1286,6 +1329,17 @@ LdrIsModuleSxsRedirected(
     _In_ PVOID DllHandle
 );
 #endif
+
+#if (NTDDI_VERSION >= NTDDI_WINTHRESHOLD)
+// rev
+NTSYSAPI
+NTSTATUS
+NTAPI
+LdrUpdatePackageSearchPath(
+    _In_ PWSTR SearchPath
+);
+#endif
+
 #endif // _KERNEL_MODE
 
 //

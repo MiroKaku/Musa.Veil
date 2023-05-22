@@ -100,6 +100,10 @@ VEIL_BEGIN()
         ((((ULONG_PTR) (_pointer)) & ((_alignment) - 1)) == 0)
 #endif
 
+#ifndef STATIC_ASSERT
+#define STATIC_ASSERT(expr) typedef char __static_assert_t[ (expr) ]
+#endif
+
 //
 // RC Resource
 //
@@ -248,7 +252,8 @@ typedef CONST SCHAR* PCSCHAR;
 
 #endif // _WIN32_WINNT >= 0x0600
 
-typedef GUID*   PGUID;
+typedef GUID* PGUID;
+typedef const GUID * PCGUID;
 
 typedef char    CCHAR;  // winnt
 typedef short   CSHORT;

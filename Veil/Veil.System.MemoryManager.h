@@ -126,15 +126,15 @@ VEIL_BEGIN()
 #ifndef _KERNEL_MODE
 typedef enum _MEMORY_INFORMATION_CLASS
 {
-    MemoryBasicInformation,                 // MEMORY_BASIC_INFORMATION
-    MemoryWorkingSetInformation,            // MEMORY_WORKING_SET_INFORMATION
-    MemoryMappedFileNameInformation,        // UNICODE_STRING
-    MemoryRegionInformation,                // MEMORY_REGION_INFORMATION
-    MemoryWorkingSetExInformation,          // MEMORY_WORKING_SET_EX_INFORMATION // since VISTA
-    MemorySharedCommitInformation,          // MEMORY_SHARED_COMMIT_INFORMATION // since WIN8
-    MemoryImageInformation,                 // MEMORY_IMAGE_INFORMATION
+    MemoryBasicInformation,                 // q: MEMORY_BASIC_INFORMATION
+    MemoryWorkingSetInformation,            // q: MEMORY_WORKING_SET_INFORMATION
+    MemoryMappedFilenameInformation,        // q: UNICODE_STRING
+    MemoryRegionInformation,                // q: MEMORY_REGION_INFORMATION
+    MemoryWorkingSetExInformation,          // q: MEMORY_WORKING_SET_EX_INFORMATION // since VISTA
+    MemorySharedCommitInformation,          // q: MEMORY_SHARED_COMMIT_INFORMATION // since WIN8
+    MemoryImageInformation,                 // q: MEMORY_IMAGE_INFORMATION
     MemoryRegionInformationEx,              // MEMORY_REGION_INFORMATION
-    MemoryPrivilegedBasicInformation,
+    MemoryPrivilegedBasicInformation,       // MEMORY_BASIC_INFORMATION
     MemoryEnclaveImageInformation,          // MEMORY_ENCLAVE_IMAGE_INFORMATION // since REDSTONE3
     MemoryBasicInformationCapped,           // 10
     MemoryPhysicalContiguityInformation,    // MEMORY_PHYSICAL_CONTIGUITY_INFORMATION // since 20H1
@@ -1209,7 +1209,7 @@ NtMapViewOfSectionEx(
     _Inout_ PSIZE_T ViewSize,
     _In_ ULONG AllocationType,
     _In_ ULONG Win32Protect,
-    _Inout_updates_opt_(ParameterCount) PMEM_EXTENDED_PARAMETER ExtendedParameters,
+    _Inout_updates_opt_(ExtendedParameterCount) PMEM_EXTENDED_PARAMETER ExtendedParameters,
     _In_ ULONG ExtendedParameterCount
 );
 
@@ -1227,7 +1227,7 @@ ZwMapViewOfSectionEx(
     _Inout_ PSIZE_T ViewSize,
     _In_ ULONG AllocationType,
     _In_ ULONG Win32Protect,
-    _Inout_updates_opt_(ParameterCount) PMEM_EXTENDED_PARAMETER ExtendedParameters,
+    _Inout_updates_opt_(ExtendedParameterCount) PMEM_EXTENDED_PARAMETER ExtendedParameters,
     _In_ ULONG ExtendedParameterCount
 );
 #endif // NTDDI_VERSION >= NTDDI_WIN10_RS4

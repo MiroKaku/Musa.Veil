@@ -203,6 +203,10 @@
 #define  nullptr NULL
 #endif
 
+#ifndef ENABLE_RTL_NUMBER_OF_V2
+#define ENABLE_RTL_NUMBER_OF_V2
+#endif
+
 #if !defined(_KERNEL_MODE) && !defined(__KERNEL_MODE)
 
 //

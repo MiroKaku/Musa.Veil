@@ -78,7 +78,7 @@ typedef struct _KEY_BASIC_INFORMATION
     LARGE_INTEGER LastWriteTime;
     ULONG TitleIndex;
     ULONG NameLength;
-    WCHAR Name[1];
+    _Field_size_bytes_(NameLength) WCHAR Name[1];
 } KEY_BASIC_INFORMATION, * PKEY_BASIC_INFORMATION;
 
 typedef struct _KEY_NODE_INFORMATION
@@ -88,30 +88,30 @@ typedef struct _KEY_NODE_INFORMATION
     ULONG ClassOffset;
     ULONG ClassLength;
     ULONG NameLength;
-    WCHAR Name[1];
+    _Field_size_bytes_(NameLength) WCHAR Name[1];
     // ...
-    // WCHAR Class[1];
+    // _Field_size_bytes_(ClassLength) WCHAR Class[1];
 } KEY_NODE_INFORMATION, * PKEY_NODE_INFORMATION;
 
 typedef struct _KEY_FULL_INFORMATION
 {
     LARGE_INTEGER LastWriteTime;
-    ULONG TitleIndex;
-    ULONG ClassOffset;
-    ULONG ClassLength;
-    ULONG SubKeys;
-    ULONG MaxNameLen;
-    ULONG MaxClassLen;
-    ULONG Values;
-    ULONG MaxValueNameLen;
-    ULONG MaxValueDataLen;
-    WCHAR Class[1];
+    ULONG   TitleIndex;
+    ULONG   ClassOffset;
+    ULONG   ClassLength;
+    ULONG   SubKeys;
+    ULONG   MaxNameLen;
+    ULONG   MaxClassLen;
+    ULONG   Values;
+    ULONG   MaxValueNameLen;
+    ULONG   MaxValueDataLen;
+    _Field_size_bytes_(ClassLength) WCHAR   Class[1];           // Variable length
 } KEY_FULL_INFORMATION, * PKEY_FULL_INFORMATION;
 
 typedef struct _KEY_NAME_INFORMATION
 {
     ULONG NameLength;
-    WCHAR Name[1];
+    _Field_size_bytes_(NameLength) WCHAR Name[1];
 } KEY_NAME_INFORMATION, * PKEY_NAME_INFORMATION;
 
 typedef struct _KEY_CACHED_INFORMATION
@@ -124,7 +124,7 @@ typedef struct _KEY_CACHED_INFORMATION
     ULONG MaxValueNameLen;
     ULONG MaxValueDataLen;
     ULONG NameLength;
-    WCHAR Name[1];
+    _Field_size_bytes_(NameLength) WCHAR Name[1];
 } KEY_CACHED_INFORMATION, * PKEY_CACHED_INFORMATION;
 #endif //!_KERNEL_MODE
 
@@ -749,7 +749,7 @@ __kernel_entry NTSYSCALLAPI
 NTSTATUS
 NTAPI
 NtCompressKey(
-    _In_ HANDLE Key
+    _In_ HANDLE KeyHandle
 );
 
 _IRQL_requires_max_(PASSIVE_LEVEL)
@@ -757,7 +757,7 @@ NTSYSAPI
 NTSTATUS
 NTAPI
 ZwCompressKey(
-    _In_ HANDLE Key
+    _In_ HANDLE KeyHandle
 );
 
 __kernel_entry NTSYSCALLAPI
