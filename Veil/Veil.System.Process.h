@@ -499,7 +499,7 @@ typedef struct _PEB32
     UNICODE_STRING32 CSDVersion;
 
     struct _ACTIVATION_CONTEXT_DATA* POINTER_32 ActivationContextData;
-    struct ASSEMBLY_STORAGE_MAP32* POINTER_32 ProcessAssemblyStorageMap;
+    struct _ASSEMBLY_STORAGE_MAP32* POINTER_32 ProcessAssemblyStorageMap;
     struct _ACTIVATION_CONTEXT_DATA* POINTER_32 SystemDefaultActivationContextData;
     struct _ASSEMBLY_STORAGE_MAP32* POINTER_32 SystemAssemblyStorageMap;
 
