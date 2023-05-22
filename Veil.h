@@ -239,8 +239,11 @@ struct IUnknown;
 
 #include "Veil/Veil.C.stdint.h"
 
+#pragma warning(push)
+#pragma warning(disable:4324) // structure was padded due to __declspec(align())
 #include <fltKernel.h>
 #include <ntimage.h>
+#pragma warning(pop)
 
 #endif // if defined(_KERNEL_MODE)
 
