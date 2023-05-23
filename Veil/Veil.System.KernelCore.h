@@ -290,10 +290,6 @@ typedef VOID (*PKRUNDOWN_ROUTINE) (
     _In_ struct _KAPC* Apc
     );
 
-typedef BOOLEAN (*PKSYNCHRONIZE_ROUTINE) (
-    _In_ PVOID SynchronizeContext
-    );
-
 typedef BOOLEAN (*PKTRANSFER_ROUTINE)(VOID);
 
 NTSYSAPI

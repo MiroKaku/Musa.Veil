@@ -556,4 +556,4 @@ VEIL_END()
 #pragma warning(pop)
 #endif
 
-#include "Veil/Veil.System.Device.Xusb.h"
+#include "Veil.System.Device.Xusb.h"

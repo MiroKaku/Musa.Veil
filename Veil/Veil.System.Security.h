@@ -1305,6 +1305,7 @@ LsaGetLogonSessionData(
 );
 
 FORCEINLINE
+_IRQL_requires_same_
 NTSTATUS
 NTAPI
 LsaFreeReturnBuffer(
