@@ -317,7 +317,7 @@ typedef struct _REG_NOTIFY_INFORMATION
     ULONG NextEntryOffset;
     REG_ACTION Action;
     ULONG KeyLength;
-    WCHAR Key[1];
+    _Field_size_bytes_(KeyLength) WCHAR Key[1];
 } REG_NOTIFY_INFORMATION, * PREG_NOTIFY_INFORMATION;
 
 typedef struct _KEY_PID_ARRAY
@@ -733,7 +733,7 @@ NTSTATUS
 NTAPI
 NtCompactKeys(
     _In_ ULONG Count,
-    _In_reads_(Count) HANDLE KeyArray[]
+    _In_reads_(Count) HANDLE* KeyArray
 );
 
 _IRQL_requires_max_(PASSIVE_LEVEL)
@@ -742,7 +742,7 @@ NTSTATUS
 NTAPI
 ZwCompactKeys(
     _In_ ULONG Count,
-    _In_reads_(Count) HANDLE KeyArray[]
+    _In_reads_(Count) HANDLE* KeyArray
 );
 
 __kernel_entry NTSYSCALLAPI
@@ -1044,7 +1044,7 @@ NTAPI
 NtNotifyChangeMultipleKeys(
     _In_ HANDLE MasterKeyHandle,
     _In_opt_ ULONG Count,
-    _In_reads_opt_(Count) OBJECT_ATTRIBUTES SubordinateObjects[],
+    _In_reads_opt_(Count) OBJECT_ATTRIBUTES* SubordinateObjects,
     _In_opt_ HANDLE Event,
     _In_opt_ PIO_APC_ROUTINE ApcRoutine,
     _In_opt_ PVOID ApcContext,
@@ -1063,7 +1063,7 @@ NTAPI
 ZwNotifyChangeMultipleKeys(
     _In_ HANDLE MasterKeyHandle,
     _In_opt_ ULONG Count,
-    _In_reads_opt_(Count) OBJECT_ATTRIBUTES SubordinateObjects[],
+    _In_reads_opt_(Count) OBJECT_ATTRIBUTES* SubordinateObjects,
     _In_opt_ HANDLE Event,
     _In_opt_ PIO_APC_ROUTINE ApcRoutine,
     _In_opt_ PVOID ApcContext,

@@ -213,7 +213,7 @@ ZwCallbackReturn(
 
 #if (NTDDI_VERSION >= NTDDI_VISTA)
 __kernel_entry NTSYSCALLAPI
-VOID
+NTSTATUS
 NTAPI
 NtFlushProcessWriteBuffers(
     VOID
@@ -221,7 +221,7 @@ NtFlushProcessWriteBuffers(
 
 _IRQL_requires_max_(PASSIVE_LEVEL)
 NTSYSAPI
-VOID
+NTSTATUS
 NTAPI
 ZwFlushProcessWriteBuffers(
     VOID

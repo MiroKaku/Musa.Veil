@@ -1305,7 +1305,7 @@ NTAPI
 NtAlpcImpersonateClientOfPort(
     _In_ HANDLE PortHandle,
     _In_ PPORT_MESSAGE Message,
-    _In_ PVOID Flags
+    _In_ ULONG Flags
 );
 
 _IRQL_requires_max_(PASSIVE_LEVEL)
@@ -1315,7 +1315,7 @@ NTAPI
 ZwAlpcImpersonateClientOfPort(
     _In_ HANDLE PortHandle,
     _In_ PPORT_MESSAGE Message,
-    _In_ PVOID Flags
+    _In_ ULONG Flags
 );
 
 #if (NTDDI_VERSION >= NTDDI_WIN10)

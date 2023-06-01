@@ -283,3 +283,7 @@ struct IUnknown;
 #include "Veil/Veil.System.VirtualDesktop.h"
 #include "Veil/Veil.System.Win32.h"
 #include "Veil/Veil.System.Device.h"
+#include "Veil/Veil.System.PNP.h"
+#include "Veil/Veil.System.TransactionManager.h"
+#include "Veil/Veil.System.VDM.h"
+#include "Veil/Veil.System.Prefetcher.h"

@@ -194,7 +194,7 @@ __kernel_entry NTSYSCALLAPI
 NTSTATUS
 NTAPI
 NtEnumerateSystemEnvironmentValuesEx(
-    _In_ ULONG InformationClass, // SYSTEM_ENVIRONMENT_INFORMATION_CLASS
+    _In_ SYSTEM_ENVIRONMENT_INFORMATION_CLASS InformationClass,
     _Out_ PVOID Buffer,
     _Inout_ PULONG BufferLength
 );
@@ -204,7 +204,7 @@ NTSYSAPI
 NTSTATUS
 NTAPI
 ZwEnumerateSystemEnvironmentValuesEx(
-    _In_ ULONG InformationClass, // SYSTEM_ENVIRONMENT_INFORMATION_CLASS
+    _In_ SYSTEM_ENVIRONMENT_INFORMATION_CLASS InformationClass,
     _Out_ PVOID Buffer,
     _Inout_ PULONG BufferLength
 );
@@ -2085,10 +2085,22 @@ typedef struct _WORKER_FACTORY_DEFERRED_WORK
     ULONG Flags;
 } WORKER_FACTORY_DEFERRED_WORK, * PWORKER_FACTORY_DEFERRED_WORK;
 
-NTSYSCALLAPI
+__kernel_entry NTSYSCALLAPI
 NTSTATUS
 NTAPI
 NtWaitForWorkViaWorkerFactory(
+    _In_ HANDLE WorkerFactoryHandle,
+    _Out_writes_to_(Count, *PacketsReturned) struct _FILE_IO_COMPLETION_INFORMATION* MiniPackets,
+    _In_ ULONG Count,
+    _Out_ PULONG PacketsReturned,
+    _In_ struct _WORKER_FACTORY_DEFERRED_WORK* DeferredWork
+);
+
+_IRQL_requires_max_(PASSIVE_LEVEL)
+NTSYSAPI
+NTSTATUS
+NTAPI
+ZwWaitForWorkViaWorkerFactory(
     _In_ HANDLE WorkerFactoryHandle,
     _Out_writes_to_(Count, *PacketsReturned) struct _FILE_IO_COMPLETION_INFORMATION* MiniPackets,
     _In_ ULONG Count,

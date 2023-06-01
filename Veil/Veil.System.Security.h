@@ -856,7 +856,7 @@ ZwAccessCheckByTypeResultList(
 // Signing
 //
 
-#if (NTDDI_VERSION >= NTDDI_WIN10_RS2)
+#if (NTDDI_VERSION >= NTDDI_WIN8)
 __kernel_entry NTSYSCALLAPI
 NTSTATUS
 NTAPI
@@ -879,6 +879,47 @@ ZwSetCachedSigningLevel(
     _In_ ULONG SourceFileCount,
     _In_opt_ HANDLE TargetFile
 );
+
+#if (NTDDI_VERSION >= NTDDI_WIN10_RS1)
+typedef struct _SE_FILE_CACHE_CLAIM_INFORMATION
+{
+    ULONG Size;
+    PVOID Claim;
+} SE_FILE_CACHE_CLAIM_INFORMATION, *PSE_FILE_CACHE_CLAIM_INFORMATION;
+
+typedef struct _SE_SET_FILE_CACHE_INFORMATION
+{
+    ULONG Size;
+    UNICODE_STRING CatalogDirectoryPath;
+    SE_FILE_CACHE_CLAIM_INFORMATION OriginClaimInfo;
+
+} SE_SET_FILE_CACHE_INFORMATION, *PSE_SET_FILE_CACHE_INFORMATION;
+
+__kernel_entry NTSYSCALLAPI
+NTSTATUS
+NTAPI
+NtSetCachedSigningLevel2(
+    _In_ ULONG Flags,
+    _In_ SE_SIGNING_LEVEL InputSigningLevel,
+    _In_reads_(SourceFileCount) PHANDLE SourceFiles,
+    _In_ ULONG SourceFileCount,
+    _In_opt_ HANDLE TargetFile,
+    _In_opt_ SE_SET_FILE_CACHE_INFORMATION* CacheInformation
+);
+
+_IRQL_requires_max_(PASSIVE_LEVEL)
+NTSYSAPI
+NTSTATUS
+NTAPI
+ZwSetCachedSigningLevel2(
+    _In_ ULONG Flags,
+    _In_ SE_SIGNING_LEVEL InputSigningLevel,
+    _In_reads_(SourceFileCount) PHANDLE SourceFiles,
+    _In_ ULONG SourceFileCount,
+    _In_opt_ HANDLE TargetFile,
+    _In_opt_ SE_SET_FILE_CACHE_INFORMATION* CacheInformation
+);
+#endif // (NTDDI_VERSION >= NTDDI_WIN10_RS1)
 
 __kernel_entry NTSYSCALLAPI
 NTSTATUS
@@ -923,7 +964,7 @@ ZwCompareSigningLevels(
     _In_ SE_SIGNING_LEVEL FirstSigningLevel,
     _In_ SE_SIGNING_LEVEL SecondSigningLevel
 );
-#endif // NTDDI_VERSION >= NTDDI_WIN10_RS2
+#endif // NTDDI_VERSION >= NTDDI_WIN8
 
 //
 // Audit alarm
