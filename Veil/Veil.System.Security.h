@@ -945,7 +945,9 @@ ZwGetCachedSigningLevel(
     _Inout_opt_ PULONG ThumbprintSize,
     _Out_opt_ PULONG ThumbprintAlgorithm
 );
+#endif // NTDDI_VERSION >= NTDDI_WIN8
 
+#if (NTDDI_VERSION >= NTDDI_WIN10_RS2)
 // rev
 __kernel_entry NTSYSCALLAPI
 NTSTATUS
@@ -964,7 +966,7 @@ ZwCompareSigningLevels(
     _In_ SE_SIGNING_LEVEL FirstSigningLevel,
     _In_ SE_SIGNING_LEVEL SecondSigningLevel
 );
-#endif // NTDDI_VERSION >= NTDDI_WIN8
+#endif // NTDDI_VERSION >= NTDDI_WIN10_RS2
 
 //
 // Audit alarm
