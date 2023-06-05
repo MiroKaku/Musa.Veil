@@ -4192,7 +4192,6 @@ typedef enum _MEMORY_RESERVE_TYPE
     MemoryReserveTypeMax
 } MEMORY_RESERVE_TYPE;
 
-#if (NTDDI_VERSION >= NTDDI_WIN7)
 __kernel_entry NTSYSCALLAPI
 NTSTATUS
 NTAPI
@@ -4211,7 +4210,6 @@ ZwAllocateReserveObject(
     _In_ POBJECT_ATTRIBUTES ObjectAttributes,
     _In_ MEMORY_RESERVE_TYPE Type
 );
-#endif
 
 // Process snapshotting
 
@@ -4229,6 +4227,43 @@ PssNtCaptureSnapshot(
 );
 #endif
 #endif // !_KERNEL_MODE
+
+#if (NTDDI_VERSION >= NTDDI_WIN10_VB)
+// rev
+#define MEMORY_BULK_INFORMATION_FLAG_BASIC 0x00000001
+
+// rev
+typedef struct _NTPSS_MEMORY_BULK_INFORMATION
+{
+    ULONG QueryFlags;
+    ULONG NumberOfEntries;
+    PVOID NextValidAddress;
+} NTPSS_MEMORY_BULK_INFORMATION, * PNTPSS_MEMORY_BULK_INFORMATION;
+
+// rev
+__kernel_entry NTSYSCALLAPI
+NTSTATUS
+NTAPI
+NtPssCaptureVaSpaceBulk(
+    _In_ HANDLE ProcessHandle,
+    _In_opt_ PVOID BaseAddress,
+    _In_ PNTPSS_MEMORY_BULK_INFORMATION BulkInformation,
+    _In_ SIZE_T BulkInformationLength,
+    _Out_opt_ PSIZE_T ReturnLength
+);
+
+_IRQL_requires_max_(PASSIVE_LEVEL)
+NTSYSAPI
+NTSTATUS
+NTAPI
+ZwPssCaptureVaSpaceBulk(
+    _In_ HANDLE ProcessHandle,
+    _In_opt_ PVOID BaseAddress,
+    _In_ PNTPSS_MEMORY_BULK_INFORMATION BulkInformation,
+    _In_ SIZE_T BulkInformationLength,
+    _Out_opt_ PSIZE_T ReturnLength
+);
+#endif // NTDDI_VERSION >= NTDDI_WIN10_VB
 
 #ifdef _KERNEL_MODE
 
