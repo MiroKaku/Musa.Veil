@@ -270,6 +270,7 @@ struct IUnknown;
 #if __has_include(<Windows.h>)
 #define  _NTOS_
 #define  _DEVIOCTL_
+#define  _WINTERNL_
 #include "Veil/Veil.System.WinNT.h"
 #include <Windows.h>
 #endif
