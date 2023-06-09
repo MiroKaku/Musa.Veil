@@ -164,7 +164,7 @@ typedef const LARGE_UNICODE_STRING* PCLARGE_UNICODE_STRING;
 
 // Win32k
 
-#if defined(_KERNEL_MODE)
+#if defined(_KERNEL_MODE) && !defined(_WINDOWS_)
 
 typedef LRESULT(CALLBACK* WNDPROC)(HWND, UINT, WPARAM, LPARAM);
 
@@ -413,7 +413,7 @@ NtUserGetAtomName(
     _Inout_ PUNICODE_STRING AtomName
 );
 
-#if defined(_KERNEL_MODE)
+#if defined(_KERNEL_MODE) && !defined(_WINDOWS_)
 typedef struct tagPAINTSTRUCT {
     HDC         hdc;
     BOOL        fErase;
@@ -440,7 +440,7 @@ NtUserEndPaint(
     _In_  const PAINTSTRUCT* Paint
 );
 
-#if defined(_KERNEL_MODE)
+#if defined(_KERNEL_MODE) && !defined(_WINDOWS_)
 typedef struct tagRAWINPUTDEVICELIST
 {
     HANDLE hDevice;
@@ -463,7 +463,7 @@ UINT NTAPI NtUserGetRawInputDeviceInfo(
     _Inout_ PUINT Size
 );
 
-#if defined(_KERNEL_MODE)
+#if defined(_KERNEL_MODE) && !defined(_WINDOWS_)
 typedef struct tagRAWINPUTDEVICE
 {
     USHORT usUsagePage; // Toplevel collection UsagePage

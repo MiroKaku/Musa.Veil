@@ -33,6 +33,9 @@
 
 #pragma once
 
+#ifndef _VEIL_
+#define _VEIL_
+
 #ifdef __cplusplus
 #ifdef VEIL_USE_SEPARATE_NAMESPACE
 #define VEIL_BEGIN() namespace Veil { extern "C" {
@@ -252,6 +255,10 @@ struct IUnknown;
 // Kernel-Mode
 //
 
+#ifndef UNICODE
+#define UNICODE 1
+#endif
+
 #include "Veil/Veil.C.stdint.h"
 
 #pragma warning(push)
@@ -259,6 +266,13 @@ struct IUnknown;
 #include <fltKernel.h>
 #include <ntimage.h>
 #pragma warning(pop)
+
+#if __has_include(<Windows.h>)
+#define  _NTOS_
+#define  _DEVIOCTL_
+#include "Veil/Veil.System.WinNT.h"
+#include <Windows.h>
+#endif
 
 #endif // if defined(_KERNEL_MODE)
 
@@ -287,3 +301,5 @@ struct IUnknown;
 #include "Veil/Veil.System.TransactionManager.h"
 #include "Veil/Veil.System.VDM.h"
 #include "Veil/Veil.System.Prefetcher.h"
+
+#endif // _VEIL_

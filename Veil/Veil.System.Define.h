@@ -147,8 +147,11 @@ typedef KAFFINITY32* POINTER_32 PKAFFINITY32;
 #define IS_INTRESOURCE(_r)  ((((ULONG_PTR)(_r)) >> 16) == 0)
 #define MAKEINTRESOURCEA(i) ((LPSTR)((ULONG_PTR)((WORD)(i))))
 #define MAKEINTRESOURCEW(i) ((LPWSTR)((ULONG_PTR)((WORD)(i))))
-
-#define MAKEINTRESOURCE     MAKEINTRESOURCEW
+#ifdef UNICODE
+#define MAKEINTRESOURCE  MAKEINTRESOURCEW
+#else
+#define MAKEINTRESOURCE  MAKEINTRESOURCEA
+#endif // !UNICODE
 
 #ifndef NORESOURCE
 
@@ -820,7 +823,7 @@ typedef struct _RTL_RB_TREE32
 
 STATIC_ASSERT(sizeof(RTL_RB_TREE32) == 8);
 
-#ifdef _KERNEL_MODE
+#if defined(_KERNEL_MODE) && !defined(_WINDOWS_)
 
 //
 // Critical Section

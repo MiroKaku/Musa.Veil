@@ -2998,7 +2998,7 @@ ZwQueueApcThreadEx(
 
 #if (NTDDI_VERSION >= NTDDI_WIN10_CO)
 
-#ifdef _KERNEL_MODE
+#if defined(_KERNEL_MODE) && !defined(_WINDOWS_)
 typedef enum _QUEUE_USER_APC_FLAGS
 {
     QUEUE_USER_APC_FLAGS_NONE = 0x00000000,
@@ -3092,7 +3092,7 @@ ZwWaitForAlertByThreadId(
 #define PS_ATTRIBUTE_INPUT          0x00020000 // input only
 #define PS_ATTRIBUTE_ADDITIVE       0x00040000 // "accumulated" e.g. bitmasks, counters, etc.
 
-#ifdef _KERNEL_MODE
+#if defined(_KERNEL_MODE) && !defined(_WINDOWS_)
 typedef enum _PROC_THREAD_ATTRIBUTE_NUM {
     ProcThreadAttributeParentProcess                = 0,
     ProcThreadAttributeExtendedFlags                = 1,
@@ -3764,7 +3764,7 @@ ZwCreateThreadEx(
 //
 // Job objects
 //
-#ifdef _KERNEL_MODE
+#if defined(_KERNEL_MODE) && !defined(_WINDOWS_)
 typedef enum _JOBOBJECTINFOCLASS
 {
     JobObjectBasicAccountingInformation, // JOBOBJECT_BASIC_ACCOUNTING_INFORMATION
@@ -4135,7 +4135,7 @@ ZwSetInformationJobObject(
     _In_ ULONG JobObjectInformationLength
 );
 
-#ifdef _KERNEL_MODE
+#if defined(_KERNEL_MODE) && !defined(_WINDOWS_)
 typedef struct _JOB_SET_ARRAY
 {
     HANDLE JobHandle;   // Handle to job object to insert

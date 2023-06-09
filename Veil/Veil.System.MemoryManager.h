@@ -922,7 +922,7 @@ typedef struct _MEMORY_RANGE_ENTRY
 
 #if (NTDDI_VERSION >= NTDDI_WIN10_RS2)
 
-#ifdef _KERNEL_MODE
+#if defined(_KERNEL_MODE) && !defined(_WINDOWS_)
 
 //
 // Define flags for setting process CFG valid call target entries.

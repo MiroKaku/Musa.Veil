@@ -10197,7 +10197,7 @@ RtlValidAcl(
     _In_ PACL Acl
 );
 
-#ifdef _KERNEL_MODE
+#if defined(_KERNEL_MODE) && !defined(_WINDOWS_)
 
 //
 // Currently define Flags for "OBJECT" ACE types.

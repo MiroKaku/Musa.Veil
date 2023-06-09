@@ -881,7 +881,7 @@ LdrDisableThreadCalloutsForDll(
 // Resources
 //
 
-#ifdef _KERNEL_MODE
+#if defined(_KERNEL_MODE) && !defined(_WINDOWS_)
 #include "Veil.System.VersionResource.h"
 #endif
 
