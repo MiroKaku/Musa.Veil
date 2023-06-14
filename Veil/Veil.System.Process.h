@@ -2284,17 +2284,25 @@ ZwResumeProcess(
 );
 
 #ifndef _KERNEL_MODE
-#define NtCurrentProcess()  ((HANDLE)(LONG_PTR)-1)
-#define ZwCurrentProcess()  NtCurrentProcess()
+#define NtCurrentProcess()      ((HANDLE)(LONG_PTR)-1)
+#define ZwCurrentProcess()      NtCurrentProcess()
 
-#define NtCurrentThread()   ((HANDLE)(LONG_PTR)-2)
-#define ZwCurrentThread()   NtCurrentThread()
+#define NtCurrentThread()       ((HANDLE)(LONG_PTR)-2)
+#define ZwCurrentThread()       NtCurrentThread()
 
-#define NtCurrentSession()  ((HANDLE)(LONG_PTR)-3)
-#define ZwCurrentSession()  NtCurrentSession()
+#define NtCurrentSession()      ((HANDLE)(LONG_PTR)-3)
+#define ZwCurrentSession()      NtCurrentSession()
+
+#define NtCurrentPeb()          (NtCurrentTeb()->ProcessEnvironmentBlock)
+#define ZwCurrentPeb()          NtCurrentPeb()
+
+// Not NT, but useful.
+#define NtCurrentProcessId()    (NtCurrentTeb()->ClientId.UniqueProcess)
+#define ZwCurrentProcessId()    NtCurrentProcessId()
+#define NtCurrentThreadId()     (NtCurrentTeb()->ClientId.UniqueThread)
+#define ZwCurrentThreadId()     NtCurrentThreadId()
+
 #endif // !_KERNEL_MODE
-
-#define NtCurrentPeb()      (NtCurrentTeb()->ProcessEnvironmentBlock)
 
 // Windows 8 and above
 #define NtCurrentProcessToken()         ((HANDLE)(LONG_PTR)-4) // NtOpenProcessToken(NtCurrentProcess())
@@ -2302,10 +2310,6 @@ ZwResumeProcess(
 #define NtCurrentThreadEffectiveToken() ((HANDLE)(LONG_PTR)-6) // NtOpenThreadToken(NtCurrentThread()) + NtOpenProcessToken(NtCurrentProcess())
 
 #define NtCurrentSilo() ( (HANDLE)(LONG_PTR) -1 )
-
-// Not NT, but useful.
-#define NtCurrentProcessId()            (NtCurrentTeb()->ClientId.UniqueProcess)
-#define NtCurrentThreadId()             (NtCurrentTeb()->ClientId.UniqueThread)
 
 __kernel_entry NTSYSCALLAPI
 NTSTATUS

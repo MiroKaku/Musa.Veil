@@ -180,6 +180,15 @@ typedef struct _HEAP_OPTIMIZE_RESOURCES_INFORMATION
 #endif
 
 //
+// DLL
+//
+
+#define DLL_PROCESS_ATTACH   1    
+#define DLL_THREAD_ATTACH    2    
+#define DLL_THREAD_DETACH    3    
+#define DLL_PROCESS_DETACH   0    
+
+//
 // Thread Context
 //
 
@@ -953,6 +962,14 @@ typedef struct _PERFORMANCE_DATA
 
 #define READ_THREAD_PROFILING_FLAG_DISPATCHING        0x00000001
 #define READ_THREAD_PROFILING_FLAG_HARDWARE_COUNTERS  0x00000002
+
+//
+// Timezone
+//
+
+#define TIME_ZONE_ID_UNKNOWN  0
+#define TIME_ZONE_ID_STANDARD 1
+#define TIME_ZONE_ID_DAYLIGHT 2
 
 
 VEIL_END()

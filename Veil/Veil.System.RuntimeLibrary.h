@@ -5069,15 +5069,62 @@ RtlRemoveVectoredContinueHandler(
 #endif // !_KERNEL_MODE
 
 //
+// Scope table structure definition.
+//
+
+#if defined(_KERNEL_MODE)
+typedef struct _SCOPE_TABLE_ARM
+{
+    DWORD Count;
+    struct
+    {
+        DWORD BeginAddress;
+        DWORD EndAddress;
+        DWORD HandlerAddress;
+        DWORD JumpTarget;
+    } ScopeRecord[1];
+} SCOPE_TABLE_ARM, * PSCOPE_TABLE_ARM;
+
+typedef struct _SCOPE_TABLE_ARM64
+{
+    DWORD Count;
+    struct
+    {
+        DWORD BeginAddress;
+        DWORD EndAddress;
+        DWORD HandlerAddress;
+        DWORD JumpTarget;
+    } ScopeRecord[1];
+} SCOPE_TABLE_ARM64, * PSCOPE_TABLE_ARM64;
+
+typedef struct _SCOPE_TABLE_AMD64
+{
+    DWORD Count;
+    struct
+    {
+        DWORD BeginAddress;
+        DWORD EndAddress;
+        DWORD HandlerAddress;
+        DWORD JumpTarget;
+    } ScopeRecord[1];
+} SCOPE_TABLE_AMD64, * PSCOPE_TABLE_AMD64;
+#endif // _KERNEL_MODE
+
+//
 // Runtime exception handling
 //
 
+typedef struct _IMAGE_ARM64_RUNTIME_FUNCTION_ENTRY ARM64_RUNTIME_FUNCTION, * PARM64_RUNTIME_FUNCTION;
+
 #if defined(_ARM_)
 typedef struct _IMAGE_ARM_RUNTIME_FUNCTION_ENTRY RUNTIME_FUNCTION, * PRUNTIME_FUNCTION;
+typedef struct _SCOPE_TABLE_ARM SCOPE_TABLE, * PSCOPE_TABLE;
 #elif defined(_ARM64_)
 typedef struct _IMAGE_ARM64_RUNTIME_FUNCTION_ENTRY RUNTIME_FUNCTION, * PRUNTIME_FUNCTION;
+typedef struct _SCOPE_TABLE_ARM64 SCOPE_TABLE, * PSCOPE_TABLE;
 #elif defined(_AMD64_)
 typedef struct _IMAGE_RUNTIME_FUNCTION_ENTRY RUNTIME_FUNCTION, * PRUNTIME_FUNCTION;
+typedef struct _SCOPE_TABLE_AMD64 SCOPE_TABLE, * PSCOPE_TABLE;
 #endif
 
 #ifndef _KERNEL_MODE
@@ -7116,9 +7163,9 @@ RtlProtectHeap(
     _In_ BOOLEAN MakeReadOnly
 );
 
-#endif // !_KERNEL_MODE
-
 #define RtlProcessHeap() (NtCurrentPeb()->ProcessHeap)
+
+#endif // !_KERNEL_MODE
 
 #ifndef _KERNEL_MODE
 
@@ -12333,7 +12380,7 @@ RtlAppxIsFileOwnedByTrustedInstaller(
 #define PSM_ACTIVATION_TOKEN_DEVELOPMENT_APP        0x10
 #define BREAKAWAY_INHIBITED                         0x20
 
-#if defined(_KERNEL_MODE)
+#if defined(_KERNEL_MODE) && !defined(_WINDOWS_)
 // PackageOrigin appmodel.h
 typedef enum PackageOrigin
 {

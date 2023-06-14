@@ -271,6 +271,7 @@ struct IUnknown;
 #define  _NTOS_
 #define  _DEVIOCTL_
 #define  _WINTERNL_
+#define  _NTSECAPI_
 #include "Veil/Veil.System.WinNT.h"
 #include <Windows.h>
 #endif
