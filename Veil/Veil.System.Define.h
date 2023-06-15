@@ -876,6 +876,10 @@ typedef struct _RTL_CRITICAL_SECTION
 } RTL_CRITICAL_SECTION, * PRTL_CRITICAL_SECTION;
 #pragma pack(pop)
 
+//
+// Slim R/W lock.
+//
+
 typedef struct _RTL_SRWLOCK
 {
     PVOID Ptr;
@@ -888,6 +892,19 @@ typedef struct _RTL_CONDITION_VARIABLE
 } RTL_CONDITION_VARIABLE, * PRTL_CONDITION_VARIABLE;
 #define RTL_CONDITION_VARIABLE_INIT {0}
 #define RTL_CONDITION_VARIABLE_LOCKMODE_SHARED  0x1
+
+//
+// Barrier
+//
+
+typedef struct _RTL_BARRIER
+{
+    DWORD Reserved1;
+    DWORD Reserved2;
+    ULONG_PTR Reserved3[2];
+    DWORD Reserved4;
+    DWORD Reserved5;
+} RTL_BARRIER, * PRTL_BARRIER;
 
 #endif // _KERNEL_MODE
 

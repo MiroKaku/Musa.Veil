@@ -948,6 +948,252 @@ typedef struct _WOW64_PROCESS
     PVOID Wow64;
 } WOW64_PROCESS, * PWOW64_PROCESS;
 
+#if defined(_KERNEL_MODE) && !defined(_WINDOWS_)
+
+//
+// Thread Context
+//
+
+#ifndef _LDT_ENTRY_DEFINED
+#define _LDT_ENTRY_DEFINED
+
+typedef struct _LDT_ENTRY
+{
+    WORD    LimitLow;
+    WORD    BaseLow;
+    union
+    {
+        struct
+        {
+            BYTE    BaseMid;
+            BYTE    Flags1;     // Declare as bytes to avoid alignment
+            BYTE    Flags2;     // Problems.
+            BYTE    BaseHi;
+        } Bytes;
+        struct
+        {
+            DWORD   BaseMid : 8;
+            DWORD   Type : 5;
+            DWORD   Dpl : 2;
+            DWORD   Pres : 1;
+            DWORD   LimitHi : 4;
+            DWORD   Sys : 1;
+            DWORD   Reserved_0 : 1;
+            DWORD   Default_Big : 1;
+            DWORD   Granularity : 1;
+            DWORD   BaseHi : 8;
+        } Bits;
+    } HighWord;
+} LDT_ENTRY, * PLDT_ENTRY;
+
+#endif
+
+//
+// WOW64 Thread Context
+//
+
+#if _MSC_VER >= 1200
+#pragma warning(push)
+#pragma warning(disable:4214) // bitfields other than int
+#pragma warning(disable:4668) // #if not_defined treated as #if 0
+#pragma warning(disable:4820) // padding added after data member
+#endif
+
+#if !defined(RC_INVOKED)
+
+#define WOW64_CONTEXT_i386      0x00010000    // this assumes that i386 and
+#define WOW64_CONTEXT_i486      0x00010000    // i486 have identical context records
+
+#define WOW64_CONTEXT_CONTROL               (WOW64_CONTEXT_i386 | 0x00000001L) // SS:SP, CS:IP, FLAGS, BP
+#define WOW64_CONTEXT_INTEGER               (WOW64_CONTEXT_i386 | 0x00000002L) // AX, BX, CX, DX, SI, DI
+#define WOW64_CONTEXT_SEGMENTS              (WOW64_CONTEXT_i386 | 0x00000004L) // DS, ES, FS, GS
+#define WOW64_CONTEXT_FLOATING_POINT        (WOW64_CONTEXT_i386 | 0x00000008L) // 387 state
+#define WOW64_CONTEXT_DEBUG_REGISTERS       (WOW64_CONTEXT_i386 | 0x00000010L) // DB 0-3,6,7
+#define WOW64_CONTEXT_EXTENDED_REGISTERS    (WOW64_CONTEXT_i386 | 0x00000020L) // cpu specific extensions
+
+#define WOW64_CONTEXT_FULL      (WOW64_CONTEXT_CONTROL | WOW64_CONTEXT_INTEGER | WOW64_CONTEXT_SEGMENTS)
+
+#define WOW64_CONTEXT_ALL       (WOW64_CONTEXT_CONTROL | WOW64_CONTEXT_INTEGER | WOW64_CONTEXT_SEGMENTS | \
+                                 WOW64_CONTEXT_FLOATING_POINT | WOW64_CONTEXT_DEBUG_REGISTERS | \
+                                 WOW64_CONTEXT_EXTENDED_REGISTERS)
+
+#define WOW64_CONTEXT_XSTATE                (WOW64_CONTEXT_i386 | 0x00000040L)
+
+#define WOW64_CONTEXT_EXCEPTION_ACTIVE      0x08000000
+#define WOW64_CONTEXT_SERVICE_ACTIVE        0x10000000
+#define WOW64_CONTEXT_EXCEPTION_REQUEST     0x40000000
+#define WOW64_CONTEXT_EXCEPTION_REPORTING   0x80000000
+
+#endif // !defined(RC_INVOKED)
+
+//
+//  Define the size of the 80387 save area, which is in the context frame.
+//
+
+#define WOW64_SIZE_OF_80387_REGISTERS      80
+
+#define WOW64_MAXIMUM_SUPPORTED_EXTENSION     512
+
+typedef struct _WOW64_FLOATING_SAVE_AREA
+{
+    DWORD   ControlWord;
+    DWORD   StatusWord;
+    DWORD   TagWord;
+    DWORD   ErrorOffset;
+    DWORD   ErrorSelector;
+    DWORD   DataOffset;
+    DWORD   DataSelector;
+    BYTE    RegisterArea[WOW64_SIZE_OF_80387_REGISTERS];
+    DWORD   Cr0NpxState;
+} WOW64_FLOATING_SAVE_AREA;
+
+typedef WOW64_FLOATING_SAVE_AREA* PWOW64_FLOATING_SAVE_AREA;
+
+#include "pshpack4.h"
+
+//
+// Context Frame
+//
+//  This frame has a several purposes: 1) it is used as an argument to
+//  NtContinue, 2) is is used to constuct a call frame for APC delivery,
+//  and 3) it is used in the user level thread creation routines.
+//
+//  The layout of the record conforms to a standard call frame.
+//
+
+typedef struct _WOW64_CONTEXT
+{
+
+    //
+    // The flags values within this flag control the contents of
+    // a CONTEXT record.
+    //
+    // If the context record is used as an input parameter, then
+    // for each portion of the context record controlled by a flag
+    // whose value is set, it is assumed that that portion of the
+    // context record contains valid context. If the context record
+    // is being used to modify a threads context, then only that
+    // portion of the threads context will be modified.
+    //
+    // If the context record is used as an IN OUT parameter to capture
+    // the context of a thread, then only those portions of the thread's
+    // context corresponding to set flags will be returned.
+    //
+    // The context record is never used as an OUT only parameter.
+    //
+
+    DWORD ContextFlags;
+
+    //
+    // This section is specified/returned if CONTEXT_DEBUG_REGISTERS is
+    // set in ContextFlags.  Note that CONTEXT_DEBUG_REGISTERS is NOT
+    // included in CONTEXT_FULL.
+    //
+
+    DWORD   Dr0;
+    DWORD   Dr1;
+    DWORD   Dr2;
+    DWORD   Dr3;
+    DWORD   Dr6;
+    DWORD   Dr7;
+
+    //
+    // This section is specified/returned if the
+    // ContextFlags word contians the flag CONTEXT_FLOATING_POINT.
+    //
+
+    WOW64_FLOATING_SAVE_AREA FloatSave;
+
+    //
+    // This section is specified/returned if the
+    // ContextFlags word contians the flag CONTEXT_SEGMENTS.
+    //
+
+    DWORD   SegGs;
+    DWORD   SegFs;
+    DWORD   SegEs;
+    DWORD   SegDs;
+
+    //
+    // This section is specified/returned if the
+    // ContextFlags word contians the flag CONTEXT_INTEGER.
+    //
+
+    DWORD   Edi;
+    DWORD   Esi;
+    DWORD   Ebx;
+    DWORD   Edx;
+    DWORD   Ecx;
+    DWORD   Eax;
+
+    //
+    // This section is specified/returned if the
+    // ContextFlags word contians the flag CONTEXT_CONTROL.
+    //
+
+    DWORD   Ebp;
+    DWORD   Eip;
+    DWORD   SegCs;              // MUST BE SANITIZED
+    DWORD   EFlags;             // MUST BE SANITIZED
+    DWORD   Esp;
+    DWORD   SegSs;
+
+    //
+    // This section is specified/returned if the ContextFlags word
+    // contains the flag CONTEXT_EXTENDED_REGISTERS.
+    // The format and contexts are processor specific
+    //
+
+    BYTE    ExtendedRegisters[WOW64_MAXIMUM_SUPPORTED_EXTENSION];
+
+} WOW64_CONTEXT;
+
+typedef WOW64_CONTEXT* PWOW64_CONTEXT;
+
+#include "poppack.h"
+
+
+typedef struct _WOW64_LDT_ENTRY
+{
+    WORD    LimitLow;
+    WORD    BaseLow;
+    union
+    {
+        struct
+        {
+            BYTE    BaseMid;
+            BYTE    Flags1;     // Declare as bytes to avoid alignment
+            BYTE    Flags2;     // Problems.
+            BYTE    BaseHi;
+        } Bytes;
+        struct
+        {
+            DWORD   BaseMid : 8;
+            DWORD   Type : 5;
+            DWORD   Dpl : 2;
+            DWORD   Pres : 1;
+            DWORD   LimitHi : 4;
+            DWORD   Sys : 1;
+            DWORD   Reserved_0 : 1;
+            DWORD   Default_Big : 1;
+            DWORD   Granularity : 1;
+            DWORD   BaseHi : 8;
+        } Bits;
+    } HighWord;
+} WOW64_LDT_ENTRY, * PWOW64_LDT_ENTRY;
+
+typedef struct _WOW64_DESCRIPTOR_TABLE_ENTRY
+{
+    DWORD Selector;
+    WOW64_LDT_ENTRY Descriptor;
+} WOW64_DESCRIPTOR_TABLE_ENTRY, * PWOW64_DESCRIPTOR_TABLE_ENTRY;
+
+#if _MSC_VER >= 1200
+#pragma warning(pop)
+#endif
+
+#endif // defined(_KERNEL_MODE) && !defined(_WINDOWS_)
+
 #ifndef _KERNEL_MODE
 //
 // Process Information Classes
@@ -1254,40 +1500,6 @@ typedef struct _PROCESS_ACCESS_TOKEN
     HANDLE Thread; // handle to initial/only thread; needs THREAD_QUERY_INFORMATION access
 } PROCESS_ACCESS_TOKEN, * PPROCESS_ACCESS_TOKEN;
 #endif // !_KERNEL_MODE
-
-#ifndef _LDT_ENTRY_DEFINED
-#define _LDT_ENTRY_DEFINED
-typedef struct _LDT_ENTRY
-{
-    USHORT    LimitLow;
-    USHORT    BaseLow;
-    union
-    {
-        struct
-        {
-            UINT8    BaseMid;
-            UINT8    Flags1;     // Declare as bytes to avoid alignment
-            UINT8    Flags2;     // Problems.
-            UINT8    BaseHi;
-        } Bytes;
-
-        struct
-        {
-            UINT32   BaseMid : 8;
-            UINT32   Type : 5;
-            UINT32   Dpl : 2;
-            UINT32   Pres : 1;
-            UINT32   LimitHi : 4;
-            UINT32   Sys : 1;
-            UINT32   Reserved_0 : 1;
-            UINT32   Default_Big : 1;
-            UINT32   Granularity : 1;
-            UINT32   BaseHi : 8;
-        } Bits;
-
-    } HighWord;
-} LDT_ENTRY, * PLDT_ENTRY;
-#endif
 
 typedef struct _PROCESS_LDT_INFORMATION
 {
