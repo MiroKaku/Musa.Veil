@@ -2505,13 +2505,23 @@ ZwResumeProcess(
 #define NtCurrentSession()      ((HANDLE)(LONG_PTR)-3)
 #define ZwCurrentSession()      NtCurrentSession()
 
-#define NtCurrentPeb()          (NtCurrentTeb()->ProcessEnvironmentBlock)
+#ifdef _M_X64
+#define NtCurrentPeb()          ((PEB *)__readgsqword(FIELD_OFFSET(TEB, ProcessEnvironmentBlock)))
+#elif _M_IX86
+#define NtCurrentPeb()          ((PEB *)__readfsdword(FIELD_OFFSET(TEB, ProcessEnvironmentBlock)))
+#endif
 #define ZwCurrentPeb()          NtCurrentPeb()
 
 // Not NT, but useful.
-#define NtCurrentProcessId()    (NtCurrentTeb()->ClientId.UniqueProcess)
+#ifdef _M_X64
+#define NtCurrentProcessId()    ((DWORD)__readgsdword(FIELD_OFFSET(TEB, ClientId.UniqueProcess)))
+#define NtCurrentThreadId()    ((DWORD)__readgsdword(FIELD_OFFSET(TEB, ClientId.UniqueThread)))
+#elif _M_IX86
+#define NtCurrentProcessId()    ((DWORD)__readfsdword(FIELD_OFFSET(TEB, ClientId.UniqueProcess)))
+#define NtCurrentThreadId()    ((DWORD)__readfsdword(FIELD_OFFSET(TEB, ClientId.UniqueThread)))
+#endif
+
 #define ZwCurrentProcessId()    NtCurrentProcessId()
-#define NtCurrentThreadId()     (NtCurrentTeb()->ClientId.UniqueThread)
 #define ZwCurrentThreadId()     NtCurrentThreadId()
 
 #endif // !_KERNEL_MODE
