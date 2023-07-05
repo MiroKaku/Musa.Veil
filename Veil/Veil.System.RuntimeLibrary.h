@@ -8696,6 +8696,17 @@ RtlRandomEx(
     _Inout_ PULONG Seed
 );
 
+#if defined(_KERNEL_MODE) && defined(_WINDOWS_)
+_IRQL_requires_max_(PASSIVE_LEVEL)
+NTSYSAPI
+BOOLEAN
+NTAPI
+RtlGenRandom(
+    _Out_writes_bytes_(RandomBufferLength) PVOID RandomBuffer,
+    _In_ ULONG RandomBufferLength
+);
+#endif
+
 #ifndef _KERNEL_MODE
 
 NTSYSAPI

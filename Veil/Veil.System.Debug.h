@@ -70,6 +70,8 @@ DbgUserBreakPoint(
 );
 #endif // !_KERNEL_MODE
 
+#define DBG_BUFFER_MAX_LENGTH       512u
+
 #define DBG_STATUS_CONTROL_C        1
 #define DBG_STATUS_SYSRQ            2
 #define DBG_STATUS_BUGCHECK_FIRST   3
