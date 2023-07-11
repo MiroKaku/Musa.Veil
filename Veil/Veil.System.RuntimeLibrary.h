@@ -8559,7 +8559,7 @@ RtlNtStatusToDosErrorNoTeb(
     _In_ NTSTATUS Status
 );
 
-#ifndef _KERNEL_MODE
+#if !defined(_KERNEL_MODE) || defined(_WINDOWS_)
 
 NTSYSAPI
 NTSTATUS
@@ -12237,7 +12237,7 @@ RtlGetAppContainerSidType(
 // Fls
 //
 
-#ifndef _KERNEL_MODE
+#if !defined(_KERNEL_MODE) || defined(_WINDOWS_)
 
 NTSYSAPI
 NTSTATUS
