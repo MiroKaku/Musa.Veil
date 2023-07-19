@@ -6251,7 +6251,7 @@ RtlIsZeroMemory(
 // Environment
 //
 
-#ifndef _KERNEL_MODE
+#if !defined(_KERNEL_MODE) || defined(_WINDOWS_)
 
 NTSYSAPI
 NTSTATUS
@@ -6380,7 +6380,7 @@ RtlSetEnvironmentStrings(
 // Directory and path support
 //
 
-#ifndef _KERNEL_MODE
+#if !defined(_KERNEL_MODE) || defined(_WINDOWS_)
 
 typedef struct _RTLP_CURDIR_REF
 {
@@ -6673,6 +6673,7 @@ RtlGetLengthWithoutTrailingPathSeperators(
     _Out_ PULONG Length
 );
 
+#if !defined(_KERNEL_MODE)
 typedef struct _GENERATE_NAME_CONTEXT
 {
     USHORT Checksum;
@@ -6683,6 +6684,7 @@ typedef struct _GENERATE_NAME_CONTEXT
     WCHAR ExtensionBuffer[4];
     ULONG LastIndexValue;
 } GENERATE_NAME_CONTEXT, * PGENERATE_NAME_CONTEXT;
+#endif
 
 // private
 NTSYSAPI

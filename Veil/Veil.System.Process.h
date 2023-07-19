@@ -609,6 +609,18 @@ typedef struct _TEB_ACTIVE_FRAME32
     PTEB_ACTIVE_FRAME_CONTEXT32 Context;
 } TEB_ACTIVE_FRAME32, * POINTER_32 PTEB_ACTIVE_FRAME32;
 
+typedef struct _FLS_DATA
+{
+    LIST_ENTRY  Entry;
+    PVOID       Slots[FLS_MAXIMUM_AVAILABLE];
+} FLS_DATA, * PFLS_DATA;
+
+typedef struct _FLS_DATA32
+{
+    LIST_ENTRY32  Entry;
+    PVOID32       Slots[FLS_MAXIMUM_AVAILABLE];
+} FLS_DATA32, * POINTER_32 PFLS_DATA32;
+
 typedef struct _TEB
 {
     NT_TIB NtTib;
@@ -735,7 +747,7 @@ typedef struct _TEB
     ULONG HeapData;
     HANDLE CurrentTransactionHandle;
     PTEB_ACTIVE_FRAME ActiveFrame;
-    PVOID FlsData;
+    PVOID FlsData;  // PFLS_DATA
 
     PVOID PreferredLanguages;
     PVOID UserPrefLanguages;
