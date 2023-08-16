@@ -259,6 +259,10 @@ struct IUnknown;
 #define UNICODE 1
 #endif
 
+#if __has_include(<Windows.h>)
+#define _UNKNOWN_H_ // fix: Unknownbase.h and unknown.h conflict
+#endif 
+
 #include "Veil/Veil.C.stdint.h"
 
 #pragma warning(push)
