@@ -6419,8 +6419,22 @@ NTSYSAPI UNICODE_STRING RtlNtPathSeperatorString;
 NTSYSAPI
 RTL_PATH_TYPE
 NTAPI
+RtlDetermineDosPathNameType_Ustr(
+    _In_ PCUNICODE_STRING DosFileName
+);
+
+NTSYSAPI
+RTL_PATH_TYPE
+NTAPI
 RtlDetermineDosPathNameType_U(
     _In_ PCWSTR DosFileName
+);
+
+NTSYSAPI
+ULONG
+NTAPI
+RtlIsDosDeviceName_Ustr(
+    _In_ PCUNICODE_STRING DosFileName
 );
 
 NTSYSAPI
@@ -6453,6 +6467,18 @@ RtlGetFullPathName_UEx(
     _Out_opt_ ULONG* BytesRequired
 );
 #endif
+
+NTSYSAPI
+ULONG
+NTAPI
+RtlGetFullPathName_Ustr(
+    _In_ PCUNICODE_STRING FileName,
+    _In_ ULONG BufferLength,
+    _Out_writes_bytes_(BufferLength) PWSTR Buffer,
+    _Out_opt_ PWSTR* FilePart,
+    _Out_opt_ PBOOLEAN NameInvalid,
+    _Out_ RTL_PATH_TYPE* InputPathType
+);
 
 #if (NTDDI_VERSION >= NTDDI_WS03)
 NTSYSAPI
@@ -6822,7 +6848,7 @@ RtlDllShutdownInProgress(
 // Heaps
 //
 
-#ifndef _KERNEL_MODE
+#if !defined(_KERNEL_MODE)
 
 typedef struct _RTL_HEAP_ENTRY
 {
@@ -7155,7 +7181,7 @@ RtlZeroHeap(
     _In_ ULONG Flags
 );
 
-#ifndef _KERNEL_MODE
+#if !defined(_KERNEL_MODE) || defined(_WINDOWS_)
 
 NTSYSAPI
 VOID
@@ -7166,10 +7192,6 @@ RtlProtectHeap(
 );
 
 #define RtlProcessHeap() (NtCurrentPeb()->ProcessHeap)
-
-#endif // !_KERNEL_MODE
-
-#ifndef _KERNEL_MODE
 
 NTSYSAPI
 BOOLEAN
