@@ -32,6 +32,7 @@
  */
 
 #pragma once
+#include <dpfilter.h>
 
 // Warnings which disabled for compiling
 #if _MSC_VER >= 1200
