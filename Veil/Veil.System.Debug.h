@@ -32,7 +32,9 @@
  */
 
 #pragma once
+#ifndef _KERNEL_MODE
 #include <dpfilter.h>
+#endif
 
 // Warnings which disabled for compiling
 #if _MSC_VER >= 1200

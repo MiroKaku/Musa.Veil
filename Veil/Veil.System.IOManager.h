@@ -2138,14 +2138,14 @@ NTSTATUS
 NTAPI
 NtCopyFileChunk(
     _In_ HANDLE SourceHandle,
-    _In_ HANDLE DestinationHandle,
+    _In_ HANDLE DestHandle,
     _In_opt_ HANDLE Event,
     _Out_ PIO_STATUS_BLOCK IoStatusBlock,
     _In_ ULONG Length,
     _In_ PLARGE_INTEGER SourceOffset,
     _In_ PLARGE_INTEGER DestOffset,
-    _In_opt_ PGUID SourceKey,
-    _In_opt_ PGUID DestKey,
+    _In_opt_ PULONG SourceKey,
+    _In_opt_ PULONG DestKey,
     _In_ ULONG Flags
 );
 
@@ -2155,14 +2155,14 @@ NTSTATUS
 NTAPI
 ZwCopyFileChunk(
     _In_ HANDLE SourceHandle,
-    _In_ HANDLE DestinationHandle,
+    _In_ HANDLE DestHandle,
     _In_opt_ HANDLE Event,
     _Out_ PIO_STATUS_BLOCK IoStatusBlock,
     _In_ ULONG Length,
     _In_ PLARGE_INTEGER SourceOffset,
     _In_ PLARGE_INTEGER DestOffset,
-    _In_opt_ PGUID SourceKey,
-    _In_opt_ PGUID DestKey,
+    _In_opt_ PULONG SourceKey,
+    _In_opt_ PULONG DestKey,
     _In_ ULONG Flags
 );
 #endif // (NTDDI_VERSION >= NTDDI_WIN11)
