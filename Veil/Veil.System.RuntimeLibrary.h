@@ -3105,7 +3105,7 @@ NTAPI
 RtlUTF8ToUnicodeN(
     _Out_writes_bytes_to_(UnicodeStringMaxByteCount, *UnicodeStringActualByteCount) PWSTR UnicodeStringDestination,
     _In_ ULONG UnicodeStringMaxByteCount,
-    _Out_opt_ PULONG UnicodeStringActualByteCount,
+    _Out_ PULONG UnicodeStringActualByteCount,
     _In_reads_bytes_(UTF8StringByteCount) PCCH UTF8StringSource,
     _In_ ULONG UTF8StringByteCount
 );
@@ -3118,7 +3118,7 @@ NTAPI
 RtlUnicodeToUTF8N(
     _Out_writes_bytes_to_(UTF8StringMaxByteCount, *UTF8StringActualByteCount) PCHAR UTF8StringDestination,
     _In_ ULONG UTF8StringMaxByteCount,
-    _Out_opt_ PULONG UTF8StringActualByteCount,
+    _Out_ PULONG UTF8StringActualByteCount,
     _In_reads_bytes_(UnicodeStringByteCount) PCWCH UnicodeStringSource,
     _In_ ULONG UnicodeStringByteCount
 );
@@ -3136,7 +3136,7 @@ NTAPI
 RtlUnicodeStringToUTF8String(
     _When_(AllocateDestinationString, _Out_ _At_(DestinationString->Buffer, __drv_allocatesMem(Mem)))
     _When_(!AllocateDestinationString, _Inout_)
-    PUTF8_STRING DestinationString,
+        PUTF8_STRING DestinationString,
     _In_ PCUNICODE_STRING SourceString,
     _In_ BOOLEAN AllocateDestinationString
 );
@@ -3149,7 +3149,7 @@ NTAPI
 RtlUTF8StringToUnicodeString(
     _When_(AllocateDestinationString, _Out_ _At_(DestinationString->Buffer, __drv_allocatesMem(Mem)))
     _When_(!AllocateDestinationString, _Inout_)
-    PUNICODE_STRING DestinationString,
+        PUNICODE_STRING DestinationString,
     _In_ PUTF8_STRING SourceString,
     _In_ BOOLEAN AllocateDestinationString
 );
@@ -6713,6 +6713,7 @@ typedef struct _GENERATE_NAME_CONTEXT
 #endif
 
 // private
+_IRQL_requires_max_(PASSIVE_LEVEL)
 NTSYSAPI
 NTSTATUS
 NTAPI
@@ -7719,7 +7720,7 @@ RtlFlushHeaps(
 // Memory zones
 //
 
-#ifndef _KERNEL_MODE
+#if !defined(_KERNEL_MODE) || defined(_WINDOWS_)
 
 // begin_private
 typedef struct _RTL_MEMORY_ZONE_SEGMENT
@@ -7793,7 +7794,7 @@ RtlUnlockMemoryZone(
 // Memory block lookaside lists
 //
 
-#ifndef _KERNEL_MODE
+#if !defined(_KERNEL_MODE) || defined(_WINDOWS_)
 
 // begin_private
 #if (NTDDI_VERSION >= NTDDI_VISTA)
@@ -8386,7 +8387,7 @@ _VEIL_IMPL_RtlMapResourceId(
                 }
                 else
                 {
-#pragma warning(suppress: 4996)
+                    #pragma warning(suppress: 4996 28751)
                     PWSTR String = (PWSTR)ExAllocatePool(PagedPool, (wcslen(From) + 1) * sizeof(WCHAR));
                     if (String == NULL)
                     {

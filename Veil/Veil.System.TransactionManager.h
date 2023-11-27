@@ -29,6 +29,9 @@
 // 'enumeration': a forward declaration of an unscoped enumeration must have an
 // underlying type (int assumed)
 #pragma warning(disable:4471)
+// Inconsistent annotation for function: parameter has another annotations on
+// this instance
+#pragma warning(disable:28253)
 #endif
 
 
@@ -50,7 +53,7 @@ NtCreateTransactionManager(
 );
 
 _Must_inspect_result_
-_IRQL_requires_max_(APC_LEVEL)
+_IRQL_requires_max_(PASSIVE_LEVEL)
 NTSYSAPI
 NTSTATUS
 NTAPI
@@ -78,7 +81,7 @@ NtOpenTransactionManager(
 );
 
 _Must_inspect_result_
-_IRQL_requires_max_(APC_LEVEL)
+_IRQL_requires_max_(PASSIVE_LEVEL)
 NTSYSAPI
 NTSTATUS
 NTAPI
@@ -102,7 +105,7 @@ NtRenameTransactionManager(
 );
 
 _Must_inspect_result_
-_IRQL_requires_max_(APC_LEVEL)
+_IRQL_requires_max_(PASSIVE_LEVEL)
 NTSYSAPI
 NTSTATUS
 NTAPI
@@ -122,7 +125,7 @@ NtRollforwardTransactionManager(
 );
 
 _Must_inspect_result_
-_IRQL_requires_max_(APC_LEVEL)
+_IRQL_requires_max_(PASSIVE_LEVEL)
 NTSYSAPI
 NTSTATUS
 NTAPI
@@ -141,7 +144,7 @@ NtRecoverTransactionManager(
 );
 
 _Must_inspect_result_
-_IRQL_requires_max_(APC_LEVEL)
+_IRQL_requires_max_(PASSIVE_LEVEL)
 NTSYSAPI
 NTSTATUS
 NTAPI
@@ -163,7 +166,7 @@ NtQueryInformationTransactionManager(
 );
 
 _Must_inspect_result_
-_IRQL_requires_max_(APC_LEVEL)
+_IRQL_requires_max_(PASSIVE_LEVEL)
 NTSYSAPI
 NTSTATUS
 NTAPI
@@ -172,7 +175,7 @@ ZwQueryInformationTransactionManager(
     _In_ TRANSACTIONMANAGER_INFORMATION_CLASS TransactionManagerInformationClass,
     _Out_writes_bytes_(TransactionManagerInformationLength) PVOID TransactionManagerInformation,
     _In_ ULONG TransactionManagerInformationLength,
-    _Out_ PULONG ReturnLength
+    _Out_opt_ PULONG ReturnLength
 );
 
 _Must_inspect_result_
@@ -188,12 +191,12 @@ NtSetInformationTransactionManager(
 );
 
 _Must_inspect_result_
-_IRQL_requires_max_(APC_LEVEL)
+_IRQL_requires_max_(PASSIVE_LEVEL)
 NTSYSAPI
 NTSTATUS
 NTAPI
 ZwSetInformationTransactionManager(
-    _In_opt_ HANDLE TmHandle,
+    _In_ HANDLE TmHandle,
     _In_ TRANSACTIONMANAGER_INFORMATION_CLASS TransactionManagerInformationClass,
     _In_reads_bytes_(TransactionManagerInformationLength) PVOID TransactionManagerInformation,
     _In_ ULONG TransactionManagerInformationLength
@@ -213,7 +216,7 @@ NtEnumerateTransactionObject(
 );
 
 _Must_inspect_result_
-_IRQL_requires_max_(APC_LEVEL)
+_IRQL_requires_max_(PASSIVE_LEVEL)
 NTSYSAPI
 NTSTATUS
 NTAPI
@@ -244,7 +247,7 @@ NtCreateTransaction(
 );
 
 _Must_inspect_result_
-_IRQL_requires_max_(APC_LEVEL)
+_IRQL_requires_max_(PASSIVE_LEVEL)
 NTSYSAPI
 NTSTATUS
 NTAPI
@@ -275,14 +278,14 @@ NtOpenTransaction(
 );
 
 _Must_inspect_result_
-_IRQL_requires_max_(APC_LEVEL)
+_IRQL_requires_max_(PASSIVE_LEVEL)
 NTSYSAPI
 NTSTATUS
 NTAPI
 ZwOpenTransaction(
     _Out_ PHANDLE TransactionHandle,
     _In_ ACCESS_MASK DesiredAccess,
-    _In_ POBJECT_ATTRIBUTES ObjectAttributes,
+    _In_opt_ POBJECT_ATTRIBUTES ObjectAttributes,
     _In_ LPGUID Uow,
     _In_opt_ HANDLE TmHandle
 );
@@ -301,7 +304,7 @@ NtQueryInformationTransaction(
 );
 
 _Must_inspect_result_
-_IRQL_requires_max_(APC_LEVEL)
+_IRQL_requires_max_(PASSIVE_LEVEL)
 NTSYSAPI
 NTSTATUS
 NTAPI
@@ -326,7 +329,7 @@ NtSetInformationTransaction(
 );
 
 _Must_inspect_result_
-_IRQL_requires_max_(APC_LEVEL)
+_IRQL_requires_max_(PASSIVE_LEVEL)
 NTSYSAPI
 NTSTATUS
 NTAPI
@@ -346,7 +349,7 @@ NtCommitTransaction(
     _In_ BOOLEAN Wait
 );
 
-_IRQL_requires_max_(APC_LEVEL)
+_IRQL_requires_max_(PASSIVE_LEVEL)
 NTSYSAPI
 NTSTATUS
 NTAPI
@@ -364,7 +367,7 @@ NtRollbackTransaction(
     _In_ BOOLEAN Wait
 );
 
-_IRQL_requires_max_(APC_LEVEL)
+_IRQL_requires_max_(PASSIVE_LEVEL)
 NTSYSAPI
 NTSTATUS
 NTAPI
@@ -390,7 +393,7 @@ NtCreateEnlistment(
 );
 
 _Must_inspect_result_
-_IRQL_requires_max_(APC_LEVEL)
+_IRQL_requires_max_(PASSIVE_LEVEL)
 NTSYSAPI
 NTSTATUS
 NTAPI
@@ -419,7 +422,7 @@ NtOpenEnlistment(
 );
 
 _Must_inspect_result_
-_IRQL_requires_max_(APC_LEVEL)
+_IRQL_requires_max_(PASSIVE_LEVEL)
 NTSYSAPI
 NTSTATUS
 NTAPI
@@ -445,7 +448,7 @@ NtQueryInformationEnlistment(
 );
 
 _Must_inspect_result_
-_IRQL_requires_max_(APC_LEVEL)
+_IRQL_requires_max_(PASSIVE_LEVEL)
 NTSYSAPI
 NTSTATUS
 NTAPI
@@ -454,7 +457,7 @@ ZwQueryInformationEnlistment(
     _In_ ENLISTMENT_INFORMATION_CLASS EnlistmentInformationClass,
     _Out_writes_bytes_(EnlistmentInformationLength) PVOID EnlistmentInformation,
     _In_ ULONG EnlistmentInformationLength,
-    _Out_ PULONG ReturnLength
+    _Out_opt_ PULONG ReturnLength
 );
 
 _Must_inspect_result_
@@ -470,12 +473,12 @@ NtSetInformationEnlistment(
 );
 
 _Must_inspect_result_
-_IRQL_requires_max_(APC_LEVEL)
+_IRQL_requires_max_(PASSIVE_LEVEL)
 NTSYSAPI
 NTSTATUS
 NTAPI
 ZwSetInformationEnlistment(
-    _In_opt_ HANDLE EnlistmentHandle,
+    _In_ HANDLE EnlistmentHandle,
     _In_ ENLISTMENT_INFORMATION_CLASS EnlistmentInformationClass,
     _In_reads_bytes_(EnlistmentInformationLength) PVOID EnlistmentInformation,
     _In_ ULONG EnlistmentInformationLength
@@ -492,7 +495,7 @@ NtRecoverEnlistment(
 );
 
 _Must_inspect_result_
-_IRQL_requires_max_(APC_LEVEL)
+_IRQL_requires_max_(PASSIVE_LEVEL)
 NTSYSAPI
 NTSTATUS
 NTAPI
@@ -512,7 +515,7 @@ NtPrePrepareEnlistment(
 );
 
 _Must_inspect_result_
-_IRQL_requires_max_(APC_LEVEL)
+_IRQL_requires_max_(PASSIVE_LEVEL)
 NTSYSAPI
 NTSTATUS
 NTAPI
@@ -532,7 +535,7 @@ NtPrepareEnlistment(
 );
 
 _Must_inspect_result_
-_IRQL_requires_max_(APC_LEVEL)
+_IRQL_requires_max_(PASSIVE_LEVEL)
 NTSYSAPI
 NTSTATUS
 NTAPI
@@ -552,7 +555,7 @@ NtCommitEnlistment(
 );
 
 _Must_inspect_result_
-_IRQL_requires_max_(APC_LEVEL)
+_IRQL_requires_max_(PASSIVE_LEVEL)
 NTSYSAPI
 NTSTATUS
 NTAPI
@@ -570,7 +573,7 @@ NtRollbackEnlistment(
     _In_opt_ PLARGE_INTEGER TmVirtualClock
 );
 
-_IRQL_requires_max_(APC_LEVEL)
+_IRQL_requires_max_(PASSIVE_LEVEL)
 NTSYSAPI
 NTSTATUS
 NTAPI
@@ -588,7 +591,7 @@ NtPrePrepareComplete(
     _In_opt_ PLARGE_INTEGER TmVirtualClock
 );
 
-_IRQL_requires_max_(APC_LEVEL)
+_IRQL_requires_max_(PASSIVE_LEVEL)
 NTSYSAPI
 NTSTATUS
 NTAPI
@@ -606,7 +609,7 @@ NtPrepareComplete(
     _In_opt_ PLARGE_INTEGER TmVirtualClock
 );
 
-_IRQL_requires_max_(APC_LEVEL)
+_IRQL_requires_max_(PASSIVE_LEVEL)
 NTSYSAPI
 NTSTATUS
 NTAPI
@@ -624,7 +627,7 @@ NtCommitComplete(
     _In_opt_ PLARGE_INTEGER TmVirtualClock
 );
 
-_IRQL_requires_max_(APC_LEVEL)
+_IRQL_requires_max_(PASSIVE_LEVEL)
 NTSYSAPI
 NTSTATUS
 NTAPI
@@ -642,7 +645,7 @@ NtReadOnlyEnlistment(
     _In_opt_ PLARGE_INTEGER TmVirtualClock
 );
 
-_IRQL_requires_max_(APC_LEVEL)
+_IRQL_requires_max_(PASSIVE_LEVEL)
 NTSYSAPI
 NTSTATUS
 NTAPI
@@ -660,7 +663,7 @@ NtRollbackComplete(
     _In_opt_ PLARGE_INTEGER TmVirtualClock
 );
 
-_IRQL_requires_max_(APC_LEVEL)
+_IRQL_requires_max_(PASSIVE_LEVEL)
 NTSYSAPI
 NTSTATUS
 NTAPI
@@ -678,7 +681,7 @@ NtSinglePhaseReject(
     _In_opt_ PLARGE_INTEGER TmVirtualClock
 );
 
-_IRQL_requires_max_(APC_LEVEL)
+_IRQL_requires_max_(PASSIVE_LEVEL)
 NTSYSAPI
 NTSTATUS
 NTAPI
@@ -703,7 +706,7 @@ NtCreateResourceManager(
 );
 
 _Must_inspect_result_
-_IRQL_requires_max_(APC_LEVEL)
+_IRQL_requires_max_(PASSIVE_LEVEL)
 NTSYSAPI
 NTSTATUS
 NTAPI
@@ -711,7 +714,7 @@ ZwCreateResourceManager(
     _Out_ PHANDLE ResourceManagerHandle,
     _In_ ACCESS_MASK DesiredAccess,
     _In_ HANDLE TmHandle,
-    _In_ LPGUID RmGuid,
+    _In_opt_ LPGUID RmGuid,
     _In_opt_ POBJECT_ATTRIBUTES ObjectAttributes,
     _In_opt_ ULONG CreateOptions,
     _In_opt_ PUNICODE_STRING Description
@@ -731,7 +734,7 @@ NtOpenResourceManager(
 );
 
 _Must_inspect_result_
-_IRQL_requires_max_(APC_LEVEL)
+_IRQL_requires_max_(PASSIVE_LEVEL)
 NTSYSAPI
 NTSTATUS
 NTAPI
@@ -739,7 +742,7 @@ ZwOpenResourceManager(
     _Out_ PHANDLE ResourceManagerHandle,
     _In_ ACCESS_MASK DesiredAccess,
     _In_ HANDLE TmHandle,
-    _In_opt_ LPGUID ResourceManagerGuid,
+    _In_ LPGUID ResourceManagerGuid,
     _In_opt_ POBJECT_ATTRIBUTES ObjectAttributes
 );
 
@@ -753,7 +756,7 @@ NtRecoverResourceManager(
 );
 
 _Must_inspect_result_
-_IRQL_requires_max_(APC_LEVEL)
+_IRQL_requires_max_(PASSIVE_LEVEL)
 NTSYSAPI
 NTSTATUS
 NTAPI
@@ -777,7 +780,7 @@ NtGetNotificationResourceManager(
 );
 
 _Must_inspect_result_
-_IRQL_requires_max_(APC_LEVEL)
+_IRQL_requires_max_(PASSIVE_LEVEL)
 NTSYSAPI
 NTSTATUS
 NTAPI
@@ -785,7 +788,7 @@ ZwGetNotificationResourceManager(
     _In_ HANDLE ResourceManagerHandle,
     _Out_ PTRANSACTION_NOTIFICATION TransactionNotification,
     _In_ ULONG NotificationLength,
-    _In_opt_ PLARGE_INTEGER Timeout,
+    _In_ PLARGE_INTEGER Timeout,
     _Out_opt_ PULONG ReturnLength,
     _In_ ULONG Asynchronous,
     _In_opt_ ULONG_PTR AsynchronousContext
@@ -805,7 +808,7 @@ NtQueryInformationResourceManager(
 );
 
 _Must_inspect_result_
-_IRQL_requires_max_(APC_LEVEL)
+_IRQL_requires_max_(PASSIVE_LEVEL)
 NTSYSAPI
 NTSTATUS
 NTAPI
@@ -830,7 +833,7 @@ NtSetInformationResourceManager(
 );
 
 _Must_inspect_result_
-_IRQL_requires_max_(APC_LEVEL)
+_IRQL_requires_max_(PASSIVE_LEVEL)
 NTSYSAPI
 NTSTATUS
 NTAPI
@@ -855,7 +858,7 @@ NtRegisterProtocolAddressInformation(
 );
 
 _Must_inspect_result_
-_IRQL_requires_max_(APC_LEVEL)
+_IRQL_requires_max_(PASSIVE_LEVEL)
 NTSYSAPI
 NTSTATUS
 NTAPI
@@ -878,7 +881,7 @@ NtPropagationComplete(
     _In_ PVOID Buffer
 );
 
-_IRQL_requires_max_(APC_LEVEL)
+_IRQL_requires_max_(PASSIVE_LEVEL)
 NTSYSAPI
 NTSTATUS
 NTAPI
@@ -899,7 +902,7 @@ NtPropagationFailed(
     _In_ NTSTATUS PropStatus
 );
 
-_IRQL_requires_max_(APC_LEVEL)
+_IRQL_requires_max_(PASSIVE_LEVEL)
 NTSYSAPI
 NTSTATUS
 NTAPI
@@ -919,7 +922,7 @@ NtFreezeTransactions(
     _In_ PLARGE_INTEGER ThawTimeout
 );
 
-_IRQL_requires_max_(APC_LEVEL)
+_IRQL_requires_max_(PASSIVE_LEVEL)
 NTSYSAPI
 NTSTATUS
 NTAPI
@@ -937,7 +940,7 @@ NtThawTransactions(
     VOID
 );
 
-_IRQL_requires_max_(APC_LEVEL)
+_IRQL_requires_max_(PASSIVE_LEVEL)
 NTSYSAPI
 NTSTATUS
 NTAPI
