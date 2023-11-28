@@ -2565,10 +2565,10 @@ RtlWakeAddressSingle(
 #define ANSI_STRING_MAX_CHARS ANSI_STRING_MAX_BYTES
 #endif
 
-#include <strsafe.h>
-
 #ifdef _KERNEL_MODE
 #include <ntstrsafe.h>
+#else
+#include <strsafe.h>
 #endif
 
 #ifndef _KERNEL_MODE
@@ -8373,6 +8373,8 @@ _VEIL_IMPL_RtlMapResourceId(
 
                     ULONG Integer = 0ul;
                     Status = RtlUnicodeStringToInteger(&UnicodeString, 10, &Integer);
+
+                    #pragma warning(suppress: 26450)
                     if (!NT_SUCCESS(Status) || Integer > LDR_RESOURCE_ID_NAME_MASK)
                     {
                         if (NT_SUCCESS(Status))
