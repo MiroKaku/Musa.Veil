@@ -4497,6 +4497,9 @@ ZwPssCaptureVaSpaceBulk(
 
 // Process
 
+extern LIST_ENTRY PsLoadedModuleList;
+extern ERESOURCE  PsLoadedModuleResource;
+
 NTKERNELAPI
 NTSTATUS
 NTAPI
