@@ -146,6 +146,12 @@
     typedef struct _VEIL_CONCATENATE(_, name) const * _VEIL_CONCATENATE(PC, name); \
     struct _VEIL_CONCATENATE(_, name)
 
+#define VEIL_DECLARE_STRUCT_ALIGN(name, x) \
+    typedef struct _VEIL_CONCATENATE(_, name) name; \
+    typedef struct _VEIL_CONCATENATE(_, name) * _VEIL_CONCATENATE(P, name); \
+    typedef struct _VEIL_CONCATENATE(_, name) const * _VEIL_CONCATENATE(PC, name); \
+    __declspec(align(x)) struct _VEIL_CONCATENATE(_, name)
+
 #define VEIL_DECLARE_UNION(name) \
     typedef union _VEIL_CONCATENATE(_, name) name; \
     typedef union _VEIL_CONCATENATE(_, name) * _VEIL_CONCATENATE(P, name); \
