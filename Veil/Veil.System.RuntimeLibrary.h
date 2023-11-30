@@ -8875,6 +8875,8 @@ RtlCutoverTimeToSystemTime(
     _In_ BOOLEAN ThisYear
 );
 
+#endif // !_KERNEL_MODE
+
 NTSYSAPI
 NTSTATUS
 NTAPI
@@ -8907,6 +8909,7 @@ RtlTimeToTimeFields(
     _Out_ PTIME_FIELDS TimeFields
 );
 
+_Success_(return != 0)
 NTSYSAPI
 BOOLEAN
 NTAPI
@@ -8915,6 +8918,7 @@ RtlTimeFieldsToTime(
     _Out_ PLARGE_INTEGER Time
 );
 
+_Success_(return != 0)
 NTSYSAPI
 BOOLEAN
 NTAPI
@@ -8931,6 +8935,7 @@ RtlSecondsSince1980ToTime(
     _Out_ PLARGE_INTEGER Time
 );
 
+_Success_(return != 0)
 NTSYSAPI
 BOOLEAN
 NTAPI
@@ -8946,6 +8951,8 @@ RtlSecondsSince1970ToTime(
     _In_ ULONG ElapsedSeconds,
     _Out_ PLARGE_INTEGER Time
 );
+
+#ifndef _KERNEL_MODE
 
 #if (NTDDI_VERSION >= NTDDI_WIN8)
 NTSYSAPI
