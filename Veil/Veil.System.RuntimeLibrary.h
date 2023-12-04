@@ -2152,9 +2152,14 @@ RtlContractHashTable(
 // RB Trees
 //
 
-#ifndef _KERNEL_MODE
-
 #if (NTDDI_VERSION >= NTDDI_WIN8)
+
+typedef struct _RTL_RB_TREE
+{
+    PRTL_BALANCED_NODE Root;
+    PRTL_BALANCED_NODE Min;
+} RTL_RB_TREE, * PRTL_RB_TREE;
+
 NTSYSAPI
 VOID
 NTAPI
@@ -2172,15 +2177,12 @@ RtlRbRemoveNode(
     _In_ PRTL_RB_TREE Tree,
     _In_ PRTL_BALANCED_NODE Node
 );
-#endif
 
-#endif // !_KERNEL_MODE
+#endif
 
 //
 // Critical sections
 //
-
-#ifndef _KERNEL_MODE
 
 NTSYSAPI
 NTSTATUS
@@ -2270,13 +2272,9 @@ RtlCheckForOrphanedCriticalSections(
     _In_ HANDLE ThreadHandle
 );
 
-#endif // !_KERNEL_MODE
-
 //
 // Resources
 //
-
-#ifndef _KERNEL_MODE
 
 typedef struct _RTL_RESOURCE
 {
@@ -2348,13 +2346,9 @@ RtlConvertExclusiveToShared(
     _Inout_ PRTL_RESOURCE Resource
 );
 
-#endif // !_KERNEL_MODE
-
 //
 // Slim reader-writer locks, condition variables, and barriers
 //
-
-#ifndef _KERNEL_MODE
 
 #if (NTDDI_VERSION >= NTDDI_VISTA)
 // winbase:InitializeSRWLock
@@ -2514,13 +2508,9 @@ RtlBarrierForDelete(
 );
 #endif //(NTDDI_VERSION >= NTDDI_VISTA)
 
-#endif // !_KERNEL_MODE
-
 //
 // Wait on address
 //
-
-#ifndef _KERNEL_MODE
 
 // begin_rev
 #if (NTDDI_VERSION >= NTDDI_WIN8)
@@ -2549,8 +2539,6 @@ RtlWakeAddressSingle(
 );
 #endif
 // end_rev
-
-#endif // !_KERNEL_MODE
 
 
 //
@@ -3658,8 +3646,6 @@ RtlIsNormalizedString(
 );
 #endif
 
-#ifndef _KERNEL_MODE
-
 #if (NTDDI_VERSION >= NTDDI_WIN7)
 // ntifs:FsRtlIsNameInExpression
 NTSYSAPI
@@ -3711,6 +3697,8 @@ RtlEqualComputerName(
     _In_ PCUNICODE_STRING String1,
     _In_ PCUNICODE_STRING String2
 );
+
+#ifndef _KERNEL_MODE
 
 NTSYSAPI
 NTSTATUS
@@ -5446,8 +5434,6 @@ RtlImageNtHeaderEx(
     _Out_ PIMAGE_NT_HEADERS* OutHeaders
 );
 
-#ifndef _KERNEL_MODE
-
 NTSYSAPI
 PVOID
 NTAPI
@@ -5465,8 +5451,6 @@ RtlSectionTableFromVirtualAddress(
     _In_ PVOID BaseOfImage,
     _In_ ULONG VirtualAddress
 );
-
-#endif // !_KERNEL_MODE
 
 NTSYSAPI
 PVOID
@@ -6251,8 +6235,6 @@ RtlIsZeroMemory(
 // Environment
 //
 
-#if !defined(_KERNEL_MODE) || defined(_WINDOWS_)
-
 NTSYSAPI
 NTSTATUS
 NTAPI
@@ -6374,13 +6356,10 @@ RtlSetEnvironmentStrings(
     _In_ SIZE_T NewEnvironmentSize
 );
 
-#endif // !_KERNEL_MODE
 
 //
 // Directory and path support
 //
-
-#if !defined(_KERNEL_MODE) || defined(_WINDOWS_)
 
 typedef struct _RTLP_CURDIR_REF
 {
@@ -6829,6 +6808,11 @@ RtlAreLongPathsEnabled(
 );
 #endif // NTDDI_VERSION >= NTDDI_WIN10_RS2
 
+//
+// Ldr
+//
+
+#ifndef _KERNEL_MODE
 NTSYSAPI
 BOOLEAN
 NTAPI
@@ -6842,8 +6826,7 @@ NTAPI
 RtlDllShutdownInProgress(
     VOID
 );
-
-#endif // !_KERNEL_MODE
+#endif
 
 //
 // Heaps
@@ -7181,8 +7164,6 @@ RtlZeroHeap(
     _In_ PVOID HeapHandle,
     _In_ ULONG Flags
 );
-
-#if !defined(_KERNEL_MODE) || defined(_WINDOWS_)
 
 NTSYSAPI
 VOID
@@ -7714,13 +7695,12 @@ RtlFlushHeaps(
     VOID
 );
 
-#endif // !_KERNEL_MODE
 
 //
 // Memory zones
 //
 
-#if !defined(_KERNEL_MODE) || defined(_WINDOWS_)
+#if !defined(_KERNEL_MODE)
 
 // begin_private
 typedef struct _RTL_MEMORY_ZONE_SEGMENT
@@ -7794,8 +7774,6 @@ RtlUnlockMemoryZone(
 // Memory block lookaside lists
 //
 
-#if !defined(_KERNEL_MODE) || defined(_WINDOWS_)
-
 // begin_private
 #if (NTDDI_VERSION >= NTDDI_VISTA)
 NTSYSAPI
@@ -7864,7 +7842,6 @@ RtlUnlockMemoryBlockLookaside(
 #endif
 // end_private
 
-#endif // !_KERNEL_MODE
 
 //
 // Transactions
@@ -8261,6 +8238,8 @@ RtlGetFileMUIPath(
     _Inout_ PULONGLONG Enumerator
 );
 
+#endif // !_KERNEL_MODE
+
 // private
 NTSYSAPI
 NTSTATUS
@@ -8275,7 +8254,6 @@ RtlLoadString(
     _Out_writes_(ReturnLanguageLen) PWSTR ReturnLanguageName,
     _Inout_opt_ PULONG ReturnLanguageLen
 );
-#endif // !_KERNEL_MODE
 
 //
 // RC Resource
@@ -8586,8 +8564,6 @@ RtlNtStatusToDosErrorNoTeb(
     _In_ NTSTATUS Status
 );
 
-#if !defined(_KERNEL_MODE) || defined(_WINDOWS_)
-
 NTSYSAPI
 NTSTATUS
 NTAPI
@@ -8623,6 +8599,8 @@ RtlRestoreLastWin32Error(
     _In_ LONG Win32Error
 );
 
+#ifndef _KERNEL_MODE
+
 #define RTL_ERRORMODE_FAILCRITICALERRORS 0x0010
 #define RTL_ERRORMODE_NOGPFAULTERRORBOX  0x0020
 #define RTL_ERRORMODE_NOOPENFILEERRORBOX 0x0040
@@ -8642,7 +8620,8 @@ RtlSetThreadErrorMode(
     _Out_opt_ PULONG OldMode
 );
 
-#endif // !_KERNEL_MODE
+#endif
+
 
 //
 // Windows Error Reporting
@@ -8723,7 +8702,6 @@ RtlRandomEx(
     _Inout_ PULONG Seed
 );
 
-#if defined(_KERNEL_MODE) && defined(_WINDOWS_)
 _IRQL_requires_max_(PASSIVE_LEVEL)
 NTSYSAPI
 BOOLEAN
@@ -8732,9 +8710,6 @@ RtlGenRandom(
     _Out_writes_bytes_(RandomBufferLength) PVOID RandomBuffer,
     _In_ ULONG RandomBufferLength
 );
-#endif
-
-#ifndef _KERNEL_MODE
 
 NTSYSAPI
 ULONG
@@ -8753,8 +8728,6 @@ RtlComputeImportTableHash(
     _Out_writes_bytes_(16) PCHAR Hash,
     _In_ ULONG ImportTableHashRevision // must be 1
 );
-
-#endif // !_KERNEL_MODE
 
 //
 // Integer conversion
@@ -8865,6 +8838,8 @@ typedef struct _TIME_FIELDS
     CSHORT Weekday;         // 0..6 = Sunday..Saturday
 } TIME_FIELDS, * PTIME_FIELDS;
 
+#endif // !_KERNEL_MODE
+
 NTSYSAPI
 BOOLEAN
 NTAPI
@@ -8874,8 +8849,6 @@ RtlCutoverTimeToSystemTime(
     _In_ PLARGE_INTEGER CurrentSystemTime,
     _In_ BOOLEAN ThisYear
 );
-
-#endif // !_KERNEL_MODE
 
 NTSYSAPI
 NTSTATUS
@@ -8952,8 +8925,6 @@ RtlSecondsSince1970ToTime(
     _Out_ PLARGE_INTEGER Time
 );
 
-#ifndef _KERNEL_MODE
-
 #if (NTDDI_VERSION >= NTDDI_WIN8)
 NTSYSAPI
 LARGE_INTEGER
@@ -8989,8 +8960,6 @@ RtlGetInterruptTimePrecise(
     _Out_ PLARGE_INTEGER PerformanceCounter
 );
 #endif
-
-#endif // !_KERNEL_MODE
 
 //
 // Time zones
@@ -9487,8 +9456,6 @@ RtlFindSetBitsAndClearEx(
 // Handle tables
 //
 
-#ifndef _KERNEL_MODE
-
 typedef struct _RTL_HANDLE_TABLE_ENTRY
 {
     union
@@ -9559,8 +9526,6 @@ RtlIsValidIndexHandle(
     _In_ ULONG HandleIndex,
     _Out_ PRTL_HANDLE_TABLE_ENTRY* Handle
 );
-
-#endif // !_KERNEL_MODE
 
 //
 // Atom tables
@@ -9912,7 +9877,6 @@ RtlConvertSidToUnicodeString(
     _In_ BOOLEAN AllocateDestinationString
 );
 
-#ifndef _KERNEL_MODE
 NTSYSAPI
 NTSTATUS
 NTAPI
@@ -9920,7 +9884,6 @@ RtlLengthSidAsUnicodeString(
     _In_ PSID Sid,
     _Out_ PULONG StringLength
 );
-#endif // !_KERNEL_MODE
 
 #if (NTDDI_VERSION >= NTDDI_VISTA)
 // private
@@ -10030,8 +9993,7 @@ RtlSetControlSecurityDescriptor(
     _In_ SECURITY_DESCRIPTOR_CONTROL ControlBitsToSet
 );
 
-#ifndef _KERNEL_MODE
-
+_IRQL_requires_max_(APC_LEVEL)
 NTSYSAPI
 NTSTATUS
 NTAPI
@@ -10041,6 +10003,7 @@ RtlSetAttributesSecurityDescriptor(
     _Out_ PULONG Revision
 );
 
+_IRQL_requires_max_(APC_LEVEL)
 NTSYSAPI
 BOOLEAN
 NTAPI
@@ -10049,6 +10012,7 @@ RtlGetSecurityDescriptorRMControl(
     _Out_ PUCHAR RMControl
 );
 
+_IRQL_requires_max_(APC_LEVEL)
 NTSYSAPI
 VOID
 NTAPI
@@ -10056,8 +10020,6 @@ RtlSetSecurityDescriptorRMControl(
     _Inout_ PSECURITY_DESCRIPTOR SecurityDescriptor,
     _In_opt_ PUCHAR RMControl
 );
-
-#endif // !_KERNEL_MODE
 
 _IRQL_requires_max_(APC_LEVEL)
 NTSYSAPI
@@ -10070,6 +10032,7 @@ RtlSetDaclSecurityDescriptor(
     _In_ BOOLEAN DaclDefaulted
 );
 
+_IRQL_requires_max_(APC_LEVEL)
 NTSYSAPI
 NTSTATUS
 NTAPI
@@ -10150,7 +10113,7 @@ RtlGetGroupSecurityDescriptor(
     PBOOLEAN GroupDefaulted
 );
 
-#ifndef _KERNEL_MODE
+_IRQL_requires_max_(APC_LEVEL)
 NTSYSAPI
 NTSTATUS
 NTAPI
@@ -10159,7 +10122,6 @@ RtlMakeSelfRelativeSD(
     _Out_writes_bytes_(*BufferLength) PSECURITY_DESCRIPTOR SelfRelativeSecurityDescriptor,
     _Inout_ PULONG BufferLength
 );
-#endif // !_KERNEL_MODE
 
 _IRQL_requires_max_(APC_LEVEL)
 NTSYSAPI
@@ -10344,7 +10306,6 @@ RtlQueryInformationAcl(
     _In_ ACL_INFORMATION_CLASS AclInformationClass
 );
 
-#ifndef _KERNEL_MODE
 _IRQL_requires_max_(APC_LEVEL)
 NTSYSAPI
 NTSTATUS
@@ -10355,7 +10316,6 @@ RtlSetInformationAcl(
     _In_ ULONG AclInformationLength,
     _In_ ACL_INFORMATION_CLASS AclInformationClass
 );
-#endif // !_KERNEL_MODE
 
 _IRQL_requires_max_(APC_LEVEL)
 NTSYSAPI
@@ -10413,7 +10373,6 @@ RtlAddAccessAllowedAceEx(
     _In_ PSID Sid
 );
 
-#ifndef _KERNEL_MODE
 _IRQL_requires_max_(APC_LEVEL)
 NTSYSAPI
 NTSTATUS
@@ -10424,7 +10383,6 @@ RtlAddAccessDeniedAce(
     _In_ ACCESS_MASK AccessMask,
     _In_ PSID Sid
 );
-#endif // !_KERNEL_MODE
 
 _IRQL_requires_max_(APC_LEVEL)
 NTSYSAPI
@@ -10438,7 +10396,6 @@ RtlAddAccessDeniedAceEx(
     _In_ PSID Sid
 );
 
-#ifndef _KERNEL_MODE
 _IRQL_requires_max_(APC_LEVEL)
 NTSYSAPI
 NTSTATUS
@@ -10451,7 +10408,6 @@ RtlAddAuditAccessAce(
     _In_ BOOLEAN AuditSuccess,
     _In_ BOOLEAN AuditFailure
 );
-#endif // !_KERNEL_MODE
 
 _IRQL_requires_max_(APC_LEVEL)
 NTSYSAPI
@@ -10511,7 +10467,6 @@ RtlAddAuditAccessObjectAce(
     _In_ BOOLEAN AuditFailure
 );
 
-#ifndef _KERNEL_MODE
 _IRQL_requires_max_(APC_LEVEL)
 NTSYSAPI
 NTSTATUS
@@ -10524,7 +10479,6 @@ RtlAddCompoundAce(
     _In_ PSID ServerSid,
     _In_ PSID ClientSid
 );
-#endif // !_KERNEL_MODE
 
 #if (NTDDI_VERSION >= NTDDI_VISTA)
 // private
@@ -10558,7 +10512,6 @@ RtlAddResourceAttributeAce(
 );
 #endif //NTDDI_VERSION >= NTDDI_WIN8
 
-#ifndef _KERNEL_MODE
 #if (NTDDI_VERSION >= NTDDI_WIN8)
 _IRQL_requires_max_(APC_LEVEL)
 NTSYSAPI
@@ -10581,7 +10534,6 @@ NTAPI
 RtlDefaultNpAcl(
     _Out_ PACL* Acl
 );
-#endif // !_KERNEL_MODE
 
 //
 // Security objects
@@ -10747,8 +10699,6 @@ RtlCreateAndSetSD(
 // Misc. security
 //
 
-#ifndef _KERNEL_MODE
-
 NTSYSAPI
 VOID
 NTAPI
@@ -10764,6 +10714,8 @@ RtlRunDecodeUnicodeString(
     _In_ UCHAR Seed,
     _Inout_ PUNICODE_STRING String
 );
+
+#ifndef _KERNEL_MODE
 
 NTSYSAPI
 NTSTATUS
@@ -10924,7 +10876,6 @@ RtlVerifyVersionInfo(
     _In_ ULONGLONG  ConditionMask
 );
 
-#ifndef _KERNEL_MODE
 // rev
 NTSYSAPI
 VOID
@@ -10934,7 +10885,6 @@ RtlGetNtVersionNumbers(
     _Out_opt_ PULONG NtMinorVersion,
     _Out_opt_ PULONG NtBuildNumber
 );
-#endif // !_KERNEL_MODE
 
 //
 // System information
@@ -11439,8 +11389,6 @@ RtlComputeCrc32(
     _In_ ULONG Length
 );
 
-#ifndef _KERNEL_MODE
-
 NTSYSAPI
 PVOID
 NTAPI
@@ -11454,6 +11402,8 @@ NTAPI
 RtlDecodePointer(
     _In_ PVOID Ptr
 );
+
+#ifndef _KERNEL_MODE
 
 NTSYSAPI
 PVOID
@@ -11503,8 +11453,6 @@ RtlIsProcessorFeaturePresent(
 );
 #endif
 
-#ifndef _KERNEL_MODE
-
 // rev
 NTSYSAPI
 ULONG
@@ -11522,8 +11470,6 @@ RtlGetCurrentProcessorNumberEx(
     _Out_ PPROCESSOR_NUMBER ProcessorNumber
 );
 #endif
-
-#endif // !_KERNEL_MODE
 
 //
 // Stack support
@@ -12271,8 +12217,6 @@ RtlGetAppContainerSidType(
 // Fls
 //
 
-#if !defined(_KERNEL_MODE) || defined(_WINDOWS_)
-
 NTSYSAPI
 NTSTATUS
 NTAPI
@@ -12305,8 +12249,6 @@ RtlFlsSetValue(
     _In_ PVOID FlsData
 );
 #endif
-
-#endif // !_KERNEL_MODE
 
 //
 // File System

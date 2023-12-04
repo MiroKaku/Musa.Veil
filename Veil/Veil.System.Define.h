@@ -584,12 +584,6 @@ typedef struct _SINGLE_LIST_ENTRY32
     ULONG Next;
 } SINGLE_LIST_ENTRY32, * POINTER_32 PSINGLE_LIST_ENTRY32;
 
-typedef struct _RTL_RB_TREE
-{
-    PRTL_BALANCED_NODE Root;
-    PRTL_BALANCED_NODE Min;
-} RTL_RB_TREE, * PRTL_RB_TREE;
-
 typedef struct _STRING32 {
     USHORT   Length;
     USHORT   MaximumLength;
