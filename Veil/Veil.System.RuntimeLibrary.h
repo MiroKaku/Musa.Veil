@@ -10032,7 +10032,6 @@ RtlSetDaclSecurityDescriptor(
     _In_ BOOLEAN DaclDefaulted
 );
 
-_IRQL_requires_max_(APC_LEVEL)
 NTSYSAPI
 NTSTATUS
 NTAPI
