@@ -8202,6 +8202,107 @@ ExReleaseCacheAwarePushLockExclusive(
 
 #if (NTDDI_VERSION >= NTDDI_WIN10_NI)
 
+#pragma warning(suppress: 28195) // memory is not always allocated here, sometimes we reuse an entry from the list
+__drv_allocatesMem(Mem)
+_IRQL_requires_max_(APC_LEVEL)
+inline
+PVOID
+_VEIL_IMPL_ExAllocateFromPagedLookasideList(
+    _Inout_ PPAGED_LOOKASIDE_LIST Lookaside
+)
+
+/*++
+
+Routine Description:
+
+    This function removes (pops) the first entry from the specified
+    paged lookaside list.
+
+Arguments:
+
+    Lookaside - Supplies a pointer to a paged lookaside list structure.
+
+Return Value:
+
+    If an entry is removed from the specified lookaside list, then the
+    address of the entry is returned as the function value. Otherwise,
+    NULL is returned.
+
+--*/
+
+{
+
+    PVOID Entry;
+
+    Lookaside->L.TotalAllocates += 1;
+    Entry = InterlockedPopEntrySList(&Lookaside->L.ListHead);
+    if (Entry == NULL) {
+        Lookaside->L.AllocateMisses += 1;
+        Entry = (Lookaside->L.Allocate)(Lookaside->L.Type,
+            Lookaside->L.Size,
+            Lookaside->L.Tag);
+    }
+
+    return Entry;
+}
+
+_IRQL_requires_max_(APC_LEVEL)
+inline
+VOID
+_VEIL_IMPL_ExFreeToPagedLookasideList(
+    _Inout_ PPAGED_LOOKASIDE_LIST Lookaside,
+    _In_ __drv_freesMem(Mem) PVOID Entry
+)
+
+/*++
+
+Routine Description:
+
+    This function inserts (pushes) the specified entry into the specified
+    paged lookaside list.
+
+Arguments:
+
+    Lookaside - Supplies a pointer to a nonpaged lookaside list structure.
+
+    Entry - Supples a pointer to the entry that is inserted in the
+        lookaside list.
+
+Return Value:
+
+    None.
+
+--*/
+
+{
+
+    Lookaside->L.TotalFrees += 1;
+    if (ExQueryDepthSList(&Lookaside->L.ListHead) >= Lookaside->L.Depth) {
+        Lookaside->L.FreeMisses += 1;
+        (Lookaside->L.Free)(Entry);
+
+    }
+    else {
+        InterlockedPushEntrySList(&Lookaside->L.ListHead,
+            (PSLIST_ENTRY)Entry);
+    }
+
+    return;
+}
+
+#if defined _M_IX86
+
+_VEIL_DEFINE_IAT_RAW_SYMBOL(ExAllocateFromPagedLookasideList@4, _VEIL_IMPL_ExAllocateFromPagedLookasideList);
+_VEIL_DEFINE_IAT_RAW_SYMBOL(ExFreeToPagedLookasideList@8, _VEIL_IMPL_ExFreeToPagedLookasideList);
+
+#elif defined _M_X64 || defined _M_ARM || defined _M_ARM64
+
+_VEIL_DEFINE_IAT_SYMBOL(ExAllocateFromPagedLookasideList, _VEIL_IMPL_ExAllocateFromPagedLookasideList);
+_VEIL_DEFINE_IAT_SYMBOL(ExFreeToPagedLookasideList, _VEIL_IMPL_ExFreeToPagedLookasideList);
+
+#endif
+
+
 __drv_allocatesMem(Mem)
 _IRQL_requires_max_(DISPATCH_LEVEL)
 inline
@@ -8327,6 +8428,109 @@ _VEIL_DEFINE_IAT_SYMBOL(ExAllocateFromNPagedLookasideList, _VEIL_IMPL_ExAllocate
 _VEIL_DEFINE_IAT_SYMBOL(ExFreeToNPagedLookasideList, _VEIL_IMPL_ExFreeToNPagedLookasideList);
 
 #endif
+
+
+__drv_allocatesMem(Mem)
+_Must_inspect_result_
+_IRQL_requires_max_(DISPATCH_LEVEL)
+inline
+PVOID
+#pragma warning(suppress: 28195) // memory is not always allocated here, sometimes we reuse an entry from the list
+_VEIL_IMPL_ExAllocateFromLookasideListEx(
+    _Inout_ PLOOKASIDE_LIST_EX Lookaside
+)
+
+/*++
+
+Routine Description:
+
+    This function removes (pops) the first entry from the specified
+    lookaside list.
+
+Arguments:
+
+    Lookaside - Supplies a pointer to a LOOKASIDE_LIST_EX structure.
+
+Return Value:
+
+    If an entry is removed from the specified lookaside list, then the
+    address of the entry is returned as the function value. Otherwise,
+    NULL is returned.
+
+--*/
+
+{
+
+    PVOID Entry;
+
+    Lookaside->L.TotalAllocates += 1;
+    Entry = InterlockedPopEntrySList(&Lookaside->L.ListHead);
+    if (Entry == NULL) {
+        Lookaside->L.AllocateMisses += 1;
+        Entry = (Lookaside->L.AllocateEx)(Lookaside->L.Type,
+            Lookaside->L.Size,
+            Lookaside->L.Tag,
+            Lookaside);
+    }
+
+    return Entry;
+}
+
+_IRQL_requires_max_(DISPATCH_LEVEL)
+inline
+VOID
+_VEIL_IMPL_ExFreeToLookasideListEx(
+    _Inout_ PLOOKASIDE_LIST_EX Lookaside,
+    _In_ __drv_freesMem(Entry) PVOID Entry
+)
+
+/*++
+
+Routine Description:
+
+    This function inserts (pushes) the specified entry into the specified
+    lookaside list.
+
+Arguments:
+
+    Lookaside - Supplies a pointer to a LOOKASIDE_LIST_EX structure.
+
+    Entry - Supples a pointer to the entry that is inserted in the
+        lookaside list.
+
+Return Value:
+
+    None.
+
+--*/
+
+{
+
+    Lookaside->L.TotalFrees += 1;
+    if (ExQueryDepthSList(&Lookaside->L.ListHead) >= Lookaside->L.Depth) {
+        Lookaside->L.FreeMisses += 1;
+        (Lookaside->L.FreeEx)(Entry, Lookaside);
+
+    }
+    else {
+        InterlockedPushEntrySList(&Lookaside->L.ListHead, (PSLIST_ENTRY)Entry);
+    }
+
+    return;
+}
+
+#if defined _M_IX86
+
+_VEIL_DEFINE_IAT_RAW_SYMBOL(ExAllocateFromLookasideListEx@4, _VEIL_IMPL_ExAllocateFromLookasideListEx);
+_VEIL_DEFINE_IAT_RAW_SYMBOL(ExFreeToLookasideListEx@8, _VEIL_IMPL_ExFreeToLookasideListEx);
+
+#elif defined _M_X64 || defined _M_ARM || defined _M_ARM64
+
+_VEIL_DEFINE_IAT_SYMBOL(ExAllocateFromLookasideListEx, _VEIL_IMPL_ExAllocateFromLookasideListEx);
+_VEIL_DEFINE_IAT_SYMBOL(ExFreeToLookasideListEx, _VEIL_IMPL_ExFreeToLookasideListEx);
+
+#endif
+
 
 #endif // (NTDDI_VERSION >= NTDDI_WIN10_NI)
 
