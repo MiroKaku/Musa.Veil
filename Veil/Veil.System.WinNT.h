@@ -124,11 +124,18 @@ typedef LONG(NTAPI* PVECTORED_EXCEPTION_HANDLER)(
 // FLS (Fiber Local Storage)
 //
 
+#ifndef _WINNT_
 typedef
+_IRQL_requires_same_
+_Function_class_(FLS_CALLBACK_FUNCTION)
 VOID
-(NTAPI* PFLS_CALLBACK_FUNCTION) (
+NTAPI
+FLS_CALLBACK_FUNCTION (
     _In_ PVOID lpFlsData
     );
+
+typedef FLS_CALLBACK_FUNCTION* PFLS_CALLBACK_FUNCTION;
+#endif
 
 //
 // APC (Asynchronous Procedure Calls)

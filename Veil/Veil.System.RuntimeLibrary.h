@@ -12246,7 +12246,7 @@ RtlProcessFlsData(
 #if (NTDDI_VERSION >= NTDDI_WIN10_VB)
 NTSYSAPI
 NTSTATUS
-WINAPI
+NTAPI
 RtlFlsGetValue(
     _In_ ULONG FlsIndex,
     _Out_ PVOID* FlsData
@@ -12254,7 +12254,7 @@ RtlFlsGetValue(
 
 NTSYSAPI
 NTSTATUS
-WINAPI
+NTAPI
 RtlFlsSetValue(
     _In_ ULONG FlsIndex,
     _In_ PVOID FlsData
