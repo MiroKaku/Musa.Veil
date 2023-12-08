@@ -11696,8 +11696,6 @@ RtlGetUnloadEventTraceEx(
 // Performance Counter
 //
 
-#ifndef _KERNEL_MODE
-
 #if (NTDDI_VERSION >= NTDDI_WIN7)
 // rev
 NTSYSAPI
@@ -11715,8 +11713,6 @@ RtlQueryPerformanceFrequency(
     _Out_ PLARGE_INTEGER PerformanceFrequency
 );
 #endif
-
-#endif // !_KERNEL_MODE
 
 //
 // Image Mitigation
