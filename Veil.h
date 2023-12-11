@@ -221,6 +221,9 @@
 #define NTDDI_WIN10_CU                      0x0A00000D      // Windows 10.0.22631 / 22H2 / Copper
 #define NTDDI_WIN11_CU                      NTDDI_WIN10_CU  // Windows 10.0.22631 / 23H2 / Copper
 
+ // Fix WDK
+#define NTDDI_THRESHOLD                     NTDDI_WINTHRESHOLD
+
 #ifndef __cplusplus
 #ifndef __bool_true_false_are_defined
 #define __bool_true_false_are_defined 1
