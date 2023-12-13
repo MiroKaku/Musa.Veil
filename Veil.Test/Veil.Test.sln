@@ -11,6 +11,14 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Veil.Test.Kernel.C", "Veil.
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Veil.Test.UserMode.C", "Veil.Test.UserMode.C.vcxproj", "{4E5DF292-45B9-44B4-B475-DC0168B63056}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ReadMe", "ReadMe", "{A50E71F5-07C7-4B8E-A79B-99159599C5A8}"
+	ProjectSection(SolutionItems) = preProject
+		..\COPYRIGHT.md = ..\COPYRIGHT.md
+		..\LICENSE = ..\LICENSE
+		..\README.md = ..\README.md
+		..\README.Zh-CN.md = ..\README.Zh-CN.md
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|ARM = Debug|ARM

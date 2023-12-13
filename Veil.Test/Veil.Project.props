@@ -3,8 +3,8 @@
 
     <!-- General -->
     <PropertyGroup>
-    <OutDir>$(SolutionDir)Build\$(PlatformShortName)\$(Configuration)\</OutDir>
-    <IntDir>$(SolutionDir)Build\.objs\$(MSBuildProjectName.ToLower())\$(PlatformShortName.ToLower())\$(Configuration.ToLower())\</IntDir>
+    <OutDir>$(SolutionDir)Output\Binaries\$(Configuration)\$(PlatformShortName)\</OutDir>
+    <IntDir>$(SolutionDir)Output\Objects\$(MSBuildProjectName)\$(Configuration)\$(PlatformShortName)\</IntDir>
     </PropertyGroup>
 
     <!-- Global -->

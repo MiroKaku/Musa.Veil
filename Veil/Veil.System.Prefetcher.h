@@ -1,19 +1,12 @@
 /*
  * PROJECT:   Veil
- * FILE:      Veil.h
- * PURPOSE:   Definition for the Windows Internal API from ntdll.dll,
- *            samlib.dll and winsta.dll
+ * FILE:      Veil.System.Prefetcher.h
+ * PURPOSE:   This file is part of Veil.
  *
- * LICENSE:   Relicensed under The MIT License from The CC BY 4.0 License
+ * LICENSE:   MIT License
  *
- * DEVELOPER: MiroKaku (50670906+MiroKaku@users.noreply.github.com)
+ * DEVELOPER: MiroKaku (kkmi04@outlook.com)
  */
-
- /*
-  * This file is part of the systeminformer project - https://systeminformer.sourceforge.io/
-  *
-  * LICENSE:   MIT License.
-  */
 
 #pragma once
 
