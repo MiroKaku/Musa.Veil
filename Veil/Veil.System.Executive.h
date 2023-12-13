@@ -2247,7 +2247,7 @@ __kernel_entry NTSYSCALLAPI
 NTSTATUS
 NTAPI
 NtConvertBetweenAuxiliaryCounterAndPerformanceCounter(
-    _In_  BOOL ConvertAuxiliaryToPerformanceCounter,
+    _In_  BOOLEAN ConvertAuxiliaryToPerformanceCounter,
     _In_  PLARGE_INTEGER PerformanceOrAuxiliaryCounterValue,
     _Out_ PLARGE_INTEGER ConvertedValue,
     _Out_opt_ PLARGE_INTEGER ConversionError
@@ -2258,7 +2258,7 @@ NTSYSAPI
 NTSTATUS
 NTAPI
 ZwConvertBetweenAuxiliaryCounterAndPerformanceCounter(
-    _In_  BOOL ConvertAuxiliaryToPerformanceCounter,
+    _In_  BOOLEAN ConvertAuxiliaryToPerformanceCounter,
     _In_  PLARGE_INTEGER PerformanceOrAuxiliaryCounterValue,
     _Out_ PLARGE_INTEGER ConvertedValue,
     _Out_opt_ PLARGE_INTEGER ConversionError
