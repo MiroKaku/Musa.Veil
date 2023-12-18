@@ -215,6 +215,9 @@
 #define ENABLE_RTL_NUMBER_OF_V2
 #endif
 
+// Disable winternl.h
+#define  _WINTERNL_
+
 #if !defined(_KERNEL_MODE) && !defined(__KERNEL_MODE)
 
 //
@@ -264,7 +267,6 @@ struct IUnknown;
 #if __has_include(<Windows.h>)
 #define  _NTOS_
 #define  _DEVIOCTL_
-#define  _WINTERNL_
 #define  _NTSECAPI_
 #include "Veil/Veil.System.WinNT.h"
 #include <Windows.h>
