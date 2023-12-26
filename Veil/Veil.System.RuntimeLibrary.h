@@ -5129,6 +5129,32 @@ typedef struct _IMAGE_RUNTIME_FUNCTION_ENTRY RUNTIME_FUNCTION, * PRUNTIME_FUNCTI
 typedef struct _SCOPE_TABLE_AMD64 SCOPE_TABLE, * PSCOPE_TABLE;
 #endif
 
+NTSYSAPI
+DECLSPEC_NORETURN
+VOID
+NTAPI
+RtlRaiseStatus(
+    _In_ NTSTATUS Status
+);
+
+NTSYSAPI
+VOID
+NTAPI
+RtlRaiseException(
+    _In_ PEXCEPTION_RECORD ExceptionRecord
+);
+
+NTSYSAPI
+__analysis_noreturn
+VOID
+NTAPI
+RtlAssert(
+    _In_ PVOID VoidFailedAssertion,
+    _In_ PVOID VoidFileName,
+    _In_ ULONG LineNumber,
+    _In_opt_ PSTR MutableMessage
+);
+
 #ifndef _KERNEL_MODE
 
 typedef ULONG(NTAPI* PRTLP_UNHANDLED_EXCEPTION_FILTER)(
@@ -5175,21 +5201,6 @@ RtlDispatchException(
     _In_ PCONTEXT ContextRecord
 );
 
-NTSYSAPI
-DECLSPEC_NORETURN
-VOID
-NTAPI
-RtlRaiseStatus(
-    _In_ NTSTATUS Status
-);
-
-NTSYSAPI
-VOID
-NTAPI
-RtlRaiseException(
-    _In_ PEXCEPTION_RECORD ExceptionRecord
-);
-
 #if (NTDDI_VERSION >= NTDDI_WIN10_VB)
 // rev
 NTSYSAPI
@@ -5209,17 +5220,6 @@ RtlRaiseNoncontinuableException(
     _In_ PCONTEXT ContextRecord
 );
 #endif // (NTDDI_VERSION >= NTDDI_WIN10_VB)
-
-NTSYSAPI
-__analysis_noreturn
-VOID
-NTAPI
-RtlAssert(
-    _In_ PVOID VoidFailedAssertion,
-    _In_ PVOID VoidFileName,
-    _In_ ULONG LineNumber,
-    _In_opt_ PSTR MutableMessage
-);
 
 #ifdef _WIN64
 // private
