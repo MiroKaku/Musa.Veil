@@ -697,7 +697,6 @@ ZwImpersonateAnonymousToken(
     _In_ HANDLE ThreadHandle
 );
 
-#if (NTDDI_VERSION >= NTDDI_WIN7)
 // rev
 __kernel_entry NTSYSCALLAPI
 NTSTATUS
@@ -724,7 +723,6 @@ ZwQuerySecurityAttributesToken(
     _In_ ULONG Length,
     _Out_ PULONG ReturnLength
 );
-#endif
 
 //
 // Access checking
@@ -1258,13 +1256,11 @@ ZwPrivilegedServiceAuditAlarm(
 
 //#pragma comment(lib, "ksecdd.lib")
 
-#if (NTDDI_VERSION >= NTDDI_VISTA)
 typedef struct _LSA_LAST_INTER_LOGON_INFO {
     LARGE_INTEGER LastSuccessfulLogon;
     LARGE_INTEGER LastFailedLogon;
     ULONG FailedAttemptCountSinceLastSuccessfulLogon;
 } LSA_LAST_INTER_LOGON_INFO, * PLSA_LAST_INTER_LOGON_INFO;
-#endif // NTDDI_VERSION >= NTDDI_VISTA
 
 typedef struct _SECURITY_LOGON_SESSION_DATA {
     ULONG               Size;
@@ -1285,8 +1281,6 @@ typedef struct _SECURITY_LOGON_SESSION_DATA {
     LSA_UNICODE_STRING  DnsDomainName;
     LSA_UNICODE_STRING  Upn;
 
-#if (NTDDI_VERSION >= NTDDI_VISTA)
-
     //
     // new for LH
     //
@@ -1305,7 +1299,6 @@ typedef struct _SECURITY_LOGON_SESSION_DATA {
     LARGE_INTEGER PasswordCanChange;
     LARGE_INTEGER PasswordMustChange;
 
-#endif
 } SECURITY_LOGON_SESSION_DATA, * PSECURITY_LOGON_SESSION_DATA;
 
 NTKERNELAPI

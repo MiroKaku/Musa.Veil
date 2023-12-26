@@ -193,11 +193,7 @@ typedef struct _LDR_DATA_TABLE_ENTRY
 {
     LIST_ENTRY InLoadOrderLinks;
     LIST_ENTRY InMemoryOrderLinks;
-    union
-    {
-        LIST_ENTRY InInitializationOrderLinks;
-        LIST_ENTRY InProgressLinks;
-    };
+    LIST_ENTRY InInitializationOrderLinks;
     PVOID DllBase;
     PLDR_INIT_ROUTINE EntryPoint;
     ULONG SizeOfImage;
@@ -266,23 +262,21 @@ typedef struct _LDR_DATA_TABLE_ENTRY
     LDR_HOT_PATCH_STATE HotPatchState;
 } LDR_DATA_TABLE_ENTRY, * PLDR_DATA_TABLE_ENTRY;
 
+STATIC_ASSERT(sizeof(LDR_DATA_TABLE_ENTRY) == (sizeof(void*) == sizeof(__int32) ? 184 : 312));
+
 #define LDR_IS_DATAFILE(DllHandle) (((ULONG_PTR)(DllHandle)) & (ULONG_PTR)1)
 #define LDR_IS_IMAGEMAPPING(DllHandle) (((ULONG_PTR)(DllHandle)) & (ULONG_PTR)2)
+#define LDR_IS_RESOURCE(DllHandle) (LDR_IS_IMAGEMAPPING(DllHandle) || LDR_IS_DATAFILE(DllHandle))
 #define LDR_MAPPEDVIEW_TO_DATAFILE(BaseAddress) ((PVOID)(((ULONG_PTR)(BaseAddress)) | (ULONG_PTR)1))
 #define LDR_MAPPEDVIEW_TO_IMAGEMAPPING(BaseAddress) ((PVOID)(((ULONG_PTR)(BaseAddress)) | (ULONG_PTR)2))
 #define LDR_DATAFILE_TO_MAPPEDVIEW(DllHandle) ((PVOID)(((ULONG_PTR)(DllHandle)) & ~(ULONG_PTR)1))
 #define LDR_IMAGEMAPPING_TO_MAPPEDVIEW(DllHandle) ((PVOID)(((ULONG_PTR)(DllHandle)) & ~(ULONG_PTR)2))
-#define LDR_IS_RESOURCE(DllHandle) (LDR_IS_IMAGEMAPPING(DllHandle) || LDR_IS_DATAFILE(DllHandle))
 
 typedef struct _LDR_DATA_TABLE_ENTRY32
 {
     LIST_ENTRY32 InLoadOrderLinks;
     LIST_ENTRY32 InMemoryOrderLinks;
-    union
-    {
-        LIST_ENTRY32 InInitializationOrderLinks;
-        LIST_ENTRY32 InProgressLinks;
-    };
+    LIST_ENTRY32 InInitializationOrderLinks;
     PVOID32 DllBase;
     PVOID32 /*PLDR_INIT_ROUTINE*/ EntryPoint;
     ULONG SizeOfImage;
@@ -403,7 +397,6 @@ LdrGetDllHandleEx(
     _Out_ PVOID* DllHandle
 );
 
-#if (NTDDI_VERSION >= NTDDI_WIN7)
 // rev
 NTSYSAPI
 NTSTATUS
@@ -422,7 +415,6 @@ LdrGetDllHandleByName(
     _In_opt_ PUNICODE_STRING FullDllName,
     _Out_ PVOID* DllHandle
 );
-#endif
 
 #if (NTDDI_VERSION >= NTDDI_WIN8)
 // rev
@@ -485,7 +477,6 @@ LdrGetProcedureAddress(
 // rev
 #define LDR_GET_PROCEDURE_ADDRESS_DONT_RECORD_FORWARDER 0x00000001
 
-#if (NTDDI_VERSION >= NTDDI_VISTA)
 // private
 NTSYSAPI
 NTSTATUS
@@ -497,7 +488,6 @@ LdrGetProcedureAddressEx(
     _Out_ PVOID* ProcedureAddress,
     _In_ ULONG Flags
 );
-#endif
 
 NTSYSAPI
 NTSTATUS
@@ -536,7 +526,7 @@ NTAPI
 LdrLockLoaderLock(
     _In_ ULONG Flags,
     _Out_opt_ ULONG* Disposition,
-    _Out_ PVOID* Cookie
+    _Out_opt_ PVOID* Cookie
 );
 
 #define LDR_UNLOCK_LOADER_LOCK_FLAG_RAISE_ON_ERRORS 0x00000001
@@ -646,7 +636,6 @@ typedef struct _LDR_VERIFY_IMAGE_INFO
     USHORT ImageCharacteristics;
 } LDR_VERIFY_IMAGE_INFO, * PLDR_VERIFY_IMAGE_INFO;
 
-#if (NTDDI_VERSION >= NTDDI_VISTA)
 // private
 NTSYSAPI
 NTSTATUS
@@ -665,7 +654,6 @@ LdrQueryModuleServiceTags(
     _Out_writes_(*BufferSize) PULONG ServiceTagBuffer,
     _Inout_ PULONG BufferSize
 );
-#endif
 
 // begin_msdn:"DLL Load Notification"
 
@@ -702,7 +690,6 @@ typedef VOID(NTAPI* PLDR_DLL_NOTIFICATION_FUNCTION)(
     _In_opt_ PVOID Context
     );
 
-#if (NTDDI_VERSION >= NTDDI_VISTA)
 NTSYSAPI
 NTSTATUS
 NTAPI
@@ -719,7 +706,6 @@ NTAPI
 LdrUnregisterDllNotification(
     _In_ PVOID Cookie
 );
-#endif
 
 // end_msdn
 
@@ -812,7 +798,6 @@ NTSYSAPI PS_SYSTEM_DLL_INIT_BLOCK LdrSystemDllInitBlock;
 //
 
 #ifndef _KERNEL_MODE
-#if (NTDDI_VERSION >= NTDDI_VISTA)
 // private
 NTSYSAPI
 NTSTATUS
@@ -844,7 +829,6 @@ LdrGetFileNameFromLoadAsDataTable(
     _In_ PVOID Module,
     _Out_ PVOID* pFileNamePrt
 );
-#endif
 
 NTSYSAPI
 NTSTATUS
@@ -992,7 +976,7 @@ typedef struct _LDR_ENUM_RESOURCE_ENTRY
 } LDR_ENUM_RESOURCE_ENTRY, * PLDR_ENUM_RESOURCE_ENTRY;
 
 #define NAME_FROM_RESOURCE_ENTRY(RootDirectory, Entry) \
-    ((Entry)->NameIsString ? (ULONG_PTR)PTR_ADD_OFFSET((RootDirectory), (Entry)->NameOffset) : (Entry)->Id)
+    ((Entry)->NameIsString ? (ULONG_PTR)Add2Ptr((RootDirectory), (Entry)->NameOffset) : (Entry)->Id)
 
 NTSYSAPI
 NTSTATUS
@@ -1189,7 +1173,7 @@ _VEIL_DEFINE_IAT_SYMBOL(LdrUnloadDataFile, _VEIL_IMPL_LdrUnloadDataFile);
 
 typedef struct _RTL_PROCESS_MODULE_INFORMATION
 {
-    HANDLE Section;
+    PVOID Section;
     PVOID MappedBase;
     PVOID ImageBase;
     ULONG ImageSize;
@@ -1446,7 +1430,85 @@ NTAPI
 LdrUpdatePackageSearchPath(
     _In_ PWSTR SearchPath
 );
-#endif
+
+// rev
+#define ENCLAVE_STATE_CREATED         0x00000000ul // LdrpCreateSoftwareEnclave initial state
+#define ENCLAVE_STATE_INITIALIZED     0x00000001ul // ZwInitializeEnclave successful (LdrInitializeEnclave)
+#define ENCLAVE_STATE_INITIALIZED_VBS 0x00000002ul // only for ENCLAVE_TYPE_VBS (LdrInitializeEnclave)
+
+// rev
+typedef struct _LDR_SOFTWARE_ENCLAVE
+{
+    LIST_ENTRY Links; // ntdll!LdrpEnclaveList
+    RTL_CRITICAL_SECTION CriticalSection;
+    ULONG EnclaveType; // ENCLAVE_TYPE_*
+    LONG ReferenceCount;
+    ULONG EnclaveState; // ENCLAVE_STATE_*
+    PVOID BaseAddress;
+    SIZE_T Size;
+    PVOID PreviousBaseAddress;
+    LIST_ENTRY Modules; // LDR_DATA_TABLE_ENTRY.InLoadOrderLinks
+    PLDR_DATA_TABLE_ENTRY PrimaryModule;
+    PLDR_DATA_TABLE_ENTRY BCryptModule;
+    PLDR_DATA_TABLE_ENTRY BCryptPrimitivesModule;
+} LDR_SOFTWARE_ENCLAVE, * PLDR_SOFTWARE_ENCLAVE;
+
+// rev from CreateEnclave
+NTSYSAPI
+NTSTATUS
+NTAPI
+LdrCreateEnclave(
+    _In_ HANDLE ProcessHandle,
+    _Inout_ PVOID* BaseAddress,
+    _In_ ULONG Reserved,
+    _In_ SIZE_T Size,
+    _In_ SIZE_T InitialCommitment,
+    _In_ ULONG EnclaveType,
+    _In_reads_bytes_(EnclaveInformationLength) PVOID EnclaveInformation,
+    _In_ ULONG EnclaveInformationLength,
+    _Out_ PULONG EnclaveError
+);
+
+// rev from InitializeEnclave
+NTSYSAPI
+NTSTATUS
+NTAPI
+LdrInitializeEnclave(
+    _In_ HANDLE ProcessHandle,
+    _In_ PVOID BaseAddress,
+    _In_reads_bytes_(EnclaveInformationLength) PVOID EnclaveInformation,
+    _In_ ULONG EnclaveInformationLength,
+    _Out_ PULONG EnclaveError
+);
+
+// rev from DeleteEnclave
+NTSYSAPI
+NTSTATUS
+NTAPI
+LdrDeleteEnclave(
+    _In_ PVOID BaseAddress
+);
+
+// rev from CallEnclave
+NTSYSAPI
+NTSTATUS
+NTAPI
+LdrCallEnclave(
+    _In_ PENCLAVE_ROUTINE Routine,
+    _In_ ULONG Flags, // ENCLAVE_CALL_FLAG_*
+    _Inout_ PVOID* RoutineParamReturn
+);
+
+// rev from LoadEnclaveImage
+NTSYSAPI
+NTSTATUS
+NTAPI
+LdrLoadEnclaveModule(
+    _In_ PVOID BaseAddress,
+    _In_opt_ PWSTR DllPath,
+    _In_ PUNICODE_STRING DllName
+);
+#endif // (NTDDI_VERSION >= NTDDI_WINTHRESHOLD)
 
 #endif // _KERNEL_MODE
 

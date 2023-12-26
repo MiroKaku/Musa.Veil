@@ -134,6 +134,31 @@ typedef struct _RTL_USER_PROCESS_PARAMETERS* PRTL_USER_PROCESS_PARAMETERS;
 typedef struct _RTL_CRITICAL_SECTION* PRTL_CRITICAL_SECTION;
 
 // private
+#define KACF_OLDGETSHORTPATHNAME                        0x00000001
+#define KACF_VERSIONLIE_NOT_USED                        0x00000002
+#define KACF_GETDISKFREESPACE                           0x00000008
+#define KACF_FTMFROMCURRENTAPT                          0x00000020
+#define KACF_DISALLOWORBINDINGCHANGES                   0x00000040
+#define KACF_OLE32VALIDATEPTRS                          0x00000080
+#define KACF_DISABLECICERO                              0x00000100
+#define KACF_OLE32ENABLEASYNCDOCFILE                    0x00000200
+#define KACF_OLE32ENABLELEGACYEXCEPTIONHANDLING         0x00000400
+#define KACF_RPCDISABLENDRCLIENTHARDENING               0x00000800
+#define KACF_RPCDISABLENDRMAYBENULL_SIZEIS              0x00001000
+#define KACF_DISABLEALLDDEHACK_NOT_USED                 0x00002000
+#define KACF_RPCDISABLENDR61_RANGE                      0x00004000
+#define KACF_RPC32ENABLELEGACYEXCEPTIONHANDLING         0x00008000
+#define KACF_OLE32DOCFILEUSELEGACYNTFSFLAGS             0x00010000
+#define KACF_RPCDISABLENDRCONSTIIDCHECK                 0x00020000
+#define KACF_USERDISABLEFORWARDERPATCH                  0x00040000
+#define KACF_OLE32DISABLENEW_WMPAINT_DISPATCH           0x00100000
+#define KACF_ADDRESTRICTEDSIDINCOINITIALIZESECURITY     0x00200000
+#define KACF_ALLOCDEBUGINFOFORCRITSECTIONS              0x00400000
+#define KACF_OLEAUT32ENABLEUNSAFELOADTYPELIBRELATIVE    0x00800000
+#define KACF_ALLOWMAXIMIZEDWINDOWGAMMA                  0x01000000
+#define KACF_DONOTADDTOCACHE                            0x80000000
+
+// private
 typedef struct _API_SET_NAMESPACE
 {
     ULONG Version;
@@ -172,6 +197,28 @@ typedef struct _API_SET_VALUE_ENTRY
     ULONG ValueOffset;
     ULONG ValueLength;
 } API_SET_VALUE_ENTRY, * PAPI_SET_VALUE_ENTRY;
+
+// private
+typedef struct _TELEMETRY_COVERAGE_HEADER
+{
+    UCHAR MajorVersion;
+    UCHAR MinorVersion;
+    struct
+    {
+        USHORT TracingEnabled : 1;
+        USHORT Reserved1 : 15;
+    };
+    ULONG HashTableEntries;
+    ULONG HashIndexMask;
+    ULONG TableUpdateVersion;
+    ULONG TableSizeInBytes;
+    ULONG LastResetTick;
+    ULONG ResetRound;
+    ULONG Reserved2;
+    ULONG RecordedCount;
+    ULONG Reserved3[4];
+    ULONG HashTable[ANYSIZE_ARRAY];
+} TELEMETRY_COVERAGE_HEADER, * PTELEMETRY_COVERAGE_HEADER;
 
 // symbols
 typedef struct _PEB
@@ -232,7 +279,7 @@ typedef struct _PEB
     PAPI_SET_NAMESPACE ApiSetMap;
     ULONG TlsExpansionCounter;
     PVOID TlsBitmap;
-    ULONG TlsBitmapBits[2];
+    ULONG TlsBitmapBits[2]; // TLS_MINIMUM_AVAILABLE
 
     PVOID ReadOnlySharedMemoryBase;
     struct _SILO_USER_SHARED_DATA* SharedData; // HotpatchInformation
@@ -274,11 +321,11 @@ typedef struct _PEB
     PVOID PostProcessInitRoutine;
 
     PVOID TlsExpansionBitmap;
-    ULONG TlsExpansionBitmapBits[32];
+    ULONG TlsExpansionBitmapBits[32]; // TLS_EXPANSION_SLOTS
 
     ULONG SessionId;
 
-    ULARGE_INTEGER AppCompatFlags;
+    ULARGE_INTEGER AppCompatFlags; // KACF_*
     ULARGE_INTEGER AppCompatFlagsUser;
     PVOID pShimData;
     PVOID AppCompatInfo; // APPCOMPAT_EXE_DATA
@@ -330,7 +377,7 @@ typedef struct _PEB
     PRTL_CRITICAL_SECTION TppWorkerpListLock;
     LIST_ENTRY TppWorkerpList;
     PVOID WaitOnAddressHashTable[128];
-    PVOID TelemetryCoverageHeader; // REDSTONE3
+    PTELEMETRY_COVERAGE_HEADER TelemetryCoverageHeader; // REDSTONE3
     ULONG CloudFileFlags;
     ULONG CloudFileDiagFlags; // REDSTONE4
     CHAR PlaceholderCompatibilityMode;
@@ -351,17 +398,17 @@ typedef struct _PEB
 } PEB, * PPEB;
 
 #ifdef _WIN64
-C_ASSERT(FIELD_OFFSET(PEB, SessionId) == 0x2C0);
-//C_ASSERT(sizeof(PEB) == 0x7B0); // REDSTONE3
-//C_ASSERT(sizeof(PEB) == 0x7B8); // REDSTONE4
-//C_ASSERT(sizeof(PEB) == 0x7C8); // REDSTONE5 // 19H1
-C_ASSERT(sizeof(PEB) == 0x7d0); // WIN11
+STATIC_ASSERT(FIELD_OFFSET(PEB, SessionId) == 0x2C0);
+//STATIC_ASSERT(sizeof(PEB) == 0x7B0); // REDSTONE3
+//STATIC_ASSERT(sizeof(PEB) == 0x7B8); // REDSTONE4
+//STATIC_ASSERT(sizeof(PEB) == 0x7C8); // REDSTONE5 // 19H1
+STATIC_ASSERT(sizeof(PEB) == 0x7d0); // WIN11
 #else
-C_ASSERT(FIELD_OFFSET(PEB, SessionId) == 0x1D4);
-//C_ASSERT(sizeof(PEB) == 0x468); // REDSTONE3
-//C_ASSERT(sizeof(PEB) == 0x470); // REDSTONE4
-//C_ASSERT(sizeof(PEB) == 0x480); // REDSTONE5 // 19H1
-C_ASSERT(sizeof(PEB) == 0x488); // WIN11
+STATIC_ASSERT(FIELD_OFFSET(PEB, SessionId) == 0x1D4);
+//STATIC_ASSERT(sizeof(PEB) == 0x468); // REDSTONE3
+//STATIC_ASSERT(sizeof(PEB) == 0x470); // REDSTONE4
+//STATIC_ASSERT(sizeof(PEB) == 0x480); // REDSTONE5 // 19H1
+STATIC_ASSERT(sizeof(PEB) == 0x488); // WIN11
 #endif
 
 typedef struct _PEB32
@@ -520,7 +567,7 @@ typedef struct _PEB32
     struct _RTL_CRITICAL_SECTION32* POINTER_32 TppWorkerpListLock;
     LIST_ENTRY32 TppWorkerpList;
     PVOID32 WaitOnAddressHashTable[128];
-    PVOID32 TelemetryCoverageHeader; // REDSTONE3
+    struct _PTELEMETRY_COVERAGE_HEADER* POINTER_32 TelemetryCoverageHeader; // REDSTONE3
     ULONG CloudFileFlags;
     ULONG CloudFileDiagFlags; // REDSTONE4
     CHAR PlaceholderCompatibilityMode;
@@ -572,6 +619,18 @@ typedef struct _TEB_ACTIVE_FRAME_CONTEXT32
     char * POINTER_32 FrameName;
 } TEB_ACTIVE_FRAME_CONTEXT32, * POINTER_32 PTEB_ACTIVE_FRAME_CONTEXT32;
 
+typedef struct _TEB_ACTIVE_FRAME_CONTEXT_EX
+{
+    TEB_ACTIVE_FRAME_CONTEXT BasicContext;
+    PSTR SourceLocation;
+} TEB_ACTIVE_FRAME_CONTEXT_EX, * PTEB_ACTIVE_FRAME_CONTEXT_EX;
+
+typedef struct _TEB_ACTIVE_FRAME_CONTEXT_EX32
+{
+    TEB_ACTIVE_FRAME_CONTEXT32 BasicContext;
+    char* POINTER_32 SourceLocation;
+} TEB_ACTIVE_FRAME_CONTEXT_EX32, * PTEB_ACTIVE_FRAME_CONTEXT_EX32;
+
 typedef struct _TEB_ACTIVE_FRAME
 {
     ULONG Flags;
@@ -586,6 +645,18 @@ typedef struct _TEB_ACTIVE_FRAME32
     PTEB_ACTIVE_FRAME_CONTEXT32 Context;
 } TEB_ACTIVE_FRAME32, * POINTER_32 PTEB_ACTIVE_FRAME32;
 
+typedef struct _TEB_ACTIVE_FRAME_EX
+{
+    TEB_ACTIVE_FRAME BasicFrame;
+    PVOID ExtensionIdentifier;
+} TEB_ACTIVE_FRAME_EX, * PTEB_ACTIVE_FRAME_EX;
+
+typedef struct _TEB_ACTIVE_FRAME_EX32
+{
+    TEB_ACTIVE_FRAME32 BasicFrame;
+    PVOID32 ExtensionIdentifier;
+} TEB_ACTIVE_FRAME_EX32, * PTEB_ACTIVE_FRAME_EX32;
+
 typedef struct _FLS_DATA
 {
     LIST_ENTRY  Entry;
@@ -597,6 +668,9 @@ typedef struct _FLS_DATA32
     LIST_ENTRY32  Entry;
     PVOID32       Slots[FLS_MAXIMUM_AVAILABLE];
 } FLS_DATA32, * POINTER_32 PFLS_DATA32;
+
+#define STATIC_UNICODE_BUFFER_LENGTH 261
+#define WIN32_CLIENT_INFO_LENGTH 62
 
 typedef struct _TEB
 {
@@ -656,7 +730,7 @@ typedef struct _TEB
     ULONG GdiClientPID;
     ULONG GdiClientTID;
     PVOID GdiThreadLocalInfo;
-    ULONG_PTR Win32ClientInfo[62];
+    ULONG_PTR Win32ClientInfo[WIN32_CLIENT_INFO_LENGTH];
     PVOID glDispatchTable[233];
     ULONG_PTR glReserved1[29];
     PVOID glReserved2;
@@ -668,10 +742,10 @@ typedef struct _TEB
 
     NTSTATUS LastStatusValue;
     UNICODE_STRING StaticUnicodeString;
-    WCHAR StaticUnicodeBuffer[261];
+    WCHAR StaticUnicodeBuffer[STATIC_UNICODE_BUFFER_LENGTH];
 
     PVOID DeallocationStack;
-    PVOID TlsSlots[64];
+    PVOID TlsSlots[TLS_MINIMUM_AVAILABLE];
     LIST_ENTRY TlsLinks;
 
     PVOID Vdm;
@@ -774,6 +848,8 @@ typedef struct _TEB
     ULONGLONG ExtendedFeatureDisableMask;
 } TEB, * PTEB;
 
+STATIC_ASSERT(sizeof(TEB) == (sizeof(void*) == sizeof(__int32) ? 0x1018 : 0x1850)); // WIN11
+
 typedef struct _TEB32
 {
     NT_TIB32 NtTib;
@@ -820,7 +896,7 @@ typedef struct _TEB32
     ULONG GdiClientPID;
     ULONG GdiClientTID;
     PVOID32 GdiThreadLocalInfo;
-    ULONG_PTR32 Win32ClientInfo[62];
+    ULONG_PTR32 Win32ClientInfo[WIN32_CLIENT_INFO_LENGTH];
     PVOID32 glDispatchTable[233];
     ULONG_PTR32 glReserved1[29];
     PVOID32 glReserved2;
@@ -832,10 +908,10 @@ typedef struct _TEB32
 
     NTSTATUS LastStatusValue;
     UNICODE_STRING32 StaticUnicodeString;
-    WCHAR StaticUnicodeBuffer[261];
+    WCHAR StaticUnicodeBuffer[STATIC_UNICODE_BUFFER_LENGTH];
 
     PVOID32 DeallocationStack;
-    PVOID32 TlsSlots[64];
+    PVOID32 TlsSlots[TLS_MINIMUM_AVAILABLE];
     LIST_ENTRY32 TlsLinks;
 
     PVOID32 Vdm;
@@ -936,6 +1012,165 @@ typedef struct _WOW64_PROCESS
 {
     PVOID Wow64;
 } WOW64_PROCESS, * PWOW64_PROCESS;
+
+#if !defined(_KERNEL_MODE)
+// The Wow64Info structure follows the PEB32/TEB32 structures and is shared between 32-bit and 64-bit modules inside a Wow64 process.
+// from SDK/10.0.10240.0/um/minwin/wow64t.h (dmex)
+//
+// Page size on x86 NT
+//
+#define PAGE_SIZE_X86NT  0x1000
+#define PAGE_SHIFT_X86NT 12L
+#define WOW64_SPLITS_PER_PAGE (PAGE_SIZE_X86NT / PAGE_SIZE_X86NT)
+
+//
+// Convert the number of native pages to sub x86-pages
+//
+#define Wow64GetNumberOfX86Pages(NativePages) \
+    (NativePages * (PAGE_SIZE_X86NT >> PAGE_SHIFT_X86NT))
+
+//
+// Macro to round to the nearest page size
+//
+#define WOW64_ROUND_TO_PAGES(Size) \
+    (((ULONG_PTR)(Size) + PAGE_SIZE_X86NT - 1) & ~(PAGE_SIZE_X86NT - 1))
+
+//
+// Get number of native pages
+//
+#define WOW64_BYTES_TO_PAGES(Size) \
+    (((ULONG)(Size) >> WOW64_ROUND_TO_PAGES) + (((ULONG)(Size) & (PAGE_SIZE_X86NT - 1)) != 0))
+
+//
+// Get the 32-bit TEB without doing a memory reference.
+//
+#define WOW64_GET_TEB32(teb64) ((PTEB32)(PVOID)Add2Ptr((teb64), WOW64_ROUND_TO_PAGES(sizeof(TEB))))
+#define WOW64_TEB32_POINTER_ADDRESS(teb64) (PVOID)&((teb64)->NtTib.ExceptionList)
+
+typedef union _WOW64_EXECUTE_OPTIONS
+{
+    ULONG Flags;
+    struct
+    {
+        ULONG StackReserveSize : 8;
+        ULONG StackCommitSize : 4;
+        ULONG Deprecated0 : 1;
+        ULONG DisableWowAssert : 1;
+        ULONG DisableTurboDispatch : 1;
+        ULONG Unused : 13;
+        ULONG Reserved0 : 1;
+        ULONG Reserved1 : 1;
+        ULONG Reserved2 : 1;
+        ULONG Reserved3 : 1;
+    };
+} WOW64_EXECUTE_OPTIONS, * PWOW64_EXECUTE_OPTIONS;
+
+#define WOW64_CPUFLAGS_MSFT64           0x00000001
+#define WOW64_CPUFLAGS_SOFTWARE         0x00000002
+#define WOW64_CPUFLAGS_IA64             0x00000004
+
+typedef struct _WOW64INFO
+{
+    ULONG NativeSystemPageSize;
+    ULONG CpuFlags;
+    WOW64_EXECUTE_OPTIONS Wow64ExecuteFlags;
+    ULONG InstrumentationCallback;
+} WOW64INFO, * PWOW64INFO;
+
+typedef struct _PEB32_WITH_WOW64INFO
+{
+    PEB32 Peb32;
+    WOW64INFO Wow64Info;
+} PEB32_WITH_WOW64INFO, * PPEB32_WITH_WOW64INFO;
+
+#ifdef _M_X64
+
+FORCEINLINE
+TEB32*
+POINTER_UNSIGNED
+Wow64CurrentGuestTeb(
+    VOID
+)
+{
+    TEB* POINTER_UNSIGNED Teb;
+    TEB32* POINTER_UNSIGNED Teb32;
+
+    Teb = NtCurrentTeb();
+
+    if (Teb->WowTebOffset == 0) {
+        //
+        // Not running under or over WoW, so there is no "guest teb"
+        //
+
+        return NULL;
+    }
+
+    if (Teb->WowTebOffset < 0) {
+        //
+        // Was called while running under WoW. The current teb is the guest
+        // teb.
+        //
+
+        Teb32 = (PTEB32)(ULONG)(ULONG_PTR)Teb;
+
+        RTL_VERIFY(&Teb32->WowTebOffset == &Teb->WowTebOffset);
+    }
+    else {
+        //
+        // Called by the WoW Host, so calculate the position of the guest teb
+        // relative to the current (host) teb.
+        //
+
+        Teb32 = (PTEB32)(ULONG)(ULONG_PTR)Add2Ptr(Teb, Teb->WowTebOffset);
+    }
+
+    RTL_VERIFY(Teb32->NtTib.Self == PtrToUlong(Teb32));
+
+    return Teb32;
+}
+
+FORCEINLINE
+VOID*
+POINTER_UNSIGNED
+Wow64CurrentNativeTeb(
+    VOID
+)
+{
+    TEB* POINTER_UNSIGNED Teb;
+    VOID* POINTER_UNSIGNED HostTeb;
+
+    Teb = NtCurrentTeb();
+
+    if (Teb->WowTebOffset >= 0) {
+        //
+        // Not running under WoW, so it it either not running on WoW at all, or
+        // it is the host. Return the current teb as native teb.
+        //
+
+        HostTeb = (PVOID)Teb;
+    }
+    else {
+        //
+        // Called while runnign under WoW Host, so calculate the position of the
+        // host teb relative to the current (guest) teb.
+        //
+
+        HostTeb = (PVOID)Add2Ptr(Teb, Teb->WowTebOffset);
+    }
+
+    RTL_VERIFY((((PTEB32)(ULONG)(ULONG_PTR)HostTeb)->NtTib.Self == PtrToUlong(HostTeb)) || ((ULONG_PTR)((PTEB)HostTeb)->NtTib.Self == (ULONG_PTR)HostTeb));
+
+    return HostTeb;
+}
+
+#define NtCurrentTeb32() (Wow64CurrentGuestTeb())
+#define NtCurrentPeb32()  ((PPEB32)(UlongToPtr((NtCurrentTeb32()->ProcessEnvironmentBlock))))
+
+#define Wow64GetNativeTebField(teb, field) (((ULONG)(teb) == ((PTEB32)(teb))->NtTib.Self) ? (((PTEB32)(teb))->##field) : (((PTEB)(teb))->##field) )
+#define Wow64SetNativeTebField(teb, field, value) { if ((ULONG)(teb) == ((PTEB32)(teb))->NtTib.Self) {(((PTEB32)(teb))->##field) = (value);} else {(((PTEB)(teb))->##field) = (value);} }
+#endif // _M_X64
+
+#endif // !defined(_KERNEL_MODE)
 
 #if defined(_KERNEL_MODE) && !defined(_WINDOWS_)
 
@@ -1202,7 +1437,7 @@ typedef enum _PROCESSINFOCLASS
     ProcessLdtInformation, // qs: PROCESS_LDT_INFORMATION // 10
     ProcessLdtSize, // s: PROCESS_LDT_SIZE
     ProcessDefaultHardErrorMode, // qs: ULONG
-    ProcessIoPortHandlers, // (kernel-mode only) // PROCESS_IO_PORT_HANDLER_INFORMATION
+    ProcessIoPortHandlers, // (kernel-mode only) // s: PROCESS_IO_PORT_HANDLER_INFORMATION
     ProcessPooledUsageAndLimits, // q: POOLED_USAGE_AND_LIMITS
     ProcessWorkingSetWatch, // q: PROCESS_WS_WATCH_INFORMATION[]; s: void
     ProcessUserModeIOPL, // qs: ULONG (requires SeTcbPrivilege)
@@ -1221,9 +1456,9 @@ typedef enum _PROCESSINFOCLASS
     ProcessBreakOnTermination, // qs: ULONG
     ProcessDebugObjectHandle, // q: HANDLE // 30
     ProcessDebugFlags, // qs: ULONG
-    ProcessHandleTracing, // q: PROCESS_HANDLE_TRACING_QUERY; s: size 0 disables, otherwise enables
+    ProcessHandleTracing, // q: PROCESS_HANDLE_TRACING_QUERY; s: PROCESS_HANDLE_TRACING_ENABLE[_EX] or void to disable
     ProcessIoPriority, // qs: IO_PRIORITY_HINT
-    ProcessExecuteFlags, // qs: ULONG
+    ProcessExecuteFlags, // qs: ULONG (MEM_EXECUTE_OPTION_*)
     ProcessTlsInformation, // PROCESS_TLS_INFORMATION // ProcessResourceManagement 
     ProcessCookie, // q: ULONG
     ProcessImageInformation, // q: SECTION_IMAGE_INFORMATION
@@ -1231,7 +1466,7 @@ typedef enum _PROCESSINFOCLASS
     ProcessPagePriority, // qs: PAGE_PRIORITY_INFORMATION
     ProcessInstrumentationCallback, // s: PVOID or PROCESS_INSTRUMENTATION_CALLBACK_INFORMATION // 40
     ProcessThreadStackAllocation, // s: PROCESS_STACK_ALLOCATION_INFORMATION, PROCESS_STACK_ALLOCATION_INFORMATION_EX
-    ProcessWorkingSetWatchEx, // q: PROCESS_WS_WATCH_INFORMATION_EX[]
+    ProcessWorkingSetWatchEx, // q: PROCESS_WS_WATCH_INFORMATION_EX[]; s: void
     ProcessImageFileNameWin32, // q: UNICODE_STRING
     ProcessImageFileMapping, // q: HANDLE (input)
     ProcessAffinityUpdateMode, // qs: PROCESS_AFFINITY_UPDATE_MODE
@@ -1242,7 +1477,7 @@ typedef enum _PROCESSINFOCLASS
     ProcessWindowInformation, // q: PROCESS_WINDOW_INFORMATION // 50
     ProcessHandleInformation, // q: PROCESS_HANDLE_SNAPSHOT_INFORMATION // since WIN8
     ProcessMitigationPolicy, // s: PROCESS_MITIGATION_POLICY_INFORMATION
-    ProcessDynamicFunctionTableInformation,
+    ProcessDynamicFunctionTableInformation, // s: PROCESS_DYNAMIC_FUNCTION_TABLE_INFORMATION
     ProcessHandleCheckingMode, // qs: ULONG; s: 0 disables, otherwise enables
     ProcessKeepAliveCount, // q: PROCESS_KEEPALIVE_COUNT_INFORMATION
     ProcessRevokeFileHandles, // s: PROCESS_REVOKE_FILE_HANDLES_INFORMATION
@@ -1251,15 +1486,15 @@ typedef enum _PROCESSINFOCLASS
     ProcessCheckStackExtentsMode, // qs: ULONG // KPROCESS->CheckStackExtents (CFG)
     ProcessCommandLineInformation, // q: UNICODE_STRING // 60
     ProcessProtectionInformation, // q: PS_PROTECTION
-    ProcessMemoryExhaustion, // PROCESS_MEMORY_EXHAUSTION_INFO // since THRESHOLD
-    ProcessFaultInformation, // PROCESS_FAULT_INFORMATION
+    ProcessMemoryExhaustion, // s: PROCESS_MEMORY_EXHAUSTION_INFO // since THRESHOLD
+    ProcessFaultInformation, // s: PROCESS_FAULT_INFORMATION
     ProcessTelemetryIdInformation, // q: PROCESS_TELEMETRY_ID_INFORMATION
-    ProcessCommitReleaseInformation, // PROCESS_COMMIT_RELEASE_INFORMATION
-    ProcessDefaultCpuSetsInformation, // SYSTEM_CPU_SET_INFORMATION[5]
-    ProcessAllowedCpuSetsInformation, // SYSTEM_CPU_SET_INFORMATION[5]
+    ProcessCommitReleaseInformation, // qs: PROCESS_COMMIT_RELEASE_INFORMATION
+    ProcessDefaultCpuSetsInformation, // qs: SYSTEM_CPU_SET_INFORMATION[5]
+    ProcessAllowedCpuSetsInformation, // qs: SYSTEM_CPU_SET_INFORMATION[5]
     ProcessSubsystemProcess,
     ProcessJobMemoryInformation, // q: PROCESS_JOB_MEMORY_INFO
-    ProcessInPrivate, // s: void // ETW // since THRESHOLD2 // 70
+    ProcessInPrivate, // q: BOOLEAN; s: void // ETW // since THRESHOLD2 // 70
     ProcessRaiseUMExceptionOnInvalidHandleClose, // qs: ULONG; s: 0 disables, otherwise enables
     ProcessIumChallengeResponse,
     ProcessChildProcessInformation, // q: PROCESS_CHILD_PROCESS_INFORMATION
@@ -1269,36 +1504,36 @@ typedef enum _PROCESSINFOCLASS
     ProcessPowerThrottlingState, // qs: POWER_THROTTLING_PROCESS_STATE
     ProcessReserved3Information, // ProcessActivityThrottlePolicy // PROCESS_ACTIVITY_THROTTLE_POLICY
     ProcessWin32kSyscallFilterInformation, // q: WIN32K_SYSCALL_FILTER
-    ProcessDisableSystemAllowedCpuSets, // 80
-    ProcessWakeInformation, // PROCESS_WAKE_INFORMATION
+    ProcessDisableSystemAllowedCpuSets, // s: BOOLEAN // 80
+    ProcessWakeInformation, // q: PROCESS_WAKE_INFORMATION
     ProcessEnergyTrackingState, // qs: PROCESS_ENERGY_TRACKING_STATE
     ProcessManageWritesToExecutableMemory, // MANAGE_WRITES_TO_EXECUTABLE_MEMORY // since REDSTONE3
     ProcessCaptureTrustletLiveDump,
-    ProcessTelemetryCoverage,
+    ProcessTelemetryCoverage, // q: TELEMETRY_COVERAGE_HEADER; s: TELEMETRY_COVERAGE_POINT
     ProcessEnclaveInformation,
-    ProcessEnableReadWriteVmLogging, // PROCESS_READWRITEVM_LOGGING_INFORMATION
+    ProcessEnableReadWriteVmLogging, // qs: PROCESS_READWRITEVM_LOGGING_INFORMATION
     ProcessUptimeInformation, // q: PROCESS_UPTIME_INFORMATION
     ProcessImageSection, // q: HANDLE
     ProcessDebugAuthInformation, // since REDSTONE4 // 90
-    ProcessSystemResourceManagement, // PROCESS_SYSTEM_RESOURCE_MANAGEMENT
+    ProcessSystemResourceManagement, // s: PROCESS_SYSTEM_RESOURCE_MANAGEMENT
     ProcessSequenceNumber, // q: ULONGLONG
     ProcessLoaderDetour, // since REDSTONE5
-    ProcessSecurityDomainInformation, // PROCESS_SECURITY_DOMAIN_INFORMATION
-    ProcessCombineSecurityDomainsInformation, // PROCESS_COMBINE_SECURITY_DOMAINS_INFORMATION
-    ProcessEnableLogging, // PROCESS_LOGGING_INFORMATION
-    ProcessLeapSecondInformation, // PROCESS_LEAP_SECOND_INFORMATION
-    ProcessFiberShadowStackAllocation, // PROCESS_FIBER_SHADOW_STACK_ALLOCATION_INFORMATION // since 19H1
-    ProcessFreeFiberShadowStackAllocation, // PROCESS_FREE_FIBER_SHADOW_STACK_ALLOCATION_INFORMATION
-    ProcessAltSystemCallInformation, // since 20H1 // 100
-    ProcessDynamicEHContinuationTargets, // PROCESS_DYNAMIC_EH_CONTINUATION_TARGETS_INFORMATION
-    ProcessDynamicEnforcedCetCompatibleRanges, // PROCESS_DYNAMIC_ENFORCED_ADDRESS_RANGE_INFORMATION // since 20H2
+    ProcessSecurityDomainInformation, // q: PROCESS_SECURITY_DOMAIN_INFORMATION
+    ProcessCombineSecurityDomainsInformation, // s: PROCESS_COMBINE_SECURITY_DOMAINS_INFORMATION
+    ProcessEnableLogging, // qs: PROCESS_LOGGING_INFORMATION
+    ProcessLeapSecondInformation, // qs: PROCESS_LEAP_SECOND_INFORMATION
+    ProcessFiberShadowStackAllocation, // s: PROCESS_FIBER_SHADOW_STACK_ALLOCATION_INFORMATION // since 19H1
+    ProcessFreeFiberShadowStackAllocation, // s: PROCESS_FREE_FIBER_SHADOW_STACK_ALLOCATION_INFORMATION
+    ProcessAltSystemCallInformation, // s: PROCESS_SYSCALL_PROVIDER_INFORMATION // since 20H1 // 100
+    ProcessDynamicEHContinuationTargets, // s: PROCESS_DYNAMIC_EH_CONTINUATION_TARGETS_INFORMATION
+    ProcessDynamicEnforcedCetCompatibleRanges, // s: PROCESS_DYNAMIC_ENFORCED_ADDRESS_RANGE_INFORMATION // since 20H2
     ProcessCreateStateChange, // since WIN11
     ProcessApplyStateChange,
-    ProcessEnableOptionalXStateFeatures, // ULONG64 // optional XState feature bitmask
+    ProcessEnableOptionalXStateFeatures, // s: ULONG64 // optional XState feature bitmask
     ProcessAltPrefetchParam, // since 22H1
     ProcessAssignCpuPartitions,
     ProcessPriorityClassEx, // s: PROCESS_PRIORITY_CLASS_EX
-    ProcessMembershipInformation, // PROCESS_MEMBERSHIP_INFORMATION
+    ProcessMembershipInformation, // q: PROCESS_MEMBERSHIP_INFORMATION
     ProcessEffectiveIoPriority, // q: IO_PRIORITY_HINT
     ProcessEffectivePagePriority, // q: ULONG
     MaxProcessInfoClass
@@ -1325,7 +1560,7 @@ typedef enum _THREADINFOCLASS
     ThreadAmILastThread, // q: ULONG
     ThreadIdealProcessor, // s: ULONG
     ThreadPriorityBoost, // qs: ULONG
-    ThreadSetTlsArrayAddress, // s: ULONG_PTR 
+    ThreadSetTlsArrayAddress, // s: ULONG_PTR // Obsolete
     ThreadIsIoPending, // q: ULONG
     ThreadHideFromDebugger, // q: BOOLEAN; s: void
     ThreadBreakOnTermination, // qs: ULONG
@@ -1337,11 +1572,11 @@ typedef enum _THREADINFOCLASS
     ThreadPagePriority, // qs: PAGE_PRIORITY_INFORMATION
     ThreadActualBasePriority, // s: LONG (requires SeIncreaseBasePriorityPrivilege)
     ThreadTebInformation, // q: THREAD_TEB_INFORMATION (requires THREAD_GET_CONTEXT + THREAD_SET_CONTEXT)
-    ThreadCSwitchMon,
+    ThreadCSwitchMon, // Obsolete
     ThreadCSwitchPmu,
-    ThreadWow64Context, // qs: WOW64_CONTEX, ARM_NT_CONTEXT since 20H1
+    ThreadWow64Context, // qs: WOW64_CONTEXT, ARM_NT_CONTEXT since 20H1
     ThreadGroupInformation, // qs: GROUP_AFFINITY // 30
-    ThreadUmsInformation, // q: THREAD_UMS_INFORMATION
+    ThreadUmsInformation, // q: THREAD_UMS_INFORMATION // Obsolete
     ThreadCounterProfiling, // q: BOOLEAN; s: THREAD_PROFILING_INFORMATION?
     ThreadIdealProcessorEx, // qs: PROCESSOR_NUMBER; s: previous PROCESSOR_NUMBER on return
     ThreadCpuAccountingInformation, // q: BOOLEAN; s: HANDLE (NtOpenSession) // NtCurrentThread // since WIN8
@@ -1445,7 +1680,6 @@ typedef struct _VM_COUNTERS_EX
     SIZE_T PrivateUsage;
 } VM_COUNTERS_EX, * PVM_COUNTERS_EX;
 
-// private
 typedef struct _VM_COUNTERS_EX2
 {
     VM_COUNTERS_EX CountersEx;
@@ -1559,12 +1793,12 @@ typedef struct _PROCESS_DEVICEMAP_INFORMATION
     {
         struct
         {
-            HANDLE DirectoryHandle;
+            HANDLE DirectoryHandle; // needs DIRECTORY_TRAVERSE access
         } Set;
         struct
         {
-            ULONG DriveMap;
-            UCHAR DriveType[32];
+            ULONG DriveMap;  // bit mask
+            UCHAR DriveType[32]; // DRIVE_* WinBase.h
         } Query;
     };
 } PROCESS_DEVICEMAP_INFORMATION, * PPROCESS_DEVICEMAP_INFORMATION;
@@ -1627,13 +1861,12 @@ typedef struct _PROCESS_HANDLE_TRACING_ENTRY
 
 typedef struct _PROCESS_HANDLE_TRACING_QUERY
 {
-    HANDLE Handle;
-    ULONG TotalTraces;
-    PROCESS_HANDLE_TRACING_ENTRY HandleTrace[1];
+    _In_opt_ HANDLE Handle;
+    _Out_ ULONG TotalTraces;
+    _Out_ PROCESS_HANDLE_TRACING_ENTRY HandleTrace[1];
 } PROCESS_HANDLE_TRACING_QUERY, * PPROCESS_HANDLE_TRACING_QUERY;
 #endif // !_KERNEL_MODE
 
-// private
 typedef struct _THREAD_TLS_INFORMATION
 {
     ULONG Flags;
@@ -1642,7 +1875,6 @@ typedef struct _THREAD_TLS_INFORMATION
     HANDLE ThreadId;
 } THREAD_TLS_INFORMATION, * PTHREAD_TLS_INFORMATION;
 
-// private
 typedef enum _PROCESS_TLS_INFORMATION_TYPE
 {
     ProcessTlsReplaceIndex,
@@ -1650,7 +1882,6 @@ typedef enum _PROCESS_TLS_INFORMATION_TYPE
     MaxProcessTlsOperation
 } PROCESS_TLS_INFORMATION_TYPE, * PPROCESS_TLS_INFORMATION_TYPE;
 
-// private
 typedef struct _PROCESS_TLS_INFORMATION
 {
     ULONG Flags;
@@ -1661,7 +1892,6 @@ typedef struct _PROCESS_TLS_INFORMATION
     THREAD_TLS_INFORMATION ThreadData[1];
 } PROCESS_TLS_INFORMATION, * PPROCESS_TLS_INFORMATION;
 
-// private
 typedef struct _PROCESS_INSTRUMENTATION_CALLBACK_INFORMATION
 {
     ULONG Version;
@@ -1669,7 +1899,6 @@ typedef struct _PROCESS_INSTRUMENTATION_CALLBACK_INFORMATION
     PVOID Callback;
 } PROCESS_INSTRUMENTATION_CALLBACK_INFORMATION, * PPROCESS_INSTRUMENTATION_CALLBACK_INFORMATION;
 
-// private
 typedef struct _PROCESS_STACK_ALLOCATION_INFORMATION
 {
     SIZE_T ReserveSize;
@@ -1677,7 +1906,6 @@ typedef struct _PROCESS_STACK_ALLOCATION_INFORMATION
     PVOID StackBase;
 } PROCESS_STACK_ALLOCATION_INFORMATION, * PPROCESS_STACK_ALLOCATION_INFORMATION;
 
-// private
 typedef struct _PROCESS_STACK_ALLOCATION_INFORMATION_EX
 {
     ULONG PreferredNode;
@@ -1687,7 +1915,6 @@ typedef struct _PROCESS_STACK_ALLOCATION_INFORMATION_EX
     PROCESS_STACK_ALLOCATION_INFORMATION AllocInfo;
 } PROCESS_STACK_ALLOCATION_INFORMATION_EX, * PPROCESS_STACK_ALLOCATION_INFORMATION_EX;
 
-// private
 typedef union _PROCESS_AFFINITY_UPDATE_MODE
 {
     ULONG Flags;
@@ -1699,7 +1926,6 @@ typedef union _PROCESS_AFFINITY_UPDATE_MODE
     };
 } PROCESS_AFFINITY_UPDATE_MODE, * PPROCESS_AFFINITY_UPDATE_MODE;
 
-// private
 typedef union _PROCESS_MEMORY_ALLOCATION_MODE
 {
     ULONG Flags;
@@ -1710,21 +1936,18 @@ typedef union _PROCESS_MEMORY_ALLOCATION_MODE
     };
 } PROCESS_MEMORY_ALLOCATION_MODE, * PPROCESS_MEMORY_ALLOCATION_MODE;
 
-// private
 typedef struct _PROCESS_HANDLE_INFORMATION
 {
     ULONG HandleCount;
     ULONG HandleCountHighWatermark;
 } PROCESS_HANDLE_INFORMATION, * PPROCESS_HANDLE_INFORMATION;
 
-// private
 typedef struct _PROCESS_CYCLE_TIME_INFORMATION
 {
     ULONGLONG AccumulatedCycles;
     ULONGLONG CurrentCycleCount;
 } PROCESS_CYCLE_TIME_INFORMATION, * PPROCESS_CYCLE_TIME_INFORMATION;
 
-// private
 typedef struct _PROCESS_WINDOW_INFORMATION
 {
     ULONG WindowFlags;
@@ -1732,7 +1955,6 @@ typedef struct _PROCESS_WINDOW_INFORMATION
     WCHAR WindowTitle[1];
 } PROCESS_WINDOW_INFORMATION, * PPROCESS_WINDOW_INFORMATION;
 
-// private
 typedef struct _PROCESS_HANDLE_TABLE_ENTRY_INFO
 {
     HANDLE HandleValue;
@@ -1744,7 +1966,6 @@ typedef struct _PROCESS_HANDLE_TABLE_ENTRY_INFO
     ULONG Reserved;
 } PROCESS_HANDLE_TABLE_ENTRY_INFO, * PPROCESS_HANDLE_TABLE_ENTRY_INFO;
 
-// private
 typedef struct _PROCESS_HANDLE_SNAPSHOT_INFORMATION
 {
     ULONG_PTR NumberOfHandles;
@@ -1752,7 +1973,6 @@ typedef struct _PROCESS_HANDLE_SNAPSHOT_INFORMATION
     PROCESS_HANDLE_TABLE_ENTRY_INFO Handles[1];
 } PROCESS_HANDLE_SNAPSHOT_INFORMATION, * PPROCESS_HANDLE_SNAPSHOT_INFORMATION;
 
-// private
 typedef struct _PROCESS_MITIGATION_POLICY_INFORMATION
 {
     PROCESS_MITIGATION_POLICY Policy;
@@ -1795,6 +2015,13 @@ typedef struct _PROCESS_MITIGATION_POLICY_INFORMATION
 #endif // NTDDI_VERSION >= NTDDI_WIN10_MN
     };
 } PROCESS_MITIGATION_POLICY_INFORMATION, * PPROCESS_MITIGATION_POLICY_INFORMATION;
+
+// private
+typedef struct _PROCESS_DYNAMIC_FUNCTION_TABLE_INFORMATION
+{
+    struct _DYNAMIC_FUNCTION_TABLE* DynamicFunctionTable;
+    BOOLEAN Remove;
+} PROCESS_DYNAMIC_FUNCTION_TABLE_INFORMATION, * PPROCESS_DYNAMIC_FUNCTION_TABLE_INFORMATION;
 
 #ifndef _KERNEL_MODE
 typedef struct _PROCESS_KEEPALIVE_COUNT_INFORMATION
@@ -1965,7 +2192,6 @@ typedef struct _POWER_THROTTLING_PROCESS_STATE
 #define WIN32K_SYSCALL_FILTER_STATE_ENABLE 0x1
 #define WIN32K_SYSCALL_FILTER_STATE_AUDIT  0x2
 
-// private
 typedef struct _WIN32K_SYSCALL_FILTER
 {
     ULONG FilterState;
@@ -2040,7 +2266,7 @@ typedef struct _PROCESS_UPTIME_INFORMATION
     ULONGLONG TimeSinceCreation;
     ULONGLONG Uptime;
     ULONGLONG SuspendedTime;
-    union
+    struct
     {
         ULONG HangCount : 4;
         ULONG GhostCount : 4;
@@ -2059,19 +2285,16 @@ typedef union _PROCESS_SYSTEM_RESOURCE_MANAGEMENT
     };
 } PROCESS_SYSTEM_RESOURCE_MANAGEMENT, * PPROCESS_SYSTEM_RESOURCE_MANAGEMENT;
 
-// private
 typedef struct _PROCESS_SECURITY_DOMAIN_INFORMATION
 {
     ULONGLONG SecurityDomain;
 } PROCESS_SECURITY_DOMAIN_INFORMATION, * PPROCESS_SECURITY_DOMAIN_INFORMATION;
 
-// private
 typedef struct _PROCESS_COMBINE_SECURITY_DOMAINS_INFORMATION
 {
     HANDLE ProcessHandle;
 } PROCESS_COMBINE_SECURITY_DOMAINS_INFORMATION, * PPROCESS_COMBINE_SECURITY_DOMAINS_INFORMATION;
 
-// private
 typedef union _PROCESS_LOGGING_INFORMATION
 {
     ULONG Flags;
@@ -2081,18 +2304,18 @@ typedef union _PROCESS_LOGGING_INFORMATION
         ULONG EnableWriteVmLogging : 1;
         ULONG EnableProcessSuspendResumeLogging : 1;
         ULONG EnableThreadSuspendResumeLogging : 1;
-        ULONG Reserved : 28;
+        ULONG EnableLocalExecProtectVmLogging : 1;
+        ULONG EnableRemoteExecProtectVmLogging : 1;
+        ULONG Reserved : 26;
     };
 } PROCESS_LOGGING_INFORMATION, * PPROCESS_LOGGING_INFORMATION;
 
-// private
 typedef struct _PROCESS_LEAP_SECOND_INFORMATION
 {
     ULONG Flags;
     ULONG Reserved;
 } PROCESS_LEAP_SECOND_INFORMATION, * PPROCESS_LEAP_SECOND_INFORMATION;
 
-// private
 typedef struct _PROCESS_FIBER_SHADOW_STACK_ALLOCATION_INFORMATION
 {
     ULONGLONG ReserveSize;
@@ -2102,13 +2325,25 @@ typedef struct _PROCESS_FIBER_SHADOW_STACK_ALLOCATION_INFORMATION
     PVOID Ssp;
 } PROCESS_FIBER_SHADOW_STACK_ALLOCATION_INFORMATION, * PPROCESS_FIBER_SHADOW_STACK_ALLOCATION_INFORMATION;
 
-// private
 typedef struct _PROCESS_FREE_FIBER_SHADOW_STACK_ALLOCATION_INFORMATION
 {
     PVOID Ssp;
 } PROCESS_FREE_FIBER_SHADOW_STACK_ALLOCATION_INFORMATION, * PPROCESS_FREE_FIBER_SHADOW_STACK_ALLOCATION_INFORMATION;
 
-//// private
+#if !defined(_KERNEL_MODE)
+//
+// Process Syscall Provider Information
+//  NtSetInformationProcess using ProcessSyscallProviderInformation
+// PROCESS_VM_WRITE access to the process is needed
+// to use this info level.
+//
+typedef struct _PROCESS_SYSCALL_PROVIDER_INFORMATION
+{
+    GUID ProviderId;
+    UCHAR Level;
+} PROCESS_SYSCALL_PROVIDER_INFORMATION, * PPROCESS_SYSCALL_PROVIDER_INFORMATION;
+#endif // !defined(_KERNEL_MODE)
+
 //typedef struct _PROCESS_DYNAMIC_ENFORCED_ADDRESS_RANGE
 //{
 //    ULONG_PTR BaseAddress;
@@ -2116,7 +2351,6 @@ typedef struct _PROCESS_FREE_FIBER_SHADOW_STACK_ALLOCATION_INFORMATION
 //    ULONG Flags;
 //} PROCESS_DYNAMIC_ENFORCED_ADDRESS_RANGE, *PPROCESS_DYNAMIC_ENFORCED_ADDRESS_RANGE;
 //
-//// private
 //typedef struct _PROCESS_DYNAMIC_ENFORCED_ADDRESS_RANGES_INFORMATION
 //{
 //    USHORT NumberOfRanges;
@@ -2126,7 +2360,6 @@ typedef struct _PROCESS_FREE_FIBER_SHADOW_STACK_ALLOCATION_INFORMATION
 //} PROCESS_DYNAMIC_ENFORCED_ADDRESS_RANGES_INFORMATION, *PPROCESS_DYNAMIC_ENFORCED_ADDRESS_RANGES_INFORMATION;
 
 #ifndef _KERNEL_MODE
-// private
 typedef struct _PROCESS_MEMBERSHIP_INFORMATION
 {
     ULONG ServerSiloId;
@@ -2164,7 +2397,6 @@ typedef struct _THREAD_BASIC_INFORMATION
     KPRIORITY BasePriority;
 } THREAD_BASIC_INFORMATION, * PTHREAD_BASIC_INFORMATION;
 
-// private
 typedef struct _THREAD_LAST_SYSCALL_INFORMATION
 {
     PVOID FirstArgument;
@@ -2177,14 +2409,12 @@ typedef struct _THREAD_LAST_SYSCALL_INFORMATION
     ULONG64 WaitTime;
 } THREAD_LAST_SYSCALL_INFORMATION, * PTHREAD_LAST_SYSCALL_INFORMATION;
 
-// private
 typedef struct _THREAD_CYCLE_TIME_INFORMATION
 {
     ULONGLONG AccumulatedCycles;
     ULONGLONG CurrentCycleCount;
 } THREAD_CYCLE_TIME_INFORMATION, * PTHREAD_CYCLE_TIME_INFORMATION;
 
-// private
 typedef struct _THREAD_TEB_INFORMATION
 {
     PVOID TebInformation; // buffer to place data in
@@ -2216,7 +2446,6 @@ typedef struct _THREAD_PERFORMANCE_DATA
     COUNTER_READING HwCounters[MAX_HW_COUNTERS];
 } THREAD_PERFORMANCE_DATA, * PTHREAD_PERFORMANCE_DATA;
 
-// private
 typedef struct _THREAD_PROFILING_INFORMATION
 {
     ULONG64 HardwareCounters;
@@ -2225,7 +2454,6 @@ typedef struct _THREAD_PROFILING_INFORMATION
     PTHREAD_PERFORMANCE_DATA PerformanceData;
 } THREAD_PROFILING_INFORMATION, * PTHREAD_PROFILING_INFORMATION;
 
-// private
 typedef struct _RTL_UMS_CONTEXT
 {
     SINGLE_LIST_ENTRY Link;
@@ -2250,7 +2478,6 @@ typedef struct _RTL_UMS_CONTEXT
     ULONG YieldCount;
 } RTL_UMS_CONTEXT, * PRTL_UMS_CONTEXT;
 
-// private
 typedef enum _THREAD_UMS_INFORMATION_COMMAND
 {
     UmsInformationCommandInvalid,
@@ -2259,7 +2486,6 @@ typedef enum _THREAD_UMS_INFORMATION_COMMAND
     UmsInformationCommandQuery
 } THREAD_UMS_INFORMATION_COMMAND;
 
-// private
 typedef struct _RTL_UMS_COMPLETION_LIST
 {
     PSINGLE_LIST_ENTRY ThreadListHead;
@@ -2268,7 +2494,6 @@ typedef struct _RTL_UMS_COMPLETION_LIST
     SINGLE_LIST_ENTRY InternalListHead;
 } RTL_UMS_COMPLETION_LIST, * PRTL_UMS_COMPLETION_LIST;
 
-// private
 typedef struct _THREAD_UMS_INFORMATION
 {
     THREAD_UMS_INFORMATION_COMMAND Command;
@@ -2286,20 +2511,17 @@ typedef struct _THREAD_UMS_INFORMATION
     };
 } THREAD_UMS_INFORMATION, * PTHREAD_UMS_INFORMATION;
 
-// private
 typedef struct _THREAD_NAME_INFORMATION
 {
     UNICODE_STRING ThreadName;
 } THREAD_NAME_INFORMATION, * PTHREAD_NAME_INFORMATION;
 
-// private
 typedef struct _ALPC_WORK_ON_BEHALF_TICKET
 {
     ULONG ThreadId;
     ULONG ThreadCreationTimeLow;
 } ALPC_WORK_ON_BEHALF_TICKET, * PALPC_WORK_ON_BEHALF_TICKET;
 
-// private
 typedef struct _RTL_WORK_ON_BEHALF_TICKET_EX
 {
     ALPC_WORK_ON_BEHALF_TICKET Ticket;
@@ -2316,7 +2538,6 @@ typedef struct _RTL_WORK_ON_BEHALF_TICKET_EX
 } RTL_WORK_ON_BEHALF_TICKET_EX, * PRTL_WORK_ON_BEHALF_TICKET_EX;
 
 #ifndef _KERNEL_MODE
-// private
 typedef enum _SUBSYSTEM_INFORMATION_TYPE
 {
     SubsystemInformationTypeWin32,
@@ -2325,7 +2546,6 @@ typedef enum _SUBSYSTEM_INFORMATION_TYPE
 } SUBSYSTEM_INFORMATION_TYPE;
 #endif // !_KERNEL_MODE
 
-// private
 typedef enum _THREAD_WORKLOAD_CLASS
 {
     ThreadWorkloadClassDefault,
@@ -3173,14 +3393,14 @@ ZwQueueApcThread(
 );
 
 #if (NTDDI_VERSION >= ntddi_WIN7)
-#define APC_FORCE_THREAD_SIGNAL ((HANDLE)1) // ReserveHandle
+#define QUEUE_USER_APC_SPECIAL_USER_APC ((HANDLE)0x1)
 
 __kernel_entry NTSYSCALLAPI
 NTSTATUS
 NTAPI
 NtQueueApcThreadEx(
     _In_ HANDLE ThreadHandle,
-    _In_opt_ HANDLE ReserveHandle, // NtAllocateReserveObject
+    _In_opt_ HANDLE ReserveHandle, // NtAllocateReserveObject // SPECIAL_USER_APC
     _In_ PPS_APC_ROUTINE ApcRoutine,
     _In_opt_ PVOID ApcArgument1,
     _In_opt_ PVOID ApcArgument2,
@@ -3193,7 +3413,7 @@ NTSTATUS
 NTAPI
 ZwQueueApcThreadEx(
     _In_ HANDLE ThreadHandle,
-    _In_opt_ HANDLE ReserveHandle, // NtAllocateReserveObject
+    _In_opt_ HANDLE ReserveHandle, // NtAllocateReserveObject // SPECIAL_USER_APC
     _In_ PPS_APC_ROUTINE ApcRoutine,
     _In_opt_ PVOID ApcArgument1,
     _In_opt_ PVOID ApcArgument2,
@@ -3371,7 +3591,7 @@ typedef enum _PROC_THREAD_ATTRIBUTE_NUM {
 #ifndef PROC_THREAD_ATTRIBUTE_PARENT_PROCESS
 #define PROC_THREAD_ATTRIBUTE_PARENT_PROCESS \
     ProcThreadAttributeValue (ProcThreadAttributeParentProcess, FALSE, TRUE, FALSE)
-#endif 
+#endif
 #ifndef PROC_THREAD_ATTRIBUTE_EXTENDED_FLAGS
 #define PROC_THREAD_ATTRIBUTE_EXTENDED_FLAGS \
     ProcThreadAttributeValue (ProcThreadAttributeExtendedFlags, FALSE, TRUE, TRUE)
@@ -3448,6 +3668,10 @@ typedef enum _PROC_THREAD_ATTRIBUTE_NUM {
 #define PROC_THREAD_ATTRIBUTE_CREATE_STORE \
     ProcThreadAttributeValue(ProcThreadAttributeCreateStore, FALSE, TRUE, FALSE)
 #endif
+#ifndef PROC_THREAD_ATTRIBUTE_TRUSTED_APP
+#define PROC_THREAD_ATTRIBUTE_TRUSTED_APP \
+    ProcThreadAttributeValue(ProcThreadAttributeTrustedApp, FALSE, TRUE, FALSE)
+#endif
 
 // private
 typedef struct _PROC_THREAD_ATTRIBUTE
@@ -3494,7 +3718,8 @@ typedef enum _SE_SAFE_OPEN_PROMPT_EXPERIENCE_RESULTS
     SeSafeOpenExperienceUninstaller = 0x10,
     SeSafeOpenExperienceIgnoreUnknownOrBad = 0x20,
     SeSafeOpenExperienceDefenderTrustedInstaller = 0x40,
-    SeSafeOpenExperienceMOTWPresent = 0x80
+    SeSafeOpenExperienceMOTWPresent = 0x80,
+    SeSafeOpenExperienceElevatedNoPropagation = 0x100
 } SE_SAFE_OPEN_PROMPT_EXPERIENCE_RESULTS;
 
 // private
@@ -3554,12 +3779,12 @@ typedef enum _PS_ATTRIBUTE_NUM
     PsAttributeChildProcessPolicy, // 20, in PULONG (PROCESS_CREATION_CHILD_PROCESS_*) // since THRESHOLD2
     PsAttributeAllApplicationPackagesPolicy, // in PULONG (PROCESS_CREATION_ALL_APPLICATION_PACKAGES_*) // since REDSTONE
     PsAttributeWin32kFilter, // in PWIN32K_SYSCALL_FILTER
-    PsAttributeSafeOpenPromptOriginClaim, // in
+    PsAttributeSafeOpenPromptOriginClaim, // in SE_SAFE_OPEN_PROMPT_RESULTS
     PsAttributeBnoIsolation, // in PPS_BNO_ISOLATION_PARAMETERS // since REDSTONE2
     PsAttributeDesktopAppPolicy, // in PULONG (PROCESS_CREATION_DESKTOP_APP_*)
     PsAttributeChpe, // in BOOLEAN // since REDSTONE3
     PsAttributeMitigationAuditOptions, // in PPS_MITIGATION_AUDIT_OPTIONS_MAP (PROCESS_CREATION_MITIGATION_AUDIT_POLICY_*) // since 21H1
-    PsAttributeMachineType, // in WORD // since 21H2
+    PsAttributeMachineType, // in USHORT // since 21H2
     PsAttributeComponentFilter,
     PsAttributeEnableOptionalXStateFeatures, // since WIN11
     PsAttributeMax
@@ -3790,6 +4015,7 @@ typedef enum _PS_MITIGATION_OPTION
     PS_MITIGATION_OPTION_BLOCK_NON_CET_BINARIES,
     PS_MITIGATION_OPTION_CET_DYNAMIC_APIS_OUT_OF_PROC_ONLY,
     PS_MITIGATION_OPTION_REDIRECTION_TRUST, // since 22H1
+    PS_MITIGATION_OPTION_RESTRICT_CORE_SHARING,
 } PS_MITIGATION_OPTION;
 
 // windows-internals-book:"Chapter 5"
@@ -3882,7 +4108,6 @@ typedef struct _PS_CREATE_INFO
 
 // end_private
 
-#if (NTDDI_VERSION >= NTDDI_VISTA)
 __kernel_entry NTSYSCALLAPI
 NTSTATUS
 NTAPI
@@ -3917,7 +4142,6 @@ ZwCreateUserProcess(
     _Inout_ PPS_CREATE_INFO CreateInfo,
     _In_opt_ PPS_ATTRIBUTE_LIST AttributeList
 );
-#endif
 
 // begin_rev
 #define THREAD_CREATE_FLAGS_NONE                    0x00000000
@@ -3929,7 +4153,10 @@ ZwCreateUserProcess(
 #define THREAD_CREATE_FLAGS_BYPASS_PROCESS_FREEZE   0x00000040 // NtCreateThreadEx only
 // end_rev
 
-#if (NTDDI_VERSION >= NTDDI_VISTA)
+typedef NTSTATUS(NTAPI* PUSER_THREAD_START_ROUTINE)(
+    _In_ PVOID ThreadParameter
+    );
+
 __kernel_entry NTSYSCALLAPI
 NTSTATUS
 NTAPI
@@ -3938,7 +4165,7 @@ NtCreateThreadEx(
     _In_ ACCESS_MASK DesiredAccess,
     _In_opt_ POBJECT_ATTRIBUTES ObjectAttributes,
     _In_ HANDLE ProcessHandle,
-    _In_ PVOID StartRoutine, // PUSER_THREAD_START_ROUTINE
+    _In_ PUSER_THREAD_START_ROUTINE StartRoutine,
     _In_opt_ PVOID Argument,
     _In_ ULONG CreateFlags, // THREAD_CREATE_FLAGS_*
     _In_ SIZE_T ZeroBits,
@@ -3956,7 +4183,7 @@ ZwCreateThreadEx(
     _In_ ACCESS_MASK DesiredAccess,
     _In_opt_ POBJECT_ATTRIBUTES ObjectAttributes,
     _In_ HANDLE ProcessHandle,
-    _In_ PVOID StartRoutine, // PUSER_THREAD_START_ROUTINE
+    _In_ PUSER_THREAD_START_ROUTINE StartRoutine,
     _In_opt_ PVOID Argument,
     _In_ ULONG CreateFlags, // THREAD_CREATE_FLAGS_*
     _In_ SIZE_T ZeroBits,
@@ -3964,7 +4191,6 @@ ZwCreateThreadEx(
     _In_ SIZE_T MaximumStackSize,
     _In_opt_ PPS_ATTRIBUTE_LIST AttributeList
 );
-#endif
 
 //
 // Job objects
@@ -4025,21 +4251,21 @@ typedef enum _JOBOBJECTINFOCLASS
 }JOBOBJECTINFOCLASS;
 #else
 // Note: We don't use an enum since it conflicts with the Windows SDK.
-#define JobObjectBasicAccountingInformation         ((_JOBOBJECTINFOCLASS)1 )// JOBOBJECT_BASIC_ACCOUNTING_INFORMATION
-#define JobObjectBasicLimitInformation              ((_JOBOBJECTINFOCLASS)2 )// JOBOBJECT_BASIC_LIMIT_INFORMATION
-#define JobObjectBasicProcessIdList                 ((_JOBOBJECTINFOCLASS)3 )// JOBOBJECT_BASIC_PROCESS_ID_LIST
-#define JobObjectBasicUIRestrictions                ((_JOBOBJECTINFOCLASS)4 )// JOBOBJECT_BASIC_UI_RESTRICTIONS
-#define JobObjectSecurityLimitInformation           ((_JOBOBJECTINFOCLASS)5 )// JOBOBJECT_SECURITY_LIMIT_INFORMATION
-#define JobObjectEndOfJobTimeInformation            ((_JOBOBJECTINFOCLASS)6 )// JOBOBJECT_END_OF_JOB_TIME_INFORMATION
-#define JobObjectAssociateCompletionPortInformation ((_JOBOBJECTINFOCLASS)7 )// JOBOBJECT_ASSOCIATE_COMPLETION_PORT
-#define JobObjectBasicAndIoAccountingInformation    ((_JOBOBJECTINFOCLASS)8 )// JOBOBJECT_BASIC_AND_IO_ACCOUNTING_INFORMATION
-#define JobObjectExtendedLimitInformation           ((_JOBOBJECTINFOCLASS)9 )// JOBOBJECT_EXTENDED_LIMIT_INFORMATION
-#define JobObjectJobSetInformation                  ((_JOBOBJECTINFOCLASS)10) // JOBOBJECT_JOBSET_INFORMATION
-#define JobObjectGroupInformation                   ((_JOBOBJECTINFOCLASS)11) // USHORT
-#define JobObjectNotificationLimitInformation       ((_JOBOBJECTINFOCLASS)12) // JOBOBJECT_NOTIFICATION_LIMIT_INFORMATION
-#define JobObjectLimitViolationInformation          ((_JOBOBJECTINFOCLASS)13) // JOBOBJECT_LIMIT_VIOLATION_INFORMATION
-#define JobObjectGroupInformationEx                 ((_JOBOBJECTINFOCLASS)14) // GROUP_AFFINITY (ARRAY)
-#define JobObjectCpuRateControlInformation          ((_JOBOBJECTINFOCLASS)15) // JOBOBJECT_CPU_RATE_CONTROL_INFORMATION
+#define JobObjectBasicAccountingInformation         ((_JOBOBJECTINFOCLASS)1 ) // q:     JOBOBJECT_BASIC_ACCOUNTING_INFORMATION
+#define JobObjectBasicLimitInformation              ((_JOBOBJECTINFOCLASS)2 ) // q; s:  JOBOBJECT_BASIC_LIMIT_INFORMATION
+#define JobObjectBasicProcessIdList                 ((_JOBOBJECTINFOCLASS)3 ) // q:     JOBOBJECT_BASIC_PROCESS_ID_LIST
+#define JobObjectBasicUIRestrictions                ((_JOBOBJECTINFOCLASS)4 ) // q; s:  JOBOBJECT_BASIC_UI_RESTRICTIONS
+#define JobObjectSecurityLimitInformation           ((_JOBOBJECTINFOCLASS)5 ) //        JOBOBJECT_SECURITY_LIMIT_INFORMATION
+#define JobObjectEndOfJobTimeInformation            ((_JOBOBJECTINFOCLASS)6 ) // q; s:  JOBOBJECT_END_OF_JOB_TIME_INFORMATION
+#define JobObjectAssociateCompletionPortInformation ((_JOBOBJECTINFOCLASS)7 ) // s:     JOBOBJECT_ASSOCIATE_COMPLETION_PORT
+#define JobObjectBasicAndIoAccountingInformation    ((_JOBOBJECTINFOCLASS)8 ) // q:     JOBOBJECT_BASIC_AND_IO_ACCOUNTING_INFORMATION
+#define JobObjectExtendedLimitInformation           ((_JOBOBJECTINFOCLASS)9 ) // q; s:  JOBOBJECT_EXTENDED_LIMIT_INFORMATION
+#define JobObjectJobSetInformation                  ((_JOBOBJECTINFOCLASS)10) //        JOBOBJECT_JOBSET_INFORMATION
+#define JobObjectGroupInformation                   ((_JOBOBJECTINFOCLASS)11) //        USHORT
+#define JobObjectNotificationLimitInformation       ((_JOBOBJECTINFOCLASS)12) //        JOBOBJECT_NOTIFICATION_LIMIT_INFORMATION
+#define JobObjectLimitViolationInformation          ((_JOBOBJECTINFOCLASS)13) //        JOBOBJECT_LIMIT_VIOLATION_INFORMATION
+#define JobObjectGroupInformationEx                 ((_JOBOBJECTINFOCLASS)14) //        GROUP_AFFINITY (ARRAY)
+#define JobObjectCpuRateControlInformation          ((_JOBOBJECTINFOCLASS)15) //        JOBOBJECT_CPU_RATE_CONTROL_INFORMATION
 #define JobObjectCompletionFilter                   ((_JOBOBJECTINFOCLASS)16)
 #define JobObjectCompletionCounter                  ((_JOBOBJECTINFOCLASS)17)
 #define JobObjectFreezeInformation                  ((_JOBOBJECTINFOCLASS)18) // JOBOBJECT_FREEZE_INFORMATION
@@ -4054,8 +4280,8 @@ typedef enum _JOBOBJECTINFOCLASS
 #define JobObjectClearPeakJobMemoryUsed             ((_JOBOBJECTINFOCLASS)27)
 #define JobObjectMemoryUsageInformation             ((_JOBOBJECTINFOCLASS)28) // JOBOBJECT_MEMORY_USAGE_INFORMATION // JOBOBJECT_MEMORY_USAGE_INFORMATION_V2
 #define JobObjectSharedCommit                       ((_JOBOBJECTINFOCLASS)29)
-#define JobObjectContainerId                        ((_JOBOBJECTINFOCLASS)30)
-#define JobObjectIoRateControlInformation           ((_JOBOBJECTINFOCLASS)31)
+#define JobObjectContainerId                        ((_JOBOBJECTINFOCLASS)30) // JOBOBJECT_CONTAINER_IDENTIFIER_V2
+#define JobObjectIoRateControlInformation           ((_JOBOBJECTINFOCLASS)31) // JOBOBJECT_IO_RATE_CONTROL_INFORMATION_NATIVE, JOBOBJECT_IO_RATE_CONTROL_INFORMATION_NATIVE_V2, JOBOBJECT_IO_RATE_CONTROL_INFORMATION_NATIVE_V3
 #define JobObjectNetRateControlInformation          ((_JOBOBJECTINFOCLASS)32) // JOBOBJECT_NET_RATE_CONTROL_INFORMATION
 #define JobObjectNotificationLimitInformation2      ((_JOBOBJECTINFOCLASS)33) // JOBOBJECT_NOTIFICATION_LIMIT_INFORMATION_2
 #define JobObjectLimitViolationInformation2         ((_JOBOBJECTINFOCLASS)34) // JOBOBJECT_LIMIT_VIOLATION_INFORMATION_2
@@ -4063,17 +4289,17 @@ typedef enum _JOBOBJECTINFOCLASS
 #define JobObjectSiloBasicInformation               ((_JOBOBJECTINFOCLASS)36) // SILOOBJECT_BASIC_INFORMATION
 #define JobObjectSiloRootDirectory                  ((_JOBOBJECTINFOCLASS)37) // SILOOBJECT_ROOT_DIRECTORY
 #define JobObjectServerSiloBasicInformation         ((_JOBOBJECTINFOCLASS)38) // SERVERSILO_BASIC_INFORMATION
-#define JobObjectServerSiloUserSharedData           ((_JOBOBJECTINFOCLASS)39) // SILO_USER_SHARED_DATA
-#define JobObjectServerSiloInitialize               ((_JOBOBJECTINFOCLASS)40)
+#define JobObjectServerSiloUserSharedData           ((_JOBOBJECTINFOCLASS)39) // SILO_USER_SHARED_DATA // NtQueryInformationJobObject(NULL, 39, Buffer, sizeof(SILO_USER_SHARED_DATA), 0);
+#define JobObjectServerSiloInitialize               ((_JOBOBJECTINFOCLASS)40) // SERVERSILO_INIT_INFORMATION
 #define JobObjectServerSiloRunningState             ((_JOBOBJECTINFOCLASS)41)
-#define JobObjectIoAttribution                      ((_JOBOBJECTINFOCLASS)42)
+#define JobObjectIoAttribution                      ((_JOBOBJECTINFOCLASS)42) // JOBOBJECT_IO_ATTRIBUTION_INFORMATION
 #define JobObjectMemoryPartitionInformation         ((_JOBOBJECTINFOCLASS)43)
 #define JobObjectContainerTelemetryId               ((_JOBOBJECTINFOCLASS)44)
 #define JobObjectSiloSystemRoot                     ((_JOBOBJECTINFOCLASS)45)
 #define JobObjectEnergyTrackingState                ((_JOBOBJECTINFOCLASS)46) // JOBOBJECT_ENERGY_TRACKING_STATE
 #define JobObjectThreadImpersonationInformation     ((_JOBOBJECTINFOCLASS)47)
-#define JobObjectIoPriorityLimit                    ((_JOBOBJECTINFOCLASS)48)
-#define JobObjectPagePriorityLimit                  ((_JOBOBJECTINFOCLASS)49)
+#define JobObjectIoPriorityLimit                    ((_JOBOBJECTINFOCLASS)48) // JOBOBJECT_IO_PRIORITY_LIMIT
+#define JobObjectPagePriorityLimit                  ((_JOBOBJECTINFOCLASS)49) // JOBOBJECT_PAGE_PRIORITY_LIMIT
 #define MaxJobObjectInfoClass                       ((_JOBOBJECTINFOCLASS)50)
 #endif // _KERNEL_MODE
 
@@ -4088,6 +4314,30 @@ typedef struct _JOBOBJECT_BASIC_ACCOUNTING_INFORMATION {
     UINT32 ActiveProcesses;
     UINT32 TotalTerminatedProcesses;
 } JOBOBJECT_BASIC_ACCOUNTING_INFORMATION, * PJOBOBJECT_BASIC_ACCOUNTING_INFORMATION;
+
+typedef struct _JOBOBJECT_BASIC_LIMIT_INFORMATION {
+    LARGE_INTEGER PerProcessUserTimeLimit;
+    LARGE_INTEGER PerJobUserTimeLimit;
+    DWORD LimitFlags;
+    SIZE_T MinimumWorkingSetSize;
+    SIZE_T MaximumWorkingSetSize;
+    DWORD ActiveProcessLimit;
+    ULONG_PTR Affinity;
+    DWORD PriorityClass;
+    DWORD SchedulingClass;
+} JOBOBJECT_BASIC_LIMIT_INFORMATION, * PJOBOBJECT_BASIC_LIMIT_INFORMATION;
+
+// rev // extended limit v2
+#define JOB_OBJECT_LIMIT_SILO_READY 0x00400000
+typedef struct _JOBOBJECT_EXTENDED_LIMIT_INFORMATION {
+    JOBOBJECT_BASIC_LIMIT_INFORMATION BasicLimitInformation;
+    IO_COUNTERS IoInfo;
+    SIZE_T ProcessMemoryLimit;
+    SIZE_T JobMemoryLimit;
+    SIZE_T PeakProcessMemoryUsed;
+    SIZE_T PeakJobMemoryUsed;
+    SIZE_T JobTotalMemoryLimit;
+} JOBOBJECT_EXTENDED_LIMIT_INFORMATION, * PJOBOBJECT_EXTENDED_LIMIT_INFORMATION;
 #endif // _KERNEL_MODE
 
 // private
@@ -4150,6 +4400,14 @@ typedef struct _JOBOBJECT_FREEZE_INFORMATION
 } JOBOBJECT_FREEZE_INFORMATION, * PJOBOBJECT_FREEZE_INFORMATION;
 
 // private
+typedef struct _JOBOBJECT_CONTAINER_IDENTIFIER_V2
+{
+    GUID ContainerId;
+    GUID ContainerTelemetryId;
+    ULONG JobId;
+} JOBOBJECT_CONTAINER_IDENTIFIER_V2, * PJOBOBJECT_CONTAINER_IDENTIFIER_V2;
+
+// private
 typedef struct _JOBOBJECT_MEMORY_USAGE_INFORMATION
 {
     ULONG64 JobMemory;
@@ -4191,13 +4449,28 @@ typedef struct _SILO_USER_SHARED_DATA
 #endif // WDK_NTDDI_VERSION != NTDDI_WIN10_RS1
 
 #if (NTDDI_VERSION >= NTDDI_WIN10_RS1)
+// rev
+#define SILO_OBJECT_ROOT_DIRECTORY_SHADOW_ROOT 0x00000001
+#define SILO_OBJECT_ROOT_DIRECTORY_INITIALIZE 0x00000002
+#define SILO_OBJECT_ROOT_DIRECTORY_SHADOW_DOS_DEVICES 0x00000004
+
 // private
 typedef struct _SILOOBJECT_ROOT_DIRECTORY
 {
-    ULONG ControlFlags;
-    UNICODE_STRING Path;
+    union
+    {
+        ULONG ControlFlags; // SILO_OBJECT_ROOT_DIRECTORY_*
+        UNICODE_STRING Path;
+    };
 } SILOOBJECT_ROOT_DIRECTORY, * PSILOOBJECT_ROOT_DIRECTORY;
 #endif // NTDDI_VERSION >= NTDDI_WIN10_RS1
+
+// private
+typedef struct _SERVERSILO_INIT_INFORMATION
+{
+    HANDLE DeleteEvent;
+    BOOLEAN IsDownlevelContainer;
+} SERVERSILO_INIT_INFORMATION, * PSERVERSILO_INIT_INFORMATION;
 
 // private
 typedef struct _JOBOBJECT_ENERGY_TRACKING_STATE
@@ -4206,6 +4479,34 @@ typedef struct _JOBOBJECT_ENERGY_TRACKING_STATE
     ULONG UpdateMask;
     ULONG DesiredState;
 } JOBOBJECT_ENERGY_TRACKING_STATE, * PJOBOBJECT_ENERGY_TRACKING_STATE;
+
+// private
+typedef enum _JOBOBJECT_IO_PRIORITY_LIMIT_FLAGS
+{
+    JOBOBJECT_IO_PRIORITY_LIMIT_ENABLE = 0x1,
+    JOBOBJECT_IO_PRIORITY_LIMIT_VALID_FLAGS = 0x1,
+} JOBOBJECT_IO_PRIORITY_LIMIT_FLAGS;
+
+// private
+typedef struct _JOBOBJECT_IO_PRIORITY_LIMIT
+{
+    JOBOBJECT_IO_PRIORITY_LIMIT_FLAGS Flags;
+    ULONG Priority;
+} JOBOBJECT_IO_PRIORITY_LIMIT, * PJOBOBJECT_IO_PRIORITY_LIMIT;
+
+// private
+typedef enum _JOBOBJECT_PAGE_PRIORITY_LIMIT_FLAGS
+{
+    JOBOBJECT_PAGE_PRIORITY_LIMIT_ENABLE = 0x1,
+    JOBOBJECT_PAGE_PRIORITY_LIMIT_VALID_FLAGS = 0x1,
+} JOBOBJECT_PAGE_PRIORITY_LIMIT_FLAGS;
+
+// private
+typedef struct _JOBOBJECT_PAGE_PRIORITY_LIMIT
+{
+    JOBOBJECT_PAGE_PRIORITY_LIMIT_FLAGS Flags;
+    ULONG Priority;
+} JOBOBJECT_PAGE_PRIORITY_LIMIT, * PJOBOBJECT_PAGE_PRIORITY_LIMIT;
 
 __kernel_entry NTSYSCALLAPI
 NTSTATUS
@@ -4433,7 +4734,6 @@ PssNtCaptureSnapshot(
 #endif
 #endif // !_KERNEL_MODE
 
-#if (NTDDI_VERSION >= NTDDI_WIN10_VB)
 // rev
 #define MEMORY_BULK_INFORMATION_FLAG_BASIC 0x00000001
 
@@ -4444,6 +4744,8 @@ typedef struct _NTPSS_MEMORY_BULK_INFORMATION
     ULONG NumberOfEntries;
     PVOID NextValidAddress;
 } NTPSS_MEMORY_BULK_INFORMATION, * PNTPSS_MEMORY_BULK_INFORMATION;
+
+#if (NTDDI_VERSION >= NTDDI_WIN10_VB)
 
 // rev
 __kernel_entry NTSYSCALLAPI

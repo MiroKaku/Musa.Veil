@@ -90,10 +90,8 @@ VEIL_BEGIN()
 #define FILE_OPEN_BY_FILE_ID            0x00002000
 #define FILE_OPEN_FOR_BACKUP_INTENT     0x00004000
 #define FILE_NO_COMPRESSION             0x00008000
-#if (NTDDI_VERSION >= NTDDI_WIN7)
 #define FILE_OPEN_REQUIRING_OPLOCK      0x00010000
 #define FILE_DISALLOW_EXCLUSIVE         0x00020000
-#endif
 #if (NTDDI_VERSION >= NTDDI_WIN8)
 #define FILE_SESSION_AWARE              0x00040000
 #endif
@@ -392,6 +390,11 @@ typedef enum _FILE_INFORMATION_CLASS
     FileStorageReserveIdInformation, // q; s: FILE_STORAGE_RESERVE_ID_INFORMATION (q: requires FILE_READ_ATTRIBUTES; s: requires FILE_WRITE_ATTRIBUTES)
     FileCaseSensitiveInformationForceAccessCheck, // q; s: FILE_CASE_SENSITIVE_INFORMATION 
     FileKnownFolderInformation, // q; s: FILE_KNOWN_FOLDER_INFORMATION (q: requires FILE_READ_ATTRIBUTES; s: requires FILE_WRITE_ATTRIBUTES) // since WIN11
+    FileStatBasicInformation, // since 23H2
+    FileId64ExtdDirectoryInformation,
+    FileId64ExtdBothDirectoryInformation,
+    FileIdAllExtdDirectoryInformation,
+    FileIdAllExtdBothDirectoryInformation,
     FileMaximumInformation
 } FILE_INFORMATION_CLASS, * PFILE_INFORMATION_CLASS;
 
@@ -1278,6 +1281,7 @@ typedef enum _FSINFOCLASS
     FileFsDataCopyInformation, // q: FILE_FS_DATA_COPY_INFORMATION
     FileFsMetadataSizeInformation, // q: FILE_FS_METADATA_SIZE_INFORMATION // since THRESHOLD
     FileFsFullSizeInformationEx, // q: FILE_FS_FULL_SIZE_INFORMATION_EX // since REDSTONE5
+    FileFsGuidInformation, // q: FILE_FS_GUID_INFORMATION // since 23H2
     FileFsMaximumInformation
 } FS_INFORMATION_CLASS, * PFS_INFORMATION_CLASS;
 
@@ -1428,6 +1432,15 @@ typedef struct _FILE_FS_FULL_SIZE_INFORMATION_EX
     ULONG SectorsPerAllocationUnit;
     ULONG BytesPerSector;
 } FILE_FS_FULL_SIZE_INFORMATION_EX, * PFILE_FS_FULL_SIZE_INFORMATION_EX;
+
+#if defined(NTDDI_WIN10_NI) && (NTDDI_VERSION >= NTDDI_WIN10_NI)
+
+typedef struct _FILE_FS_GUID_INFORMATION {
+    GUID FsGuid;
+} FILE_FS_GUID_INFORMATION, * PFILE_FS_GUID_INFORMATION;
+
+#endif // #if (NTDDI_VERSION >= NTDDI_WIN10_NI)
+
 #endif // !_KERNEL_MODE
 
 __kernel_entry NTSYSCALLAPI
@@ -1573,7 +1586,6 @@ ZwDeleteFile(
     _In_ POBJECT_ATTRIBUTES ObjectAttributes
 );
 
-#if (NTDDI_VERSION >= NTDDI_VISTA)
 __kernel_entry NTSYSCALLAPI
 NTSTATUS
 NTAPI
@@ -1589,7 +1601,6 @@ ZwFlushBuffersFile(
     _In_ HANDLE FileHandle,
     _Out_ PIO_STATUS_BLOCK IoStatusBlock
 );
-#endif
 
 #define FLUSH_FLAGS_FILE_DATA_ONLY      0x00000001
 #define FLUSH_FLAGS_NO_SYNC             0x00000002
@@ -1821,7 +1832,6 @@ ZwSetEaFile(
     _In_ ULONG Length
 );
 
-#if (NTDDI_VERSION >= NTDDI_VISTA)
 __kernel_entry NTSYSCALLAPI
 NTSTATUS
 NTAPI
@@ -1874,7 +1884,6 @@ ZwSetQuotaInformationFile(
     _In_reads_bytes_(Length) PVOID Buffer,
     _In_ ULONG Length
 );
-#endif
 
 __kernel_entry NTSYSCALLAPI
 NTSTATUS
@@ -1939,7 +1948,6 @@ ZwCancelIoFile(
     _Out_ PIO_STATUS_BLOCK IoStatusBlock
 );
 
-#if (NTDDI_VERSION >= NTDDI_VISTA)
 __kernel_entry NTSYSCALLAPI
 NTSTATUS
 NTAPI
@@ -1958,9 +1966,7 @@ ZwCancelIoFileEx(
     _In_opt_ PIO_STATUS_BLOCK IoRequestToCancel,
     _Out_ PIO_STATUS_BLOCK IoStatusBlock
 );
-#endif
 
-#if (NTDDI_VERSION >= NTDDI_VISTA)
 __kernel_entry NTSYSCALLAPI
 NTSTATUS
 NTAPI
@@ -1979,7 +1985,6 @@ ZwCancelSynchronousIoFile(
     _In_opt_ PIO_STATUS_BLOCK IoRequestToCancel,
     _Out_ PIO_STATUS_BLOCK IoStatusBlock
 );
-#endif
 
 __kernel_entry NTSYSCALLAPI
 NTSTATUS
@@ -2509,7 +2514,6 @@ ZwSetIoCompletion(
     _In_ ULONG_PTR IoStatusInformation
 );
 
-#if (NTDDI_VERSION >= NTDDI_WIN7)
 __kernel_entry NTSYSCALLAPI
 NTSTATUS
 NTAPI
@@ -2534,7 +2538,6 @@ ZwSetIoCompletionEx(
     _In_ NTSTATUS IoStatus,
     _In_ ULONG_PTR IoStatusInformation
 );
-#endif
 
 __kernel_entry NTSYSCALLAPI
 NTSTATUS
@@ -2559,7 +2562,6 @@ ZwRemoveIoCompletion(
     _In_opt_ PLARGE_INTEGER Timeout
 );
 
-#if (NTDDI_VERSION >= NTDDI_VISTA)
 __kernel_entry NTSYSCALLAPI
 NTSTATUS
 NTAPI
@@ -2584,7 +2586,6 @@ ZwRemoveIoCompletionEx(
     _In_opt_ PLARGE_INTEGER Timeout,
     _In_ BOOLEAN Alertable
 );
-#endif
 
 //
 // Wait completion packet
@@ -2688,7 +2689,6 @@ typedef enum _IO_SESSION_STATE
 } IO_SESSION_STATE;
 #endif // !_KERNEL_MODE
 
-#if (NTDDI_VERSION >= NTDDI_VISTA)
 __kernel_entry NTSYSCALLAPI
 NTSTATUS
 NTAPI
@@ -2707,9 +2707,7 @@ ZwOpenSession(
     _In_ ACCESS_MASK DesiredAccess,
     _In_ POBJECT_ATTRIBUTES ObjectAttributes
 );
-#endif
 
-#if (NTDDI_VERSION >= NTDDI_WIN7)
 __kernel_entry NTSYSCALLAPI
 NTSTATUS
 NTAPI
@@ -2738,7 +2736,92 @@ ZwNotifyChangeSession(
     _In_reads_bytes_opt_(PayloadSize) PVOID Payload,
     _In_ ULONG PayloadSize
 );
-#endif
+
+// I/O Ring
+
+#if (NTDDI_VERSION >= NTDDI_WIN11)
+__kernel_entry NTSYSCALLAPI
+NTSTATUS
+NTAPI
+NtCreateIoRing(
+    _Out_ PHANDLE IoRingHandle,
+    _In_ ULONG CreateParametersLength,
+    _In_ PVOID CreateParameters,
+    _In_ ULONG OutputParametersLength,
+    _Out_ PVOID OutputParameters
+);
+
+_IRQL_requires_max_(PASSIVE_LEVEL)
+NTSYSAPI
+NTSTATUS
+NTAPI
+ZwCreateIoRing(
+    _Out_ PHANDLE IoRingHandle,
+    _In_ ULONG CreateParametersLength,
+    _In_ PVOID CreateParameters,
+    _In_ ULONG OutputParametersLength,
+    _Out_ PVOID OutputParameters
+);
+
+__kernel_entry NTSYSCALLAPI
+NTSTATUS
+NTAPI
+NtSubmitIoRing(
+    _In_ HANDLE IoRingHandle,
+    _In_ ULONG Flags,
+    _In_opt_ ULONG WaitOperations,
+    _In_opt_ PLARGE_INTEGER Timeout
+);
+
+_IRQL_requires_max_(PASSIVE_LEVEL)
+NTSYSAPI
+NTSTATUS
+NTAPI
+ZwSubmitIoRing(
+    _In_ HANDLE IoRingHandle,
+    _In_ ULONG Flags,
+    _In_opt_ ULONG WaitOperations,
+    _In_opt_ PLARGE_INTEGER Timeout
+);
+
+__kernel_entry NTSYSCALLAPI
+NTSTATUS
+NTAPI
+NtQueryIoRingCapabilities(
+    _In_ SIZE_T IoRingCapabilitiesLength,
+    _Out_ PVOID IoRingCapabilities
+);
+
+_IRQL_requires_max_(PASSIVE_LEVEL)
+NTSYSAPI
+NTSTATUS
+NTAPI
+ZwQueryIoRingCapabilities(
+    _In_ SIZE_T IoRingCapabilitiesLength,
+    _Out_ PVOID IoRingCapabilities
+);
+
+__kernel_entry NTSYSCALLAPI
+NTSTATUS
+NTAPI
+NtSetInformationIoRing(
+    _In_ HANDLE IoRingHandle,
+    _In_ ULONG IoRingInformationClass,
+    _In_ ULONG IoRingInformationLength,
+    _In_ PVOID IoRingInformation
+);
+
+_IRQL_requires_max_(PASSIVE_LEVEL)
+NTSYSAPI
+NTSTATUS
+NTAPI
+ZwSetInformationIoRing(
+    _In_ HANDLE IoRingHandle,
+    _In_ ULONG IoRingInformationClass,
+    _In_ ULONG IoRingInformationLength,
+    _In_ PVOID IoRingInformation
+);
+#endif // (NTDDI_VERSION >= NTDDI_WIN11)
 
 //
 // Other types
@@ -2861,12 +2944,105 @@ typedef struct _REPARSE_DATA_BUFFER
         } MountPointReparseBuffer;
         struct
         {
+            ULONG StringCount;
+            WCHAR StringList[1];
+        } AppExecLinkReparseBuffer;
+        struct
+        {
             UCHAR DataBuffer[1];
         } GenericReparseBuffer;
     };
 } REPARSE_DATA_BUFFER, * PREPARSE_DATA_BUFFER;
 
 #define REPARSE_DATA_BUFFER_HEADER_SIZE UFIELD_OFFSET(REPARSE_DATA_BUFFER, GenericReparseBuffer)
+
+#if (NTDDI_VERSION >= NTDDI_WIN10_RS1)
+
+//
+//======================= FSCTL_SET_REPARSE_POINT_EX =========================
+//
+//  This FSCTL can be used to set or replace  reparse tag of a file.
+//
+
+typedef struct _REPARSE_DATA_BUFFER_EX {
+
+    ULONG Flags;
+
+    //
+    //  This is the existing reparse tag on the file if any,  if the
+    //  caller wants to replace the reparse tag too.
+    //
+    //    - To set the reparse data  along with the reparse tag that
+    //      could be different,  pass the current reparse tag of the
+    //      file.
+    //
+    //    - To update the reparse data while having the same reparse
+    //      tag,  the caller should give the existing reparse tag in
+    //      this ExistingReparseTag field.
+    //
+    //    - To set the reparse tag along with reparse data on a file
+    //      that doesn't have a reparse tag yet, set this to zero.
+    //
+    //  If the ExistingReparseTag  does not match the reparse tag on
+    //  the file,  the FSCTL_SET_REPARSE_POINT_EX  would  fail  with
+    //  STATUS_IO_REPARSE_TAG_MISMATCH. NOTE: If a file doesn't have
+    //  a reparse tag, ExistingReparseTag should be 0.
+    //
+
+    ULONG ExistingReparseTag;
+
+    //
+    //  For non-Microsoft reparse tags, this is the existing reparse
+    //  guid on the file if any,  if the caller wants to replace the
+    //  reparse tag and / or guid along with the data.
+    //
+    //  If ExistingReparseTag is 0, the file is not expected to have
+    //  any reparse tags, so ExistingReparseGuid is ignored. And for
+    //  non-Microsoft tags ExistingReparseGuid should match the guid
+    //  in the file if ExistingReparseTag is non zero.
+    //
+
+    GUID ExistingReparseGuid;
+
+    //
+    //  Reserved
+    //
+
+    ULONGLONG Reserved;
+
+    //
+    //  Reparse data to set
+    //
+
+    union {
+
+        REPARSE_DATA_BUFFER ReparseDataBuffer;
+        REPARSE_GUID_DATA_BUFFER ReparseGuidDataBuffer;
+
+    } DUMMYUNIONNAME;
+
+} REPARSE_DATA_BUFFER_EX, * PREPARSE_DATA_BUFFER_EX;
+
+//
+//  REPARSE_DATA_BUFFER_EX Flags
+//
+//  REPARSE_DATA_EX_FLAG_GIVEN_TAG_OR_NONE - Forces the FSCTL to set the
+//  reparse tag if the file has no tag or the tag on the file is same as
+//  the one in  ExistingReparseTag.   NOTE: If the ExistingReparseTag is
+//  not a Microsoft tag then the ExistingReparseGuid should match if the
+//  file has the ExistingReparseTag.
+//
+
+#define REPARSE_DATA_EX_FLAG_GIVEN_TAG_OR_NONE              (0x00000001)
+
+
+#define REPARSE_GUID_DATA_BUFFER_EX_HEADER_SIZE \
+    UFIELD_OFFSET(REPARSE_DATA_BUFFER_EX, ReparseGuidDataBuffer.GenericReparseBuffer)
+
+#define REPARSE_DATA_BUFFER_EX_HEADER_SIZE \
+    UFIELD_OFFSET(REPARSE_DATA_BUFFER_EX, ReparseDataBuffer.GenericReparseBuffer)
+
+#endif /* (NTDDI_VERSION >= NTDDI_WIN10_RS1) */
 
 #endif // !_KERNEL_MODE
 
@@ -3255,6 +3431,39 @@ typedef struct _MOUNTMGR_VOLUME_PATHS
      MOUNTMGR_IS_VOLUME_NAME(s) && \
      (s)->Length == 98 && \
      (s)->Buffer[1] == '?')
+
+// KSecDD FS control definitions
+
+#define KSEC_DEVICE_NAME L"\\Device\\KSecDD"
+
+#define IOCTL_KSEC_CONNECT_LSA                      CTL_CODE(FILE_DEVICE_KSEC,  0, METHOD_BUFFERED,     FILE_WRITE_ACCESS )
+#define IOCTL_KSEC_RNG                              CTL_CODE(FILE_DEVICE_KSEC,  1, METHOD_BUFFERED,     FILE_ANY_ACCESS )
+#define IOCTL_KSEC_RNG_REKEY                        CTL_CODE(FILE_DEVICE_KSEC,  2, METHOD_BUFFERED,     FILE_ANY_ACCESS )
+#define IOCTL_KSEC_ENCRYPT_MEMORY                   CTL_CODE(FILE_DEVICE_KSEC,  3, METHOD_OUT_DIRECT,   FILE_ANY_ACCESS )
+#define IOCTL_KSEC_DECRYPT_MEMORY                   CTL_CODE(FILE_DEVICE_KSEC,  4, METHOD_OUT_DIRECT,   FILE_ANY_ACCESS )
+#define IOCTL_KSEC_ENCRYPT_MEMORY_CROSS_PROC        CTL_CODE(FILE_DEVICE_KSEC,  5, METHOD_OUT_DIRECT,   FILE_ANY_ACCESS )
+#define IOCTL_KSEC_DECRYPT_MEMORY_CROSS_PROC        CTL_CODE(FILE_DEVICE_KSEC,  6, METHOD_OUT_DIRECT,   FILE_ANY_ACCESS )
+#define IOCTL_KSEC_ENCRYPT_MEMORY_SAME_LOGON        CTL_CODE(FILE_DEVICE_KSEC,  7, METHOD_OUT_DIRECT,   FILE_ANY_ACCESS )
+#define IOCTL_KSEC_DECRYPT_MEMORY_SAME_LOGON        CTL_CODE(FILE_DEVICE_KSEC,  8, METHOD_OUT_DIRECT,   FILE_ANY_ACCESS )
+#define IOCTL_KSEC_FIPS_GET_FUNCTION_TABLE          CTL_CODE(FILE_DEVICE_KSEC,  9, METHOD_BUFFERED,     FILE_ANY_ACCESS )
+#define IOCTL_KSEC_ALLOC_POOL                       CTL_CODE(FILE_DEVICE_KSEC, 10, METHOD_BUFFERED,     FILE_ANY_ACCESS )
+#define IOCTL_KSEC_FREE_POOL                        CTL_CODE(FILE_DEVICE_KSEC, 11, METHOD_BUFFERED,     FILE_ANY_ACCESS )
+#define IOCTL_KSEC_COPY_POOL                        CTL_CODE(FILE_DEVICE_KSEC, 12, METHOD_BUFFERED,     FILE_ANY_ACCESS )
+#define IOCTL_KSEC_DUPLICATE_HANDLE                 CTL_CODE(FILE_DEVICE_KSEC, 13, METHOD_BUFFERED,     FILE_ANY_ACCESS )
+#define IOCTL_KSEC_REGISTER_EXTENSION               CTL_CODE(FILE_DEVICE_KSEC, 14, METHOD_BUFFERED,     FILE_ANY_ACCESS )
+#define IOCTL_KSEC_CLIENT_CALLBACK                  CTL_CODE(FILE_DEVICE_KSEC, 15, METHOD_BUFFERED,     FILE_ANY_ACCESS )
+#define IOCTL_KSEC_GET_BCRYPT_EXTENSION             CTL_CODE(FILE_DEVICE_KSEC, 16, METHOD_BUFFERED,     FILE_ANY_ACCESS )
+#define IOCTL_KSEC_GET_SSL_EXTENSION                CTL_CODE(FILE_DEVICE_KSEC, 17, METHOD_BUFFERED,     FILE_ANY_ACCESS )
+#define IOCTL_KSEC_GET_DEVICECONTROL_EXTENSION      CTL_CODE(FILE_DEVICE_KSEC, 18, METHOD_BUFFERED,     FILE_ANY_ACCESS )
+#define IOCTL_KSEC_ALLOC_VM                         CTL_CODE(FILE_DEVICE_KSEC, 19, METHOD_BUFFERED,     FILE_ANY_ACCESS )
+#define IOCTL_KSEC_FREE_VM                          CTL_CODE(FILE_DEVICE_KSEC, 20, METHOD_BUFFERED,     FILE_ANY_ACCESS )
+#define IOCTL_KSEC_COPY_VM                          CTL_CODE(FILE_DEVICE_KSEC, 21, METHOD_BUFFERED,     FILE_ANY_ACCESS )
+#define IOCTL_KSEC_CLIENT_FREE_VM                   CTL_CODE(FILE_DEVICE_KSEC, 22, METHOD_BUFFERED,     FILE_ANY_ACCESS )
+#define IOCTL_KSEC_INSERT_PROTECTED_PROCESS_ADDRESS CTL_CODE(FILE_DEVICE_KSEC, 23, METHOD_BUFFERED,     FILE_ANY_ACCESS )
+#define IOCTL_KSEC_REMOVE_PROTECTED_PROCESS_ADDRESS CTL_CODE(FILE_DEVICE_KSEC, 24, METHOD_BUFFERED,     FILE_ANY_ACCESS )
+#define IOCTL_KSEC_GET_BCRYPT_EXTENSION2            CTL_CODE(FILE_DEVICE_KSEC, 25, METHOD_BUFFERED,     FILE_ANY_ACCESS )
+#define IOCTL_KSEC_IPC_GET_QUEUED_FUNCTION_CALLS    CTL_CODE(FILE_DEVICE_KSEC, 26, METHOD_OUT_DIRECT,   FILE_ANY_ACCESS)
+#define IOCTL_KSEC_IPC_SET_FUNCTION_RETURN          CTL_CODE(FILE_DEVICE_KSEC, 27, METHOD_NEITHER,      FILE_ANY_ACCESS)
 
 //
 // Only Kernel

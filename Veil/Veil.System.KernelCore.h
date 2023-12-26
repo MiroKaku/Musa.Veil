@@ -188,7 +188,6 @@ ZwCallbackReturn(
     _In_ NTSTATUS Status
 );
 
-#if (NTDDI_VERSION >= NTDDI_VISTA)
 __kernel_entry NTSYSCALLAPI
 NTSTATUS
 NTAPI
@@ -203,7 +202,6 @@ NTAPI
 ZwFlushProcessWriteBuffers(
     VOID
 );
-#endif
 
 __kernel_entry NTSYSCALLAPI
 NTSTATUS

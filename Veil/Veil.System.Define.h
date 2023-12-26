@@ -195,9 +195,95 @@ typedef KAFFINITY32* POINTER_32 PKAFFINITY32;
 
 #endif // if _KERNEL_MODE
 
+#if !defined(ASSERT)
+
+#if DBG
+
+NTSYSAPI
+__analysis_noreturn
+VOID
+NTAPI
+RtlAssert(
+    _In_ PVOID VoidFailedAssertion,
+    _In_ PVOID VoidFileName,
+    _In_ ULONG LineNumber,
+    _In_opt_ PSTR MutableMessage
+);
+
+ULONG
+__cdecl
+DbgPrint(
+    _In_z_ _Printf_format_string_ PCSTR Format,
+    ...
+);
+
+#define ASSERT( exp ) \
+    ((!(exp)) ? \
+        (RtlAssert( (PVOID)#exp, (PVOID)__FILE__, __LINE__, NULL ),FALSE) : \
+        TRUE)
+
+#define ASSERTMSG( msg, exp ) \
+    ((!(exp)) ? \
+        (RtlAssert( (PVOID)#exp, (PVOID)__FILE__, __LINE__, msg ),FALSE) : \
+        TRUE)
+
+#define RTL_SOFT_ASSERT(_exp) \
+    ((!(_exp)) ? \
+        (DbgPrint("%s(%d): Soft assertion failed\n   Expression: %s\n", __FILE__, __LINE__, #_exp),FALSE) : \
+        TRUE)
+
+#define RTL_SOFT_ASSERTMSG(_msg, _exp) \
+    ((!(_exp)) ? \
+        (DbgPrint("%s(%d): Soft assertion failed\n   Expression: %s\n   Message: %s\n", __FILE__, __LINE__, #_exp, (_msg)),FALSE) : \
+        TRUE)
+
+#define RTL_VERIFY         ASSERT
+#define RTL_VERIFYMSG      ASSERTMSG
+
+#define RTL_SOFT_VERIFY    RTL_SOFT_ASSERT
+#define RTL_SOFT_VERIFYMSG RTL_SOFT_ASSERTMSG
+
+#else
+#define ASSERT( exp )         ((void) 0)
+#define ASSERTMSG( msg, exp ) ((void) 0)
+
+#define RTL_SOFT_ASSERT(_exp)          ((void) 0)
+#define RTL_SOFT_ASSERTMSG(_msg, _exp) ((void) 0)
+
+#define RTL_VERIFY( exp )         ((exp) ? TRUE : FALSE)
+#define RTL_VERIFYMSG( msg, exp ) ((exp) ? TRUE : FALSE)
+
+#define RTL_SOFT_VERIFY(_exp)         ((_exp) ? TRUE : FALSE)
+#define RTL_SOFT_VERIFYMSG(msg, _exp) ((_exp) ? TRUE : FALSE)
+
+#endif // DBG
+
+#endif // !defined(ASSERT)
+
 //
 // ntdef
 //
+
+//
+// Object Attributes
+//
+
+// Valid values for the Attributes field
+
+#define OBJ_PROTECT_CLOSE                   0x00000001L
+#define OBJ_INHERIT                         0x00000002L
+#define OBJ_AUDIT_OBJECT_CLOSE              0x00000004L
+#define OBJ_NO_RIGHTS_UPGRADE               0x00000008L
+#define OBJ_PERMANENT                       0x00000010L
+#define OBJ_EXCLUSIVE                       0x00000020L
+#define OBJ_CASE_INSENSITIVE                0x00000040L
+#define OBJ_OPENIF                          0x00000080L
+#define OBJ_OPENLINK                        0x00000100L
+#define OBJ_KERNEL_HANDLE                   0x00000200L
+#define OBJ_FORCE_ACCESS_CHECK              0x00000400L
+#define OBJ_IGNORE_IMPERSONATED_DEVICEMAP   0x00000800L
+#define OBJ_DONT_REPARSE                    0x00001000L
+#define OBJ_VALID_ATTRIBUTES                0x00001FF2L
 
 #ifndef _NTDEF_
 #define _NTDEF_
@@ -266,8 +352,15 @@ typedef CONST SCHAR* PCSCHAR;
 
 #endif // _WIN32_WINNT >= 0x0600
 
-typedef GUID* PGUID;
-typedef const GUID * PCGUID;
+#ifndef __LPGUID_DEFINED__
+#define __LPGUID_DEFINED__
+typedef GUID* LPGUID;
+#endif
+
+#ifndef __LPCGUID_DEFINED__
+#define __LPCGUID_DEFINED__
+typedef const GUID* LPCGUID;
+#endif
 
 typedef char    CCHAR;  // winnt
 typedef short   CSHORT;
@@ -587,26 +680,6 @@ typedef UNICODE_STRING64* PUNICODE_STRING64;
 
 typedef STRING64 ANSI_STRING64;
 typedef ANSI_STRING64* PANSI_STRING64;
-
-//
-// Object Attributes
-//
-
-// Valid values for the Attributes field
-
-#define OBJ_PROTECT_CLOSE                   0x00000001L
-#define OBJ_INHERIT                         0x00000002L
-#define OBJ_AUDIT_OBJECT_CLOSE              0x00000004L
-#define OBJ_PERMANENT                       0x00000010L
-#define OBJ_EXCLUSIVE                       0x00000020L
-#define OBJ_CASE_INSENSITIVE                0x00000040L
-#define OBJ_OPENIF                          0x00000080L
-#define OBJ_OPENLINK                        0x00000100L
-#define OBJ_KERNEL_HANDLE                   0x00000200L
-#define OBJ_FORCE_ACCESS_CHECK              0x00000400L
-#define OBJ_IGNORE_IMPERSONATED_DEVICEMAP   0x00000800L
-#define OBJ_DONT_REPARSE                    0x00001000L
-#define OBJ_VALID_ATTRIBUTES                0x00001FF2L
 
 typedef struct _OBJECT_ATTRIBUTES
 {

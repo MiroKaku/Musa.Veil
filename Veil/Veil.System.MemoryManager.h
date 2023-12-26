@@ -420,7 +420,7 @@ typedef enum _SECTION_INFORMATION_CLASS
 {
     SectionBasicInformation, // q; SECTION_BASIC_INFORMATION
     SectionImageInformation, // q; SECTION_IMAGE_INFORMATION
-    SectionRelocationInformation, // q; PVOID RelocationAddress // name:wow64:whNtQuerySection_SectionRelocationInformation // since WIN7
+    SectionRelocationInformation, // q; ULONG_PTR RelocationDelta // name:wow64:whNtQuerySection_SectionRelocationInformation // since WIN7
     SectionOriginalBaseInformation, // PVOID BaseAddress
     SectionInternalImageInformation, // SECTION_INTERNAL_IMAGE_INFORMATION // since REDSTONE2
     MaxSectionInfoClass
@@ -518,7 +518,8 @@ typedef enum _SECTION_INHERIT
 #define MEM_EXECUTE_OPTION_PERMANENT                0x8
 #define MEM_EXECUTE_OPTION_EXECUTE_DISPATCH_ENABLE  0x10
 #define MEM_EXECUTE_OPTION_IMAGE_DISPATCH_ENABLE    0x20
-#define MEM_EXECUTE_OPTION_VALID_FLAGS              0x3f
+#define MEM_EXECUTE_OPTION_DISABLE_EXCEPTION_CHAIN_VALIDATION 0x40
+#define MEM_EXECUTE_OPTION_VALID_FLAGS              0x7f
 
 //
 // Virtual memory
@@ -849,7 +850,7 @@ NtFlushVirtualMemory(
     _In_ HANDLE ProcessHandle,
     _Inout_ PVOID* BaseAddress,
     _Inout_ PSIZE_T RegionSize,
-    _Out_ struct _IO_STATUS_BLOCK* IoStatus
+    _Out_ PIO_STATUS_BLOCK IoStatus
 );
 
 _IRQL_requires_max_(APC_LEVEL)
@@ -1423,7 +1424,7 @@ __kernel_entry NTSYSCALLAPI
 NTSTATUS
 NTAPI
 NtCreatePartition(
-    _In_ HANDLE ParentPartitionHandle,
+    _In_opt_ HANDLE ParentPartitionHandle,
     _Out_ PHANDLE PartitionHandle,
     _In_ ACCESS_MASK DesiredAccess,
     _In_opt_ POBJECT_ATTRIBUTES ObjectAttributes,
@@ -1435,7 +1436,7 @@ NTSYSAPI
 NTSTATUS
 NTAPI
 ZwCreatePartition(
-    _In_ HANDLE ParentPartitionHandle,
+    _In_opt_ HANDLE ParentPartitionHandle,
     _Out_ PHANDLE PartitionHandle,
     _In_ ACCESS_MASK DesiredAccess,
     _In_opt_ POBJECT_ATTRIBUTES ObjectAttributes,
@@ -1788,13 +1789,17 @@ ZwInitializeEnclave(
 
 #if (NTDDI_VERSION >= NTDDI_WIN10_RS3)
 
+#define TERMINATE_ENCLAVE_FLAG_NO_WAIT    0x00000001ul
+#define TERMINATE_ENCLAVE_FLAG_WAIT_ERROR 0x00000004ul // STATUS_PENDING -> STATUS_ENCLAVE_NOT_TERMINATED
+#define TERMINATE_ENCLAVE_VALID_FLAGS     0x00000005ul
+
 // rev
 __kernel_entry NTSYSCALLAPI
 NTSTATUS
 NTAPI
 NtTerminateEnclave(
     _In_ PVOID BaseAddress,
-    _In_ BOOLEAN WaitForThread
+    _In_ ULONG Flags // TERMINATE_ENCLAVE_FLAG_*
 );
 
 // rev
@@ -1815,14 +1820,18 @@ typedef PENCLAVE_ROUTINE LPENCLAVE_ROUTINE;
 #endif // _KERNEL_MODE
 
 // rev
+#define ENCLAVE_CALL_VALID_FLAGS  0x00000001ul
+#define ENCLAVE_CALL_FLAG_NO_WAIT 0x00000001ul
+
+// rev
 __kernel_entry NTSYSCALLAPI
 NTSTATUS
 NTAPI
 NtCallEnclave(
     _In_ PENCLAVE_ROUTINE Routine,
-    _In_ PVOID Parameter,
-    _In_ BOOLEAN WaitForThread,
-    _Out_opt_ PVOID* ReturnValue
+    _In_ PVOID Reserved,              // reserved for dispatch (RtlEnclaveCallDispatch)
+    _In_ ULONG Flags,                 // ENCLAVE_CALL_FLAG_*
+    _Inout_ PVOID* RoutineParamReturn // input routine parameter, output routine return value
 );
 
 // rev
@@ -1832,9 +1841,9 @@ NTSTATUS
 NTAPI
 ZwCallEnclave(
     _In_ PENCLAVE_ROUTINE Routine,
-    _In_ PVOID Parameter,
-    _In_ BOOLEAN WaitForThread,
-    _Out_opt_ PVOID* ReturnValue
+    _In_ PVOID Reserved,
+    _In_ ULONG Flags,
+    _Inout_ PVOID* RoutineParamReturn
 );
 
 #endif // NTDDI_VERSION >= NTDDI_VERSION_RS3

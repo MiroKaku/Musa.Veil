@@ -71,9 +71,7 @@ VEIL_BEGIN()
 #define ALG_TYPE_STREAM                 (4 << 9)
 #define ALG_TYPE_DH                     (5 << 9)
 #define ALG_TYPE_SECURECHANNEL          (6 << 9)
-#if (NTDDI_VERSION >= NTDDI_VISTA)
 #define ALG_TYPE_ECDH                   (7 << 9)
-#endif //(NTDDI_VERSION >= NTDDI_VISTA)
 #if (NTDDI_VERSION >= NTDDI_WIN10_RS1)
 #define ALG_TYPE_THIRDPARTY             (8 << 9)
 #endif //(NTDDI_VERSION >= NTDDI_WIN10_RS1)
@@ -98,9 +96,7 @@ VEIL_BEGIN()
 #define ALG_SID_DSS_ANY                 0
 #define ALG_SID_DSS_PKCS                1
 #define ALG_SID_DSS_DMS                 2
-#if (NTDDI_VERSION >= NTDDI_VISTA)
 #define ALG_SID_ECDSA                   3
-#endif //(NTDDI_VERSION >= NTDDI_VISTA)
 
 // Block cipher sub ids
 // DES sub_ids
@@ -114,12 +110,10 @@ VEIL_BEGIN()
 #define ALG_SID_3DES_112                9
 #define ALG_SID_CYLINK_MEK              12
 #define ALG_SID_RC5                     13
-#if (NTDDI_VERSION >= NTDDI_WINXP)
 #define ALG_SID_AES_128                 14
 #define ALG_SID_AES_192                 15
 #define ALG_SID_AES_256                 16
 #define ALG_SID_AES                     17
-#endif //(NTDDI_VERSION >= NTDDI_WINXP)
 
 // Fortezza sub-ids
 #define ALG_SID_SKIPJACK                10
@@ -144,10 +138,8 @@ VEIL_BEGIN()
 #define ALG_SID_DH_EPHEM                2
 #define ALG_SID_AGREED_KEY_ANY          3
 #define ALG_SID_KEA                     4
-#if (NTDDI_VERSION >= NTDDI_VISTA)
 #define ALG_SID_ECDH                    5
 #define ALG_SID_ECDH_EPHEM              6
-#endif //(NTDDI_VERSION >= NTDDI_VISTA)
 
 // Hash sub ids
 #define ALG_SID_MD2                     1
@@ -161,14 +153,10 @@ VEIL_BEGIN()
 #define ALG_SID_SSL3SHAMD5              8
 #define ALG_SID_HMAC                    9
 #define ALG_SID_TLS1PRF                 10
-#if (NTDDI_VERSION >= NTDDI_WINXP)
 #define ALG_SID_HASH_REPLACE_OWF        11
-#endif //(NTDDI_VERSION >= NTDDI_WINXP)
-#if (NTDDI_VERSION > NTDDI_WINXPSP2)
 #define ALG_SID_SHA_256                 12
 #define ALG_SID_SHA_384                 13
 #define ALG_SID_SHA_512                 14
-#endif //(NTDDI_VERSION > NTDDI_WINXPSP2)
 
 // secure channel sub ids
 #define ALG_SID_SSL3_MASTER             1
@@ -179,10 +167,8 @@ VEIL_BEGIN()
 #define ALG_SID_TLS1_MASTER             6
 #define ALG_SID_SCHANNEL_ENC_KEY        7
 
-#if (NTDDI_VERSION >= NTDDI_VISTA)
 // misc ECC sub ids
 #define ALG_SID_ECMQV                   1
-#endif //(NTDDI_VERSION >= NTDDI_VISTA)
 
 // Our silly example sub-id
 #define ALG_SID_EXAMPLE                 80
@@ -203,9 +189,7 @@ typedef unsigned int ALG_ID;
 #define CALG_MAC                (ALG_CLASS_HASH | ALG_TYPE_ANY | ALG_SID_MAC)           // Deprecated. Don't use.
 #define CALG_RSA_SIGN           (ALG_CLASS_SIGNATURE | ALG_TYPE_RSA | ALG_SID_RSA_ANY)
 #define CALG_DSS_SIGN           (ALG_CLASS_SIGNATURE | ALG_TYPE_DSS | ALG_SID_DSS_ANY)
-#if (NTDDI_VERSION >= NTDDI_WINXP)
 #define CALG_NO_SIGN            (ALG_CLASS_SIGNATURE | ALG_TYPE_ANY | ALG_SID_ANY)
-#endif //(NTDDI_VERSION >= NTDDI_WINXP)
 #define CALG_RSA_KEYX           (ALG_CLASS_KEY_EXCHANGE|ALG_TYPE_RSA|ALG_SID_RSA_ANY)
 #define CALG_DES                (ALG_CLASS_DATA_ENCRYPT|ALG_TYPE_BLOCK|ALG_SID_DES)
 #define CALG_3DES_112           (ALG_CLASS_DATA_ENCRYPT|ALG_TYPE_BLOCK|ALG_SID_3DES_112)
@@ -233,25 +217,19 @@ typedef unsigned int ALG_ID;
 #define CALG_RC5                (ALG_CLASS_DATA_ENCRYPT|ALG_TYPE_BLOCK|ALG_SID_RC5)
 #define CALG_HMAC               (ALG_CLASS_HASH | ALG_TYPE_ANY | ALG_SID_HMAC)
 #define CALG_TLS1PRF            (ALG_CLASS_HASH | ALG_TYPE_ANY | ALG_SID_TLS1PRF)
-#if (NTDDI_VERSION >= NTDDI_WINXP)
 #define CALG_HASH_REPLACE_OWF   (ALG_CLASS_HASH | ALG_TYPE_ANY | ALG_SID_HASH_REPLACE_OWF)
 #define CALG_AES_128            (ALG_CLASS_DATA_ENCRYPT|ALG_TYPE_BLOCK|ALG_SID_AES_128)
 #define CALG_AES_192            (ALG_CLASS_DATA_ENCRYPT|ALG_TYPE_BLOCK|ALG_SID_AES_192)
 #define CALG_AES_256            (ALG_CLASS_DATA_ENCRYPT|ALG_TYPE_BLOCK|ALG_SID_AES_256)
 #define CALG_AES                (ALG_CLASS_DATA_ENCRYPT|ALG_TYPE_BLOCK|ALG_SID_AES)
-#endif //(NTDDI_VERSION >= NTDDI_WINXP)
-#if (NTDDI_VERSION > NTDDI_WINXPSP2)
 #define CALG_SHA_256            (ALG_CLASS_HASH | ALG_TYPE_ANY | ALG_SID_SHA_256)
 #define CALG_SHA_384            (ALG_CLASS_HASH | ALG_TYPE_ANY | ALG_SID_SHA_384)
 #define CALG_SHA_512            (ALG_CLASS_HASH | ALG_TYPE_ANY | ALG_SID_SHA_512)
-#endif //(NTDDI_VERSION > NTDDI_WINXPSP2)
-#if (NTDDI_VERSION >= NTDDI_VISTA)
 #define CALG_ECDH               (ALG_CLASS_KEY_EXCHANGE | ALG_TYPE_DH | ALG_SID_ECDH)
 #define CALG_ECDH_EPHEM         (ALG_CLASS_KEY_EXCHANGE | ALG_TYPE_ECDH | ALG_SID_ECDH_EPHEM)
 #define CALG_ECMQV              (ALG_CLASS_KEY_EXCHANGE | ALG_TYPE_ANY | ALG_SID_ECMQV)
 #define CALG_ECDSA              (ALG_CLASS_SIGNATURE | ALG_TYPE_DSS | ALG_SID_ECDSA)
 #define CALG_NULLCIPHER         (ALG_CLASS_DATA_ENCRYPT | ALG_TYPE_ANY | 0)
-#endif //(NTDDI_VERSION >= NTDDI_VISTA)
 #if (NTDDI_VERSION >= NTDDI_WIN10_RS1)
 #define CALG_THIRDPARTY_KEY_EXCHANGE    (ALG_CLASS_KEY_EXCHANGE | ALG_TYPE_THIRDPARTY | ALG_SID_THIRDPARTY_ANY)
 #define CALG_THIRDPARTY_SIGNATURE       (ALG_CLASS_SIGNATURE    | ALG_TYPE_THIRDPARTY | ALG_SID_THIRDPARTY_ANY)

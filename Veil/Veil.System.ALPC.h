@@ -828,7 +828,6 @@ typedef struct _ALPC_MESSAGE_HANDLE_INFORMATION
 
 // System calls
 
-#if (NTDDI_VERSION >= NTDDI_VISTA)
 __kernel_entry NTSYSCALLAPI
 NTSTATUS
 NTAPI
@@ -1426,7 +1425,6 @@ AlpcUnregisterCompletionList(
     _In_ HANDLE PortHandle
 );
 
-#if (NTDDI_VERSION >= NTDDI_WIN7)
 // rev
 NTSYSAPI
 NTSTATUS
@@ -1434,7 +1432,6 @@ NTAPI
 AlpcRundownCompletionList(
     _In_ HANDLE PortHandle
 );
-#endif
 
 NTSYSAPI
 NTSTATUS
@@ -1498,7 +1495,6 @@ AlpcGetCompletionListMessageAttributes(
     _In_ PPORT_MESSAGE Message
 );
 #endif // !_KERNEL_MODE
-#endif // Vista
 
 
 VEIL_END()
