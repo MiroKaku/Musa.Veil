@@ -5413,7 +5413,7 @@ RtlQueryInformationActiveActivationContext(
 // Images
 //
 
-IMAGE_DOS_HEADER __ImageBase;
+extern IMAGE_DOS_HEADER __ImageBase;
 #define RtlCurrentImageBase() ((PVOID)&__ImageBase)
 
 NTSYSAPI
