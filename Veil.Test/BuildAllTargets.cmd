@@ -1,8 +1,7 @@
-@setlocal
 @echo off
 
-rem Change to the current folder.
-cd "%~dp0"
+setlocal
+pushd "%~dp0"
 
 rem Remove the output folder for a fresh compile.
 rd /s /q Output
@@ -15,4 +14,5 @@ if "%VSINSTALLDIR%"=="" (
 rem Build all targets
 MSBuild -binaryLogger:Output\BuildAllTargets.binlog -m BuildAllTargets.proj
 
-@endlocal
+popd
+endlocal
