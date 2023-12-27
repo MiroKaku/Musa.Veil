@@ -7443,19 +7443,18 @@ NtGetTickCount(
     VOID
 ) {
 #ifdef _WIN64
-
-    return (ULONG)((USER_SHARED_DATA->TickCountQuad * USER_SHARED_DATA->TickCountMultiplier) >> 24);
+    return (ULONG)((SharedUserData->TickCountQuad * SharedUserData->TickCountMultiplier) >> 24);
 #else
     ULARGE_INTEGER tickCount;
     while (TRUE) {
-        tickCount.HighPart = (ULONG)USER_SHARED_DATA->TickCount.High1Time;
-        tickCount.LowPart = USER_SHARED_DATA->TickCount.LowPart;
-        if (tickCount.HighPart == (ULONG)USER_SHARED_DATA->TickCount.High2Time)
+        tickCount.HighPart = (ULONG)SharedUserData->TickCount.High1Time;
+        tickCount.LowPart = SharedUserData->TickCount.LowPart;
+        if (tickCount.HighPart == (ULONG)SharedUserData->TickCount.High2Time)
             break;
         YieldProcessor();
     }
-    return (ULONG)((UInt32x32To64(tickCount.LowPart, USER_SHARED_DATA->TickCountMultiplier) >> 24) +
-        UInt32x32To64((tickCount.HighPart << 8) & 0xffffffff, USER_SHARED_DATA->TickCountMultiplier));
+    return (ULONG)((UInt32x32To64(tickCount.LowPart, SharedUserData->TickCountMultiplier) >> 24) +
+        UInt32x32To64((tickCount.HighPart << 8) & 0xffffffff, SharedUserData->TickCountMultiplier));
 #endif
 }
 
@@ -7467,18 +7466,18 @@ NtGetTickCount64(
     ULARGE_INTEGER tickCount;
 
 #ifdef _WIN64
-    tickCount.QuadPart = USER_SHARED_DATA->TickCountQuad;
+    tickCount.QuadPart = SharedUserData->TickCountQuad;
 #else
     while (TRUE) {
-        tickCount.HighPart = (ULONG)USER_SHARED_DATA->TickCount.High1Time;
-        tickCount.LowPart = USER_SHARED_DATA->TickCount.LowPart;
-        if (tickCount.HighPart == (ULONG)USER_SHARED_DATA->TickCount.High2Time)
+        tickCount.HighPart = (ULONG)SharedUserData->TickCount.High1Time;
+        tickCount.LowPart = SharedUserData->TickCount.LowPart;
+        if (tickCount.HighPart == (ULONG)SharedUserData->TickCount.High2Time)
             break;
         YieldProcessor();
     }
 #endif
-    return (UInt32x32To64(tickCount.LowPart, USER_SHARED_DATA->TickCountMultiplier) >> 24) +
-        (UInt32x32To64(tickCount.HighPart, USER_SHARED_DATA->TickCountMultiplier) << 8);
+    return (UInt32x32To64(tickCount.LowPart, SharedUserData->TickCountMultiplier) >> 24) +
+        (UInt32x32To64(tickCount.HighPart, SharedUserData->TickCountMultiplier) << 8);
 }
 
 #define ZwGetTickCount    NtGetTickCount
