@@ -270,6 +270,8 @@ ZwTraceEvent(
 #define ETW_CKCL_RUNDOWN_STOP    0x00000008
 #define ETW_FILENAME_RUNDOWN     0x00000010
 
+#if !defined(_KERNEL_MODE)
+
 //
 // Constants for UMGL (User Mode Global Logging).
 //
@@ -304,8 +306,8 @@ typedef struct _ETW_UMGL_KEY
     UCHAR Flags;
 } ETW_UMGL_KEY, * PETW_UMGL_KEY;
 
-#define UMGL_LOGGER_ID(Index)               (((PETW_UMGL_KEY)(&USER_SHARED_DATA->UserModeGlobalLogger[Index]))->LoggerId)
-#define UMGL_LOGGER_FLAGS(Index)            (((PETW_UMGL_KEY)(&USER_SHARED_DATA->UserModeGlobalLogger[Index]))->Flags)
+#define UMGL_LOGGER_ID(Index)               (((PETW_UMGL_KEY)(&SharedUserData->UserModeGlobalLogger[Index]))->LoggerId)
+#define UMGL_LOGGER_FLAGS(Index)            (((PETW_UMGL_KEY)(&SharedUserData->UserModeGlobalLogger[Index]))->Flags)
 #define IS_UMGL_LOGGING_ENABLED(Index)      (UMGL_LOGGER_ID(Index) != 0)
 #define IS_UMGL_FLAG_ENABLED(Index, Flag)   ((UMGL_LOGGER_FLAGS(Index) & Flag) != 0)
 
@@ -492,8 +494,6 @@ typedef struct _ETW_SESSION_NOTIFICATION_PACKET
     TRACEHANDLE TraceHandle;
     ULONG Reserved[2];
 } ETW_SESSION_NOTIFICATION_PACKET, * PETW_SESSION_NOTIFICATION_PACKET;
-
-#if !defined(_KERNEL_MODE)
 
 NTSYSAPI
 ULONG
