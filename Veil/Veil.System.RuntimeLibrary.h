@@ -7157,7 +7157,9 @@ RtlProtectHeap(
     _In_ BOOLEAN MakeReadOnly
 );
 
+#ifndef _KERNEL_MODE
 #define RtlProcessHeap() (NtCurrentPeb()->ProcessHeap)
+#endif
 
 NTSYSAPI
 BOOLEAN
@@ -7272,7 +7274,7 @@ NTAPI
 RtlValidateHeap(
     _In_opt_ PVOID HeapHandle,
     _In_ ULONG Flags,
-    _In_opt_ PVOID BaseAddress
+    _In_opt_ LPCVOID BaseAddress
 );
 
 NTSYSAPI
@@ -7304,40 +7306,6 @@ NTAPI
 RtlEnumProcessHeaps(
     _In_ PRTL_ENUM_HEAPS_ROUTINE EnumRoutine,
     _In_ PVOID Parameter
-);
-
-typedef struct _RTL_HEAP_USAGE_ENTRY
-{
-    struct _RTL_HEAP_USAGE_ENTRY* Next;
-    PVOID Address;
-    SIZE_T Size;
-    USHORT AllocatorBackTraceIndex;
-    USHORT TagIndex;
-} RTL_HEAP_USAGE_ENTRY, * PRTL_HEAP_USAGE_ENTRY;
-
-typedef struct _RTL_HEAP_USAGE
-{
-    ULONG Length;
-    SIZE_T BytesAllocated;
-    SIZE_T BytesCommitted;
-    SIZE_T BytesReserved;
-    SIZE_T BytesReservedMaximum;
-    PRTL_HEAP_USAGE_ENTRY Entries;
-    PRTL_HEAP_USAGE_ENTRY AddedEntries;
-    PRTL_HEAP_USAGE_ENTRY RemovedEntries;
-    ULONG_PTR Reserved[8];
-} RTL_HEAP_USAGE, * PRTL_HEAP_USAGE;
-
-#define HEAP_USAGE_ALLOCATED_BLOCKS HEAP_REALLOC_IN_PLACE_ONLY
-#define HEAP_USAGE_FREE_BUFFER HEAP_ZERO_MEMORY
-
-NTSYSAPI
-NTSTATUS
-NTAPI
-RtlUsageHeap(
-    _In_ PVOID HeapHandle,
-    _In_ ULONG Flags,
-    _Inout_ PRTL_HEAP_USAGE Usage
 );
 
 typedef struct _RTL_HEAP_WALK_ENTRY
@@ -7598,15 +7566,24 @@ typedef struct _RTL_HEAP_STACK_CONTROL
 } RTL_HEAP_STACK_CONTROL, * PRTL_HEAP_STACK_CONTROL;
 
 // rev
-typedef NTSTATUS(NTAPI* PRTL_HEAP_DEBUGGING_INTERCEPTOR_ROUTINE)(
+typedef
+_Function_class_(RTL_HEAP_DEBUGGING_INTERCEPTOR_ROUTINE)
+NTSTATUS
+NTAPI
+RTL_HEAP_DEBUGGING_INTERCEPTOR_ROUTINE(
     _In_ PVOID HeapHandle,
     _In_ ULONG Action,
     _In_ ULONG StackFramesToCapture,
     _In_ PVOID* StackTrace
     );
+typedef RTL_HEAP_DEBUGGING_INTERCEPTOR_ROUTINE *PRTL_HEAP_DEBUGGING_INTERCEPTOR_ROUTINE;
 
 // rev
-typedef NTSTATUS(NTAPI* PRTL_HEAP_LEAK_ENUMERATION_ROUTINE)(
+typedef
+_Function_class_(RTL_HEAP_LEAK_ENUMERATION_ROUTINE)
+NTSTATUS
+NTAPI
+RTL_HEAP_LEAK_ENUMERATION_ROUTINE(
     _In_ LONG Reserved,
     _In_ PVOID HeapHandle,
     _In_ PVOID BaseAddress,
@@ -7614,6 +7591,7 @@ typedef NTSTATUS(NTAPI* PRTL_HEAP_LEAK_ENUMERATION_ROUTINE)(
     _In_ ULONG StackTraceDepth,
     _In_ PVOID* StackTrace
     );
+typedef RTL_HEAP_LEAK_ENUMERATION_ROUTINE* PRTL_HEAP_LEAK_ENUMERATION_ROUTINE;
 
 // symbols
 typedef struct _HEAP_DEBUGGING_INFORMATION
@@ -7642,7 +7620,7 @@ NTSYSAPI
 NTSTATUS
 NTAPI
 RtlSetHeapInformation(
-    _In_ PVOID HeapHandle,
+    _In_opt_ PVOID HeapHandle,
     _In_ HEAP_INFORMATION_CLASS HeapInformationClass,
     _In_opt_ PVOID HeapInformation,
     _In_opt_ SIZE_T HeapInformationLength
