@@ -3513,8 +3513,7 @@ RtlInitCodePageTable(
     _Inout_ PCPTABLEINFO CodePageTable
 );
 
-#ifndef _KERNEL_MODE
-
+// _KERNEL_MODE begin
 NTSYSAPI
 VOID
 NTAPI
@@ -3540,8 +3539,7 @@ RtlIsTextUnicode(
     _In_ ULONG Size,
     _Inout_opt_ PULONG Result
 );
-
-#endif // !_KERNEL_MODE
+// _KERNEL_MODE end
 
 typedef enum _RTL_NORM_FORM
 {
@@ -3630,8 +3628,7 @@ RtlEqualComputerName(
     _In_ PCUNICODE_STRING String2
 );
 
-#ifndef _KERNEL_MODE
-
+// _KERNEL_MODE begin
 NTSYSAPI
 NTSTATUS
 NTAPI
@@ -3640,8 +3637,7 @@ RtlDnsHostNameToComputerName(
     _In_ PCUNICODE_STRING DnsHostNameString,
     _In_ BOOLEAN AllocateComputerNameString
 );
-
-#endif // !_KERNEL_MODE
+// _KERNEL_MODE end
 
 #ifndef _KERNEL_MODE
 #define RTL_GUID_STRING_SIZE 38
@@ -4120,7 +4116,7 @@ RtlCompressChunks(
 // Locale
 //
 
-#ifndef _KERNEL_MODE
+// _KERNEL_MODE begin
 // private
 NTSYSAPI
 NTSTATUS
@@ -4277,7 +4273,7 @@ RtlGetLocaleFileMappingAddress(
     _Out_ PLARGE_INTEGER DefaultCasingTableSize
 );
 
-#endif // !_KERNEL_MODE
+// _KERNEL_MODE end
 
 //
 // PEB
@@ -8112,7 +8108,7 @@ RtlIsAnyDebuggerPresent(
     result = NtCurrentPeb()->BeingDebugged;
 
     if (!result)
-        return USER_SHARED_DATA->KdDebuggerEnabled;
+        return SharedUserData->KdDebuggerEnabled;
 
     return result;
 }
@@ -11389,30 +11385,29 @@ NTSYSAPI
 PVOID
 NTAPI
 RtlEncodePointer(
-    _In_ PVOID Ptr
+    _In_opt_ PVOID Ptr
 );
 
 NTSYSAPI
 PVOID
 NTAPI
 RtlDecodePointer(
-    _In_ PVOID Ptr
+    _In_opt_ PVOID Ptr
 );
 
-#ifndef _KERNEL_MODE
-
+// _KERNEL_MODE begin
 NTSYSAPI
 PVOID
 NTAPI
 RtlEncodeSystemPointer(
-    _In_ PVOID Ptr
+    _In_opt_ PVOID Ptr
 );
 
 NTSYSAPI
 PVOID
 NTAPI
 RtlDecodeSystemPointer(
-    _In_ PVOID Ptr
+    _In_opt_ PVOID Ptr
 );
 
 #if (NTDDI_VERSION >= NTDDI_WIN10)
@@ -11422,7 +11417,7 @@ NTSTATUS
 NTAPI
 RtlEncodeRemotePointer(
     _In_ HANDLE ProcessHandle,
-    _In_ PVOID Pointer,
+    _In_opt_ PVOID Pointer,
     _Out_ PVOID* EncodedPointer
 );
 
@@ -11432,12 +11427,12 @@ NTSTATUS
 NTAPI
 RtlDecodeRemotePointer(
     _In_ HANDLE ProcessHandle,
-    _In_ PVOID Pointer,
+    _In_opt_ PVOID Pointer,
     _Out_ PVOID* DecodedPointer
 );
-#endif
+#endif // (NTDDI_VERSION >= NTDDI_WIN10)
 
-#endif // !_KERNEL_MODE
+// _KERNEL_MODE end
 
 #if (NTDDI_VERSION >= NTDDI_WINTHRESHOLD)
 // rev
@@ -12547,7 +12542,7 @@ typedef enum _RTL_BSD_ITEM_TYPE
     RtlBsdPowerTransition, // q: s: RTL_BSD_DATA_POWER_TRANSITION
     RtlBsdItemBootAttemptCount, // q: s: UCHAR // BootAttemptCount
     RtlBsdItemBootCheckpoint, // q: s: UCHAR // LastBootCheckpoint
-    RtlBsdItemBootId, // q; s: ULONG (USER_SHARED_DATA->BootId)
+    RtlBsdItemBootId, // q; s: ULONG (SharedUserData->BootId)
     RtlBsdItemShutdownBootId, // q; s: ULONG
     RtlBsdItemReportedAbnormalShutdownBootId, // q; s: ULONG
     RtlBsdItemErrorInfo, // RTL_BSD_DATA_ERROR_INFO
