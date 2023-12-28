@@ -5032,7 +5032,7 @@ RtlRemoteCall(
 // Vectored exception handlers
 //
 
-#ifndef _KERNEL_MODE
+// _KERNEL_MODE begin
 
 NTSYSAPI
 PVOID
@@ -5064,7 +5064,7 @@ RtlRemoveVectoredContinueHandler(
     _In_ PVOID Handle
 );
 
-#endif // !_KERNEL_MODE
+// _KERNEL_MODE end
 
 //
 // Scope table structure definition.
@@ -5151,26 +5151,33 @@ RtlAssert(
     _In_opt_ PSTR MutableMessage
 );
 
-#ifndef _KERNEL_MODE
+// _KERNEL_MODE begin
 
-typedef ULONG(NTAPI* PRTLP_UNHANDLED_EXCEPTION_FILTER)(
-    _In_ PEXCEPTION_POINTERS ExceptionInfo
+#ifndef _ERRHANDLING_H_
+typedef LONG(WINAPI* PTOP_LEVEL_EXCEPTION_FILTER)(
+    _In_ struct _EXCEPTION_POINTERS* ExceptionInfo
     );
+
+typedef PTOP_LEVEL_EXCEPTION_FILTER LPTOP_LEVEL_EXCEPTION_FILTER;
+#endif
 
 NTSYSAPI
 VOID
 NTAPI
 RtlSetUnhandledExceptionFilter(
-    _In_ PRTLP_UNHANDLED_EXCEPTION_FILTER UnhandledExceptionFilter
+    _In_opt_ PTOP_LEVEL_EXCEPTION_FILTER UnhandledExceptionFilter
 );
 
-// rev
 NTSYSAPI
 LONG
 NTAPI
 RtlUnhandledExceptionFilter(
     _In_ PEXCEPTION_POINTERS ExceptionPointers
 );
+
+// _KERNEL_MODE end
+
+#ifndef _KERNEL_MODE
 
 // rev
 NTSYSAPI
@@ -5216,6 +5223,10 @@ RtlRaiseNoncontinuableException(
     _In_ PCONTEXT ContextRecord
 );
 #endif // (NTDDI_VERSION >= NTDDI_WIN10_VB)
+
+#endif // _KERNEL_MODE
+
+#ifndef _KERNEL_MODE
 
 #ifdef _WIN64
 // private
@@ -5403,6 +5414,7 @@ RtlQueryInformationActiveActivationContext(
     _In_ SIZE_T ActivationContextInformationLength,
     _Out_opt_ PSIZE_T ReturnLength
 );
+
 #endif // !_KERNEL_MODE
 
 //
@@ -8073,6 +8085,8 @@ RtlSetProcessDebugInformation(
     _Inout_ PRTL_DEBUG_INFORMATION Buffer
 );
 
+#endif // !_KERNEL_MODE
+
 // rev
 FORCEINLINE
 BOOLEAN
@@ -8081,17 +8095,15 @@ RtlIsAnyDebuggerPresent(
     VOID
 )
 {
-    BOOLEAN result;
-
-    result = NtCurrentPeb()->BeingDebugged;
-
-    if (!result)
-        return SharedUserData->KdDebuggerEnabled;
-
-    return result;
+#ifdef _KERNEL_MODE
+    return !KdRefreshDebuggerNotPresent();
+#else
+    if (NtCurrentPeb()->BeingDebugged) {
+        return TRUE;
+    }
+    return SharedUserData->KdDebuggerEnabled;
+#endif
 }
-
-#endif // !_KERNEL_MODE
 
 //
 // Messages
@@ -8563,7 +8575,7 @@ RtlRestoreLastWin32Error(
     _In_ LONG Win32Error
 );
 
-#ifndef _KERNEL_MODE
+// _KERNEL_MODE begin
 
 #define RTL_ERRORMODE_FAILCRITICALERRORS 0x0010
 #define RTL_ERRORMODE_NOGPFAULTERRORBOX  0x0020
@@ -8584,7 +8596,7 @@ RtlSetThreadErrorMode(
     _Out_opt_ PULONG OldMode
 );
 
-#endif
+// _KERNEL_MODE end
 
 
 //
