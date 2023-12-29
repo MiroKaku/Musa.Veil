@@ -2557,6 +2557,10 @@ typedef enum _THREAD_WORKLOAD_CLASS
 // Processes
 //
 
+#ifndef STARTF_HASSHELLDATA
+#define STARTF_HASSHELLDATA 0x00000400
+#endif
+
 __kernel_entry NTSYSCALLAPI
 NTSTATUS
 NTAPI
@@ -2714,6 +2718,8 @@ ZwResumeProcess(
 #define NtCurrentSession()      ((HANDLE)(LONG_PTR)-3)
 #define ZwCurrentSession()      NtCurrentSession()
 
+#define ZwCurrentTeb()          NtCurrentTeb()
+
 #define NtCurrentPeb()          (NtCurrentTeb()->ProcessEnvironmentBlock)
 #define ZwCurrentPeb()          NtCurrentPeb()
 
@@ -2723,7 +2729,14 @@ ZwResumeProcess(
 #define NtCurrentThreadId()     (NtCurrentTeb()->ClientId.UniqueThread)
 #define ZwCurrentThreadId()     NtCurrentThreadId()
 
-#endif // !_KERNEL_MODE
+#else // ifdef _KERNEL_MODE
+
+#define NtCurrentProcessId()    PsGetCurrentProcessId()
+#define ZwCurrentProcessId()    NtCurrentProcessId()
+#define NtCurrentThreadId()     PsGetCurrentThreadId()
+#define ZwCurrentThreadId()     NtCurrentThreadId()
+
+#endif // _KERNEL_MODE
 
 // Windows 8 and above
 #define NtCurrentProcessToken()         ((HANDLE)(LONG_PTR)-4) // NtOpenProcessToken(NtCurrentProcess())
@@ -3066,7 +3079,7 @@ ZwGetCurrentProcessorNumber(
 
 #if (NTDDI_VERSION >= NTDDI_WIN10)
 __kernel_entry NTSYSCALLAPI
-ULONG
+NTSTATUS
 NTAPI
 NtGetCurrentProcessorNumberEx(
     _Out_opt_ PPROCESSOR_NUMBER ProcessorNumber
@@ -3074,7 +3087,7 @@ NtGetCurrentProcessorNumberEx(
 
 _IRQL_requires_max_(PASSIVE_LEVEL)
 NTSYSAPI
-ULONG
+NTSTATUS
 NTAPI
 ZwGetCurrentProcessorNumberEx(
     _Out_opt_ PPROCESSOR_NUMBER ProcessorNumber
