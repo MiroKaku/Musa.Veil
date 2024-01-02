@@ -77,6 +77,64 @@ VEIL_BEGIN()
         ((((ULONG_PTR) (_pointer)) & ((_alignment) - 1)) == 0)
 #endif
 
+
+//
+// Define alignment macros to align structure sizes and pointers up and down.
+//
+
+#ifndef ALIGN_DOWN_BY
+#define ALIGN_DOWN_BY(length, alignment) \
+    ((ULONG_PTR)(length) & ~((ULONG_PTR)(alignment) - 1))
+#endif
+
+#ifndef ALIGN_UP_BY
+#define ALIGN_UP_BY(length, alignment) \
+    (ALIGN_DOWN_BY(((ULONG_PTR)(length) + (alignment) - 1), alignment))
+#endif
+
+#ifndef ALIGN_DOWN_POINTER_BY
+#define ALIGN_DOWN_POINTER_BY(address, alignment) \
+    ((PVOID)((ULONG_PTR)(address) & ~((ULONG_PTR)(alignment) - 1)))
+#endif
+
+#ifndef ALIGN_UP_POINTER_BY
+#define ALIGN_UP_POINTER_BY(address, alignment) \
+    (ALIGN_DOWN_POINTER_BY(((ULONG_PTR)(address) + (alignment) - 1), alignment))
+#endif
+
+#ifndef ALIGN_DOWN
+#define ALIGN_DOWN(length, type) \
+    ALIGN_DOWN_BY(length, sizeof(type))
+#endif
+
+#ifndef ALIGN_UP
+#define ALIGN_UP(length, type) \
+    ALIGN_UP_BY(length, sizeof(type))
+#endif
+
+#ifndef ALIGN_DOWN_POINTER
+#define ALIGN_DOWN_POINTER(address, type) \
+    ALIGN_DOWN_POINTER_BY(address, sizeof(type))
+#endif
+
+#ifndef ALIGN_UP_POINTER
+#define ALIGN_UP_POINTER(address, type) \
+    ALIGN_UP_POINTER_BY(address, sizeof(type))
+#endif
+
+//
+// Calculate the byte offset of a field in a structure of type type.
+//
+
+#ifndef FIELD_OFFSET
+#define FIELD_OFFSET(type, field) ((ULONG)&(((type *)0)->field))
+#endif
+
+#ifndef FIELD_SIZE
+#define FIELD_SIZE(type, field) (sizeof(((type *)0)->field))
+#endif
+
+
 #ifndef STATIC_ASSERT
 #define STATIC_ASSERT(expr) typedef char __static_assert_t[ (expr) ]
 #endif
