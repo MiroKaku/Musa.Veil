@@ -2078,18 +2078,18 @@ typedef enum _PS_PROTECTED_SIGNER
 #define PS_PROTECTED_AUDIT_MASK 0x08
 #define PS_PROTECTED_TYPE_MASK 0x07
 
-// vProtectionLevel.Level = PsProtectedValue(PsProtectedSignerCodeGen, FALSE, PsProtectedTypeProtectedLight)
-#define PsProtectedValue(aSigner, aAudit, aType) ( \
-    ((aSigner & PS_PROTECTED_SIGNER_MASK) << 4) | \
-    ((aAudit & PS_PROTECTED_AUDIT_MASK) << 3) | \
-    (aType & PS_PROTECTED_TYPE_MASK)\
+// ProtectionLevel.Level = PsProtectedValue(PsProtectedSignerCodeGen, FALSE, PsProtectedTypeProtectedLight)
+#define PsProtectedValue(Signer, Audit, Type) ( \
+    ((Signer & PS_PROTECTED_SIGNER_MASK) << 4) | \
+    ((Audit & PS_PROTECTED_AUDIT_MASK) << 3) | \
+    (Type & PS_PROTECTED_TYPE_MASK)\
     )
 
-// InitializePsProtection(&vProtectionLevel, PsProtectedSignerCodeGen, FALSE, PsProtectedTypeProtectedLight)
-#define InitializePsProtection(aProtectionLevelPtr, aSigner, aAudit, aType) { \
-    (aProtectionLevelPtr)->Signer = aSigner; \
-    (aProtectionLevelPtr)->Audit = aAudit; \
-    (aProtectionLevelPtr)->Type = aType; \
+// InitializePsProtection(&ProtectionLevel, PsProtectedSignerCodeGen, FALSE, PsProtectedTypeProtectedLight)
+#define InitializePsProtection(ProtectionLevelPtr, Signer, Audit, Type) { \
+    (ProtectionLevelPtr)->Signer = Signer; \
+    (ProtectionLevelPtr)->Audit = Audit; \
+    (ProtectionLevelPtr)->Type = Type; \
     }
 
 typedef struct _PS_PROTECTION
@@ -3710,15 +3710,18 @@ typedef struct _PROC_THREAD_ATTRIBUTE_LIST
 #define EXTENDED_PROCESS_CREATION_FLAG_FORCELUA 0x00000002
 #define EXTENDED_PROCESS_CREATION_FLAG_FORCE_BREAKAWAY 0x00000004 // requires SeTcbPrivilege // since WINBLUE
 
-// private
-#define PROTECTION_LEVEL_WINTCB_LIGHT 0x00000000
-#define PROTECTION_LEVEL_WINDOWS 0x00000001
-#define PROTECTION_LEVEL_WINDOWS_LIGHT 0x00000002
-#define PROTECTION_LEVEL_ANTIMALWARE_LIGHT 0x00000003
-#define PROTECTION_LEVEL_LSA_LIGHT 0x00000004
-#define PROTECTION_LEVEL_WINTCB 0x00000005
-#define PROTECTION_LEVEL_CODEGEN_LIGHT 0x00000006
-#define PROTECTION_LEVEL_AUTHENTICODE 0x00000007
+#define PROTECTION_LEVEL_WINTCB_LIGHT       0x00000000
+#define PROTECTION_LEVEL_WINDOWS            0x00000001
+#define PROTECTION_LEVEL_WINDOWS_LIGHT      0x00000002
+#define PROTECTION_LEVEL_ANTIMALWARE_LIGHT  0x00000003
+#define PROTECTION_LEVEL_LSA_LIGHT          0x00000004
+#define PROTECTION_LEVEL_WINTCB             0x00000005
+#define PROTECTION_LEVEL_CODEGEN_LIGHT      0x00000006
+#define PROTECTION_LEVEL_AUTHENTICODE       0x00000007
+#define PROTECTION_LEVEL_PPL_APP            0x00000008
+
+#define PROTECTION_LEVEL_SAME               0xFFFFFFFF
+#define PROTECTION_LEVEL_NONE               0xFFFFFFFE
 
 // private
 typedef enum _SE_SAFE_OPEN_PROMPT_EXPERIENCE_RESULTS
