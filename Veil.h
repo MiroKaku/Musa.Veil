@@ -265,6 +265,7 @@ struct IUnknown;
 #pragma warning(pop)
 
 #if __has_include(<Windows.h>)
+#define  WIN32_LEAN_AND_MEAN
 #define  _NTOS_
 #define  _DEVIOCTL_
 #define  _NTSECAPI_

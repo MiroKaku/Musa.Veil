@@ -1,4 +1,4 @@
-/*
+﻿/*
  * PROJECT:   Veil
  * FILE:      Veil.System.RuntimeLibrary.h
  * PURPOSE:   This file is part of Veil.
@@ -8861,8 +8861,8 @@ RtlTimeFieldsToTime(
     _Out_ PLARGE_INTEGER Time
 );
 
-const LARGE_INTEGER SecondsToStartOf1970 = {0xb6109100, 0x00000002};
-const LARGE_INTEGER SecondsToStartOf1980 = {0xc8df3700, 0x00000002};
+DECLSPEC_SELECTANY extern const LARGE_INTEGER SecondsToStartOf1970 = {0xb6109100, 0x00000002};
+DECLSPEC_SELECTANY extern const LARGE_INTEGER SecondsToStartOf1980 = {0xc8df3700, 0x00000002};
 
 _Success_(return != 0)
 NTSYSAPI
