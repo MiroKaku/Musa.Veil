@@ -6065,6 +6065,16 @@ typedef KNONVOLATILE_CONTEXT_POINTERS_ARM64 KNONVOLATILE_CONTEXT_POINTERS, * PKN
 
 #endif // _M_ARM64 | _CHPE_X86_ARM64_EH_
 
+NTSYSAPI
+VOID
+NTAPI
+RtlUnwind(
+    _In_opt_ PVOID TargetFrame,
+    _In_opt_ PVOID TargetIp,
+    _In_opt_ PEXCEPTION_RECORD ExceptionRecord,
+    _In_ PVOID ReturnValue
+);
+
 #if defined(_M_AMD64) || defined(_M_ARM64) || defined(_M_ARM)
 
 NTSYSAPI
