@@ -271,6 +271,7 @@ struct IUnknown;
 #define  _NTSECAPI_
 #include "Veil/Veil.System.WinNT.h"
 #include <Windows.h>
+#include <Unknwn.h>
 #endif
 
 #endif // if defined(_KERNEL_MODE)
