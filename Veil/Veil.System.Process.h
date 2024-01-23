@@ -5046,6 +5046,22 @@ PsReferenceProcessFilePointer(
 
 // Thread
 
+_IRQL_requires_max_(PASSIVE_LEVEL)
+NTKERNELAPI
+_Must_inspect_result_
+NTSTATUS
+PsCreateSystemThreadEx(
+    _Out_ PHANDLE ThreadHandle,
+    _In_ ULONG DesiredAccess,
+    _In_opt_ POBJECT_ATTRIBUTES ObjectAttributes,
+    _In_opt_  HANDLE ProcessHandle,
+    _Out_opt_ PCLIENT_ID ClientId,
+    _In_ PKSTART_ROUTINE StartRoutine,
+    _In_opt_ _When_(return >= 0, __drv_aliasesMem) PVOID StartContext,
+    _In_opt_ PGROUP_AFFINITY ProcessorGroup,
+    _In_opt_ ULONG* IdealProcessor
+);
+
 NTKERNELAPI
 BOOLEAN
 PsIsSystemThread(
