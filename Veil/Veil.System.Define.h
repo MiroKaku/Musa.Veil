@@ -161,7 +161,7 @@ typedef void* POINTER_32 HANDLE32;
 #define DECLARE_HANDLE32(name) struct name##__{int unused;}; typedef struct name##__ * POINTER_32 name
 #endif
 #else
-typedef PVOID32 HANDLE32;
+typedef UINT32 HANDLE32;
 #define DECLARE_HANDLE32(name) typedef HANDLE32 name
 #endif
 typedef HANDLE32* POINTER_32 PHANDLE32;
