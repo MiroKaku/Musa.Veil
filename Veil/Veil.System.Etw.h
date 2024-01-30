@@ -718,6 +718,7 @@ EtwQueryRealtimeConsumer(
     _Out_ PULONG EventsLostCount,
     _Out_ PULONG BuffersLostCount
 );
+#endif // !defined(_KERNEL_MODE)
 
 // private
 typedef struct _TELEMETRY_COVERAGE_POINT
@@ -728,6 +729,7 @@ typedef struct _TELEMETRY_COVERAGE_POINT
     ULONG Flags;
 } TELEMETRY_COVERAGE_POINT, * PTELEMETRY_COVERAGE_POINT;
 
+#if !defined _KERNEL_MODE
 // rev
 #if (NTDDI_VERSION >= NTDDI_WIN10_RS3)
 NTSYSAPI
@@ -737,8 +739,7 @@ EtwCheckCoverage(
     _Inout_ PTELEMETRY_COVERAGE_POINT CoveragePoint
 );
 #endif
-
-#endif // !defined(_KERNEL_MODE)
+#endif
 
 //
 // WMI

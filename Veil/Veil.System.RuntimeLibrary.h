@@ -4777,6 +4777,14 @@ CreateProcessInternalW(
 // Threads
 //
 
+DECLSPEC_NORETURN
+NTSYSAPI
+VOID
+NTAPI
+RtlExitUserThread(
+    _In_ NTSTATUS ExitStatus
+);
+
 #ifndef _KERNEL_MODE
 
 typedef NTSTATUS(NTAPI* PUSER_THREAD_START_ROUTINE)(
@@ -4797,14 +4805,6 @@ RtlCreateUserThread(
     _In_opt_ PVOID Parameter,
     _Out_opt_ PHANDLE ThreadHandle,
     _Out_opt_ PCLIENT_ID ClientId
-);
-
-DECLSPEC_NORETURN
-NTSYSAPI
-VOID
-NTAPI
-RtlExitUserThread(
-    _In_ NTSTATUS ExitStatus
 );
 
 // rev

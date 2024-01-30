@@ -1538,11 +1538,51 @@ typedef enum _PROCESSINFOCLASS
     ProcessEffectivePagePriority, // q: ULONG
     MaxProcessInfoClass
 } PROCESSINFOCLASS;
+#else
+#define ProcessIumChallengeResponse                 ((PROCESSINFOCLASS)72)
+#define ProcessChildProcessInformation              ((PROCESSINFOCLASS)73)
+#define ProcessHighGraphicsPriorityInformation      ((PROCESSINFOCLASS)74)
+#define ProcessEnergyValues                         ((PROCESSINFOCLASS)76)
+#define ProcessPowerThrottlingState                 ((PROCESSINFOCLASS)77)
+#define ProcessReserved3Information                 ((PROCESSINFOCLASS)78)
+#define ProcessDisableSystemAllowedCpuSets          ((PROCESSINFOCLASS)80)
+#define ProcessWakeInformation                      ((PROCESSINFOCLASS)81)
+#define ProcessManageWritesToExecutableMemory       ((PROCESSINFOCLASS)83)
+#define ProcessCaptureTrustletLiveDump              ((PROCESSINFOCLASS)84)
+#define ProcessTelemetryCoverage                    ((PROCESSINFOCLASS)85)
+#define ProcessEnclaveInformation                   ((PROCESSINFOCLASS)86)
+#define ProcessEnableReadWriteVmLogging             ((PROCESSINFOCLASS)87)
+#define ProcessUptimeInformation                    ((PROCESSINFOCLASS)88)
+#define ProcessImageSection                         ((PROCESSINFOCLASS)89)
+#define ProcessDebugAuthInformation                 ((PROCESSINFOCLASS)90)
+#define ProcessSystemResourceManagement             ((PROCESSINFOCLASS)91)
+//#define ProcessSequenceNumber                       ((PROCESSINFOCLASS)92)
+#define ProcessLoaderDetour                         ((PROCESSINFOCLASS)93)
+#define ProcessSecurityDomainInformation            ((PROCESSINFOCLASS)94)
+#define ProcessCombineSecurityDomainsInformation    ((PROCESSINFOCLASS)95)
+#define ProcessEnableLogging                        ((PROCESSINFOCLASS)96)
+#define ProcessLeapSecondInformation                ((PROCESSINFOCLASS)97)
+#define ProcessFiberShadowStackAllocation           ((PROCESSINFOCLASS)98)
+#define ProcessFreeFiberShadowStackAllocation       ((PROCESSINFOCLASS)99)
+#define ProcessAltSystemCallInformation             ((PROCESSINFOCLASS)100)
+#define ProcessDynamicEHContinuationTargets         ((PROCESSINFOCLASS)101)
+#define ProcessDynamicEnforcedCetCompatibleRanges   ((PROCESSINFOCLASS)102)
+#define ProcessCreateStateChange                    ((PROCESSINFOCLASS)103)
+#define ProcessApplyStateChange                     ((PROCESSINFOCLASS)104)
+#define ProcessEnableOptionalXStateFeatures         ((PROCESSINFOCLASS)105)
+#define ProcessAltPrefetchParam                     ((PROCESSINFOCLASS)106)
+#define ProcessAssignCpuPartitions                  ((PROCESSINFOCLASS)107)
+#define ProcessPriorityClassEx                      ((PROCESSINFOCLASS)108)
+#define ProcessMembershipInformation                ((PROCESSINFOCLASS)109)
+#define ProcessEffectiveIoPriority                  ((PROCESSINFOCLASS)110)
+#define ProcessEffectivePagePriority                ((PROCESSINFOCLASS)111)
+#endif // !_KERNEL_MODE
 
 //
 // Thread Information Classes
 //
 
+#ifndef _KERNEL_MODE
 typedef enum _THREADINFOCLASS
 {
     ThreadBasicInformation, // q: THREAD_BASIC_INFORMATION
@@ -1603,6 +1643,26 @@ typedef enum _THREADINFOCLASS
     ThreadEffectivePagePriority, // q: ULONG
     MaxThreadInfoClass
 } THREADINFOCLASS;
+#else
+#define ThreadHeterogeneousCpuPolicy            ((THREADINFOCLASS)36)
+#define ThreadContainerId                       ((THREADINFOCLASS)37)
+#define ThreadNameInformation                   ((THREADINFOCLASS)38)
+#define ThreadSelectedCpuSets                   ((THREADINFOCLASS)39)
+#define ThreadSystemThreadInformation           ((THREADINFOCLASS)40)
+#define ThreadActualGroupAffinity               ((THREADINFOCLASS)41)
+#define ThreadDynamicCodePolicyInfo             ((THREADINFOCLASS)42)
+#define ThreadExplicitCaseSensitivity           ((THREADINFOCLASS)43)
+#define ThreadWorkOnBehalfTicket                ((THREADINFOCLASS)44)
+#define ThreadDbgkWerReportActive               ((THREADINFOCLASS)46)
+#define ThreadAttachContainer                   ((THREADINFOCLASS)47)
+#define ThreadManageWritesToExecutableMemory    ((THREADINFOCLASS)48)
+#define ThreadPowerThrottlingState              ((THREADINFOCLASS)49)
+#define ThreadWorkloadClass                     ((THREADINFOCLASS)50)
+#define ThreadCreateStateChange                 ((THREADINFOCLASS)51)
+#define ThreadApplyStateChange                  ((THREADINFOCLASS)52)
+#define ThreadStrongerBadHandleChecks           ((THREADINFOCLASS)53)
+#define ThreadEffectiveIoPriority               ((THREADINFOCLASS)54)
+#define ThreadEffectivePagePriority             ((THREADINFOCLASS)55)
 #endif // !_KERNEL_MODE
 
 #ifndef _KERNEL_MODE
@@ -1622,8 +1682,8 @@ typedef struct _PROCESS_BASIC_INFORMATION
     PPEB PebBaseAddress;
     KAFFINITY AffinityMask;
     KPRIORITY BasePriority;
-    HANDLE UniqueProcessId;
-    HANDLE InheritedFromUniqueProcessId;
+    ULONG_PTR UniqueProcessId;
+    ULONG_PTR InheritedFromUniqueProcessId;
 } PROCESS_BASIC_INFORMATION, * PPROCESS_BASIC_INFORMATION;
 
 typedef struct _PROCESS_EXTENDED_BASIC_INFORMATION
@@ -2386,6 +2446,25 @@ ZwQueryPortInformationProcess(
 //
 // Thread information structures
 //
+
+//
+// Priority flags
+//
+
+#define THREAD_BASE_PRIORITY_LOWRT  15  // value that gets a thread to LowRealtime-1
+#define THREAD_BASE_PRIORITY_MAX    2   // maximum thread base priority boost
+#define THREAD_BASE_PRIORITY_MIN    (-2)  // minimum thread base priority boost
+#define THREAD_BASE_PRIORITY_IDLE   (-15) // value that gets a thread to idle
+
+#define THREAD_PRIORITY_LOWEST          THREAD_BASE_PRIORITY_MIN
+#define THREAD_PRIORITY_BELOW_NORMAL    (THREAD_PRIORITY_LOWEST+1)
+#define THREAD_PRIORITY_NORMAL          0
+#define THREAD_PRIORITY_HIGHEST         THREAD_BASE_PRIORITY_MAX
+#define THREAD_PRIORITY_ABOVE_NORMAL    (THREAD_PRIORITY_HIGHEST-1)
+#define THREAD_PRIORITY_ERROR_RETURN    (MAXLONG)
+
+#define THREAD_PRIORITY_TIME_CRITICAL   THREAD_BASE_PRIORITY_LOWRT
+#define THREAD_PRIORITY_IDLE            THREAD_BASE_PRIORITY_IDLE
 
 typedef struct _THREAD_BASIC_INFORMATION
 {
@@ -3151,6 +3230,7 @@ ZwQueryInformationThread(
     _Out_opt_ PULONG ReturnLength
 );
 
+#pragma warning(suppress: 28252 28253)
 __kernel_entry NTSYSCALLAPI
 NTSTATUS
 NTAPI
