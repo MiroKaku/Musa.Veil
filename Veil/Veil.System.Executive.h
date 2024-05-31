@@ -8121,6 +8121,99 @@ ExfReleasePushLock(
     _Inout_ PEX_PUSH_LOCK PushLock
 );
 
+
+#if (NTDDI_VERSION >= NTDDI_WINBLUE)
+
+// New Push Lock
+
+#define EX_DEFAULT_PUSH_LOCK_FLAGS      0
+#define EX_PUSH_LOCK_ENABLE_AUTO_BOOST               (0x1) // Deprecated.
+#define EX_PUSH_LOCK_DISABLE_AUTO_BOOST              (0x2)
+#define EX_PUSH_LOCK_VALID_FLAGS                     (0x3)
+
+
+_IRQL_requires_max_(APC_LEVEL)
+_Requires_lock_held_(_Global_critical_region_)
+NTKERNELAPI
+VOID
+FASTCALL
+ExAcquirePushLockExclusiveEx(
+    _Inout_ _Requires_lock_not_held_(*_Curr_) _Acquires_lock_(*_Curr_)
+    PEX_PUSH_LOCK PushLock,
+    _In_ ULONG Flags
+);
+
+_IRQL_requires_max_(APC_LEVEL)
+_Requires_lock_held_(_Global_critical_region_)
+NTKERNELAPI
+VOID
+FASTCALL
+ExAcquirePushLockSharedEx(
+    _Inout_ _Requires_lock_not_held_(*_Curr_) _Acquires_lock_(*_Curr_)
+    PEX_PUSH_LOCK PushLock,
+    _In_ ULONG Flags
+);
+
+_IRQL_requires_max_(DISPATCH_LEVEL)
+_Requires_lock_held_(_Global_critical_region_)
+NTKERNELAPI
+VOID
+FASTCALL
+ExReleasePushLockExclusiveEx(
+    _Inout_ _Requires_lock_held_(*_Curr_) _Releases_lock_(*_Curr_)
+    PEX_PUSH_LOCK PushLock,
+    _In_ ULONG Flags
+);
+
+_IRQL_requires_max_(DISPATCH_LEVEL)
+_Requires_lock_held_(_Global_critical_region_)
+NTKERNELAPI
+VOID
+FASTCALL
+ExReleasePushLockSharedEx(
+    _Inout_ _Requires_lock_held_(*_Curr_) _Releases_lock_(*_Curr_)
+    PEX_PUSH_LOCK PushLock,
+    _In_ ULONG Flags
+);
+
+_Must_inspect_result_
+_IRQL_requires_max_(APC_LEVEL)
+_Post_satisfies_(return == FALSE || return == TRUE)
+NTKERNELAPI
+BOOLEAN
+FASTCALL
+ExTryAcquirePushLockExclusiveEx(
+    _Inout_ _Requires_lock_not_held_(*_Curr_) _Acquires_lock_(*_Curr_)
+    PEX_PUSH_LOCK PushLock,
+    _In_ ULONG Flags
+);
+
+_Must_inspect_result_
+_IRQL_requires_max_(APC_LEVEL)
+_Post_satisfies_(return == FALSE || return == TRUE)
+NTKERNELAPI
+BOOLEAN
+FASTCALL
+ExTryAcquirePushLockSharedEx(
+    _Inout_ _Requires_lock_not_held_(*_Curr_) _Acquires_lock_(*_Curr_)
+    PEX_PUSH_LOCK PushLock,
+    _In_ ULONG Flags
+);
+
+_Must_inspect_result_
+_IRQL_requires_(DISPATCH_LEVEL)
+_Post_satisfies_(return == FALSE || return == TRUE)
+NTKERNELAPI
+BOOLEAN
+FASTCALL
+ExTryConvertPushLockSharedToExclusiveEx(
+    _Inout_ _Requires_lock_held_(*_Curr_) _Releases_lock_(*_Curr_)
+    PEX_PUSH_LOCK PushLock,
+    _In_ ULONG Flags
+);
+
+#endif // (NTDDI_VERSION >= NTDDI_WINBLUE)
+
 // Cache Aware Push Lock
 
 #define EX_CACHE_LINE_SIZE          (128)

@@ -2122,6 +2122,7 @@ RtlInitializeCriticalSection(
     _Out_ PRTL_CRITICAL_SECTION CriticalSection
 );
 
+_Must_inspect_result_
 NTSYSAPI
 NTSTATUS
 NTAPI
