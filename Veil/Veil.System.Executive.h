@@ -8178,41 +8178,84 @@ ExReleasePushLockSharedEx(
 
 _Must_inspect_result_
 _IRQL_requires_max_(APC_LEVEL)
+_Requires_lock_held_(_Global_critical_region_)
 _Post_satisfies_(return == FALSE || return == TRUE)
 NTKERNELAPI
 BOOLEAN
 FASTCALL
 ExTryAcquirePushLockExclusiveEx(
-    _Inout_ _Requires_lock_not_held_(*_Curr_) _Acquires_lock_(*_Curr_)
-    PEX_PUSH_LOCK PushLock,
+    _When_(return != FALSE, _Requires_lock_not_held_(*_Curr_) _Acquires_lock_(*_Curr_))
+    _Inout_ PEX_PUSH_LOCK PushLock,
     _In_ ULONG Flags
 );
 
 _Must_inspect_result_
 _IRQL_requires_max_(APC_LEVEL)
+_Requires_lock_held_(_Global_critical_region_)
 _Post_satisfies_(return == FALSE || return == TRUE)
 NTKERNELAPI
 BOOLEAN
 FASTCALL
 ExTryAcquirePushLockSharedEx(
-    _Inout_ _Requires_lock_not_held_(*_Curr_) _Acquires_lock_(*_Curr_)
-    PEX_PUSH_LOCK PushLock,
+    _When_(return != FALSE, _Requires_lock_not_held_(*_Curr_) _Acquires_lock_(*_Curr_))
+    _Inout_ PEX_PUSH_LOCK PushLock,
     _In_ ULONG Flags
 );
 
 _Must_inspect_result_
 _IRQL_requires_(DISPATCH_LEVEL)
+_Requires_lock_held_(_Global_critical_region_)
 _Post_satisfies_(return == FALSE || return == TRUE)
 NTKERNELAPI
 BOOLEAN
 FASTCALL
 ExTryConvertPushLockSharedToExclusiveEx(
+    _Inout_ PEX_PUSH_LOCK PushLock,
+    _In_ ULONG Flags
+);
+
+
+_IRQL_requires_max_(APC_LEVEL)
+_Requires_lock_held_(_Global_critical_region_)
+NTKERNELAPI
+NTSTATUS
+FASTCALL
+ExBlockOnAddressPushLock(
+    _Inout_ _Requires_lock_not_held_(*_Curr_) _Acquires_lock_(*_Curr_)
+    PEX_PUSH_LOCK PushLock,
+    _In_ volatile VOID * Address,
+    _In_ VOID * CompareAddress,
+    _In_ SIZE_T AddressSize,
+    _In_opt_ PLARGE_INTEGER Timeout
+);
+
+_IRQL_requires_(DISPATCH_LEVEL)
+_Requires_lock_held_(_Global_critical_region_)
+NTKERNELAPI
+VOID
+FASTCALL
+ExUnblockPushLockEx(
     _Inout_ _Requires_lock_held_(*_Curr_) _Releases_lock_(*_Curr_)
     PEX_PUSH_LOCK PushLock,
     _In_ ULONG Flags
 );
 
+_IRQL_requires_(DISPATCH_LEVEL)
+_Requires_lock_held_(_Global_critical_region_)
+NTKERNELAPI
+VOID
+FASTCALL
+ExUnblockOnAddressPushLockEx(
+    _Inout_ _Requires_lock_held_(*_Curr_) _Releases_lock_(*_Curr_)
+    PEX_PUSH_LOCK PushLock,
+    _In_ ULONG Flags
+);
+
+// !! Note: 
+//   ExUnblockPushLockEx == ExUnblockOnAddressPushLockEx
+
 #endif // (NTDDI_VERSION >= NTDDI_WINBLUE)
+
 
 // Cache Aware Push Lock
 
