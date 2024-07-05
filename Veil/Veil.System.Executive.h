@@ -8070,6 +8070,18 @@ ExEnterCriticalRegionAndAcquireFastMutexUnsafe(
     _Inout_ PFAST_MUTEX FastMutex
 );
 
+// Resource Lock
+
+_Must_inspect_result_
+_IRQL_requires_max_(APC_LEVEL)
+_Requires_lock_held_(_Global_critical_region_)
+_Post_satisfies_(return == FALSE || return == TRUE)
+NTSYSAPI
+BOOLEAN
+ExTryToAcquireResourceExclusiveLite(
+    _Inout_ PERESOURCE Resource
+);
+
 // Push Lock
 
 NTSYSAPI
@@ -8294,6 +8306,12 @@ NTAPI
 ExReleaseCacheAwarePushLockExclusive(
     _Inout_ PEX_PUSH_LOCK_CACHE_AWARE CacheAwarePushLock
 );
+
+
+//
+// Pool lookaside list
+//
+
 
 #if (NTDDI_VERSION >= NTDDI_WIN10_NI)
 
