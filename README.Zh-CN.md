@@ -1,8 +1,12 @@
-# 面纱 (veil)
+# [面纱 (Mi.Veil)](https://github.com/mirokaku/Veil)
 
-* [English](README.md)
+[![Actions Status](https://github.com/MiroKaku/Veil/workflows/build/badge.svg)](https://github.com/MiroKaku/Veil/actions)
+[![LICENSE](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/MiroKaku/Veil/blob/main/LICENSE)
+[![nuget](https://img.shields.io/nuget/v/Mi.Veil)](https://www.nuget.org/packages/Mi.Veil/)
 
-`面纱`是 Windows 的原生 API 定义集合。采用`面纱`这个名字，寓意为揭开 Windows 的面纱，窥探隐藏在背后的面貌。
+* [English](https://github.com/MiroKaku/Veil/blob/main/README.md)
+
+`Mi.Veil`是 Windows 的原生 API 定义集合。采用`Veil`这个名字，寓意为揭开 Windows 的面纱，窥探隐藏在背后的面貌。
 
 该项目包含了来自 `ntoskrnl.exe`、`ntdll.dll`、`kernelbase.dll` 的 Windows 内部未文档化的 API 定义。
 
@@ -15,12 +19,20 @@
 
 ## 如何使用
 
+### 方法一（推荐）
+
+右键单击该项目并选择“管理 NuGet 包”，然后搜索`Mi.Veil`并选择适合你的版本，最后单击“安装”。
+
+### 方法二
+
 首先，请确保您的程序使用的是最新的 Windows SDK。然后克隆项目，直接 include 即可。
+
+## 其它
 
 ```C
 // 如果你不想污染全局空间的话，请包含以下宏定义
 #define VEIL_USE_SEPARATE_NAMESPACE
 
 // 第一包含顺序
-#include "veil.h"
+#include "Veil.h"
 ```

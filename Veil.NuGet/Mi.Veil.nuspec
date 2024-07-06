@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
+  <metadata minClientVersion="2.5">
+    <id>Mi.Veil</id>
+    <version>$version$</version>
+    <title>Mi.Veil</title>
+    <authors>MeeSong (MiroKaku)</authors>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <license type="expression">MIT</license>
+    <readme>build\native\README.md</readme>
+    <description>Veil - Collection of undocumented Windows API declarations.</description>
+    <releaseNotes>$releaseNotes$</releaseNotes>
+    <copyright>Copyright© MeeSong (MiroKaku)</copyright>
+    <tags>Veil Native WDK KMDF Kernel Driver</tags>
+    <projectUrl>https://github.com/MiroKaku/Veil</projectUrl>
+    <repository type="git" url="https://github.com/MiroKaku/Veil.git" branch="main" commit="$commit$" />
+    <dependencies>
+      <dependency id="YY.NuGet.Import.Helper" version="1.0.0.4" />
+    </dependencies>
+  </metadata>
+  <files>
+    <file src=".\Mi.Veil.props" target="build\native\" />
+    <file src=".\Mi.Veil.Config.props" target="build\native\config\" />
+
+    <file src="..\Veil.h" target="build\native\include\"/>
+    <file src="..\Veil\**" target="build\native\include\Veil\"/>
+
+    <file src="..\LICENSE" target="build\native\"/>
+    <file src="..\README.md" target="build\native\"/>
+  </files>
+</package>
