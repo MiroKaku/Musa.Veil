@@ -1,12 +1,12 @@
-# [Mi.Veil](https://github.com/mirokaku/Veil)
+# [Musa.Veil](https://github.com/mirokaku/Veil)
 
 [![Actions Status](https://github.com/MiroKaku/Veil/workflows/Build/badge.svg)](https://github.com/MiroKaku/Veil/actions)
 [![LICENSE](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/MiroKaku/Veil/blob/main/LICENSE)
-[![nuget](https://img.shields.io/nuget/v/Mi.Veil)](https://www.nuget.org/packages/Mi.Veil/)
+[![nuget](https://img.shields.io/nuget/v/Musa.Veil)](https://www.nuget.org/packages/Musa.Veil/)
 
 * [简体中文](https://github.com/MiroKaku/Veil/blob/main/README.zh-CN.md)
 
-`Mi.Veil` is a collection of Native API definitions for Windows. Take the name `Veil`, which means to lift the veil of Windows and spy on the face hidden behind.
+`Musa.Veil` is a collection of Native API definitions for Windows. Take the name `Veil`, which means to lift the veil of Windows and spy on the face hidden behind.
 
 This project contains the definitions for the Windows internal undocumented API from `ntoskrnl.exe`, `ntdll.dll`, `kernelbase.dll`.
 
@@ -22,7 +22,7 @@ This project is based on the [systeminformer/phnt](https://github.com/winsiderss
 ### Method 1 (recommended)
 
 Right click on the project, select "Manage NuGet Packages".
-Search for `Mi.Veil`, choose the version that suits you, and then click "Install".
+Search for `Musa.Veil`, choose the version that suits you, and then click "Install".
 
 ### Method 2
 

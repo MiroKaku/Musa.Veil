@@ -1,12 +1,12 @@
-# [面纱 (Mi.Veil)](https://github.com/mirokaku/Veil)
+# [面纱 (Musa.Veil)](https://github.com/mirokaku/Veil)
 
 [![Actions Status](https://github.com/MiroKaku/Veil/workflows/Build/badge.svg)](https://github.com/MiroKaku/Veil/actions)
 [![LICENSE](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/MiroKaku/Veil/blob/main/LICENSE)
-[![nuget](https://img.shields.io/nuget/v/Mi.Veil)](https://www.nuget.org/packages/Mi.Veil/)
+[![nuget](https://img.shields.io/nuget/v/Musa.Veil)](https://www.nuget.org/packages/Musa.Veil/)
 
 * [English](https://github.com/MiroKaku/Veil/blob/main/README.md)
 
-`Mi.Veil`是 Windows 的原生 API 定义集合。采用`Veil`这个名字，寓意为揭开 Windows 的面纱，窥探隐藏在背后的面貌。
+`Musa.Veil`是 Windows 的原生 API 定义集合。采用`Veil`这个名字，寓意为揭开 Windows 的面纱，窥探隐藏在背后的面貌。
 
 该项目包含了来自 `ntoskrnl.exe`、`ntdll.dll`、`kernelbase.dll` 的 Windows 内部未文档化的 API 定义。
 
@@ -21,7 +21,7 @@
 
 ### 方法一（推荐）
 
-右键单击该项目并选择“管理 NuGet 包”，然后搜索`Mi.Veil`并选择适合你的版本，最后单击“安装”。
+右键单击该项目并选择“管理 NuGet 包”，然后搜索`Musa.Veil`并选择适合你的版本，最后单击“安装”。
 
 ### 方法二
 
