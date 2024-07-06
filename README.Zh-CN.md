@@ -1,6 +1,6 @@
 # [面纱 (Mi.Veil)](https://github.com/mirokaku/Veil)
 
-[![Actions Status](https://github.com/MiroKaku/Veil/workflows/build/badge.svg)](https://github.com/MiroKaku/Veil/actions)
+[![Actions Status](https://github.com/MiroKaku/Veil/workflows/Build/badge.svg)](https://github.com/MiroKaku/Veil/actions)
 [![LICENSE](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/MiroKaku/Veil/blob/main/LICENSE)
 [![nuget](https://img.shields.io/nuget/v/Mi.Veil)](https://www.nuget.org/packages/Mi.Veil/)
 
