@@ -3,15 +3,15 @@
 
   <PropertyGroup>
     <!-- \veil\config\..\ -->
-    <MiVeil_Root>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)\..'))</MiVeil_Root>
+    <Musa_Veil_Root>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)\..'))</Musa_Veil_Root>
   </PropertyGroup>
 
   <PropertyGroup>
-    <MiVeil_Include>$(MiVeil_Root)\include</MiVeil_Include>
+    <Musa_Veil_Include>$(Musa_Veil_Root)\include</Musa_Veil_Include>
   </PropertyGroup>
 
   <PropertyGroup>
-    <IncludePath>$(MiVeil_Include);$(IncludePath)</IncludePath>
+    <IncludePath>$(Musa_Veil_Include);$(IncludePath)</IncludePath>
   </PropertyGroup>
 
 </Project>

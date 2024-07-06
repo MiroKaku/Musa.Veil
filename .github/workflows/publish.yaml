@@ -52,16 +52,16 @@ jobs:
               git fetch --depth=1 origin +refs/tags/*:refs/tags/*
 
               $releaseNotes = & git tag -l --format='%(contents)' $env:GITHUB_REF.Remove(0, 10)
-              $content = [System.IO.File]::ReadAllText("Veil.NuGet\Mi.Veil.nuspec")
+              $content = [System.IO.File]::ReadAllText("Veil.NuGet\Musa.Veil.nuspec")
 
               $releaseNotesToken = '$releaseNotes$'
               $releaseNotesIndex = $content.IndexOf($releaseNotesToken)
 
               if($releaseNotesIndex -ne -1)
               {
-                  echo $content.Substring(0, $releaseNotesIndex) | out-file "Veil.NuGet\Mi.Veil-New.nuspec" -NoNewline
-                  echo $releaseNotes | out-file "Veil.NuGet\Mi.Veil-New.nuspec" -Append
-                  echo $content.Remove(0, $releaseNotesIndex + $releaseNotesToken.Length) | out-file "Veil.NuGet\Mi.Veil-New.nuspec" -NoNewline -Append
+                  echo $content.Substring(0, $releaseNotesIndex) | out-file "Veil.NuGet\Musa.Veil-New.nuspec" -NoNewline
+                  echo $releaseNotes | out-file "Veil.NuGet\Musa.Veil-New.nuspec" -Append
+                  echo $content.Remove(0, $releaseNotesIndex + $releaseNotesToken.Length) | out-file "Veil.NuGet\Musa.Veil-New.nuspec" -NoNewline -Append
               }
           }
 
@@ -71,23 +71,21 @@ jobs:
         shell: cmd
         run: |
           if "${{env.BuildVersion}}" NEQ "" (
-              NuGet pack .\Veil.NuGet\Mi.Veil-New.nuspec -Properties version=${{env.BuildVersion}};commit=%GITHUB_SHA%
+              NuGet pack .\Veil.NuGet\Musa.Veil-New.nuspec -Properties version=${{env.BuildVersion}};commit=%GITHUB_SHA%
           )
           if %ERRORLEVEL% NEQ 0 exit /B %ERRORLEVEL%
-
-      - name: Publish a version
-        if: contains(github.ref, 'tags/')
-        uses: "marvinpinto/action-automatic-releases@v1.2.1"
-        with:
-          repo_token: "${{ secrets.GITHUB_TOKEN }}"
-          prerelease: false
-          files: |
-            *.nupkg
 
       - name: Publish a NuGet package
         if: contains(github.ref, 'tags/')
         working-directory: ${{github.workspace}}
         shell: cmd
         run: |
-          NuGet push Mi.Veil.${{env.BuildVersion}}.nupkg -ApiKey ${{ secrets.NUGET_TOKEN }} -Source https://api.nuget.org/v3/index.json
+          NuGet push Musa.Veil.${{env.BuildVersion}}.nupkg -ApiKey ${{ secrets.NUGET_TOKEN }} -Source https://api.nuget.org/v3/index.json
           if %ERRORLEVEL% NEQ 0 exit /B %ERRORLEVEL%
+
+      - name: Publish a version
+        uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: |
+            *.nupkg
