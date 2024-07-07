@@ -23,6 +23,19 @@
 
 右键单击该项目并选择“管理 NuGet 包”，然后搜索`Musa.Veil`并选择适合你的版本，最后单击“安装”。
 
+或者
+
+在你的 `.vcxproj` 文件里面添加下面代码：
+
+```XML
+  <ItemGroup>
+    <PackageReference Include="Musa.Veil">
+      <!-- 期望的版本 -->
+      <Version>1.0.0</Version>
+    </PackageReference>
+  </ItemGroup>
+```
+
 ### 方法二
 
 首先，请确保您的程序使用的是最新的 Windows SDK。然后克隆项目，直接 include 即可。

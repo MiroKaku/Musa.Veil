@@ -24,6 +24,19 @@ This project is based on the [systeminformer/phnt](https://github.com/winsiderss
 Right click on the project, select "Manage NuGet Packages".
 Search for `Musa.Veil`, choose the version that suits you, and then click "Install".
 
+Or
+
+Add the following code to your `.vcxproj` file:
+
+```XML
+  <ItemGroup>
+    <PackageReference Include="Musa.Veil">
+      <!-- Expected version -->
+      <Version>1.0.0</Version>
+    </PackageReference>
+  </ItemGroup>
+```
+
 ### Method 2
 
 First make sure that your program is using the latest Windows SDK.
