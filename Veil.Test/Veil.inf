@@ -110,7 +110,7 @@ ErrorControl   = 1                  ; SERVICE_ERROR_NORMAL
 
 
 [Strings]
-ManufacturerName        = "MiroKaku"
+ManufacturerName        = "MeeSong"
 ServiceName             = "Veil.Test"
 ServiceDesc             = "Veil.Test Driver"
 DiskName                = "Veil.Test.Kernel Source Disk"

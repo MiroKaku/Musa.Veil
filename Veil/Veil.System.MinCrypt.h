@@ -5,7 +5,7 @@
  *
  * LICENSE:   MIT License
  *
- * DEVELOPER: MiroKaku (kkmi04@outlook.com)
+ * DEVELOPER: MeeSong (kkmi04@outlook.com)
  */
 
 /*
