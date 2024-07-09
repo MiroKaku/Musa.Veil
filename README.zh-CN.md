@@ -12,7 +12,7 @@
 
 该项目基于 [systeminformer/phnt](https://github.com/winsiderss/systeminformer/tree/master/phnt) 和 [Chuyu-Team/MINT](https://github.com/Chuyu-Team/MINT) 分支修改，集合两个项目的优点。
 
-* 可以用于内核模式和用户模式。
+* 可以同时用于内核模式和用户模式。
 * 支持使用 `/W4` `/WX` 选项编译。
 * 适配 Windows SDK。
 * API 由 Windows SDK 版本宏管理。
@@ -25,7 +25,7 @@
 
 或者
 
-在你的 `.vcxproj` 文件里面添加下面代码：
+如果你的项目模板用的是 [Mile.Project.Windows](https://github.com/ProjectMile/Mile.Project.Windows)，那么可以直接在你的 `.vcxproj` 文件里面添加下面代码：
 
 ```XML
   <ItemGroup>
@@ -49,3 +49,11 @@
 // 第一包含顺序
 #include "Veil.h"
 ```
+
+## 鸣谢
+
+> [IntelliJ IDEA](https://zh.wikipedia.org/zh-hans/IntelliJ_IDEA) 是一个在各个方面都最大程度地提高开发人员的生产力的 IDE。
+
+特别感谢 [JetBrains](https://www.jetbrains.com/?from=meesong) 为开源项目提供免费的 [Resharper C++](https://www.jetbrains.com/resharper-cpp/?from=meesong) 等 IDE 的授权
+
+[<img src="https://resources.jetbrains.com/storage/products/company/brand/logos/ReSharperCPP_icon.png" alt="ReSharper C++ logo." width=200>](https://www.jetbrains.com/?from=meesong)

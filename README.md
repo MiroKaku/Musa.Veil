@@ -26,7 +26,7 @@ Search for `Musa.Veil`, choose the version that suits you, and then click "Insta
 
 Or
 
-Add the following code to your `.vcxproj` file:
+If your project template uses [Mile.Project.Windows](https://github.com/ProjectMile/Mile.Project.Windows), you can add the following code directly to your `.vcxproj` file:
 
 ```XML
   <ItemGroup>
@@ -51,3 +51,10 @@ Then clone and include it.
 // First inclusion order
 #include "Veil.h"
 ```
+
+## Acknowledgements
+
+Thanks to [JetBrains](https://www.jetbrains.com/?from=meesong) for providing free licenses such as [Resharper C++](https://www.jetbrains.com/resharper-cpp/?from=meesong) for my open-source projects.
+
+[<img src="https://resources.jetbrains.com/storage/products/company/brand/logos/ReSharperCPP_icon.png" alt="ReSharper C++ logo." width=200>](https://www.jetbrains.com/?from=meesong)
+
