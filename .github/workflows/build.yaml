@@ -28,11 +28,11 @@ jobs:
         with:
           submodules: false
 
-      - name: Enable X86 and ARM build support
-        working-directory: ${{github.workspace}}
-        shell: pwsh
-        run: |
-          .\.github\workflows\EnableX86AndARM.ps1
+      #- name: Enable X86 and ARM build support
+      #  working-directory: ${{github.workspace}}
+      #  shell: pwsh
+      #  run: |
+      #    .\.github\workflows\EnableX86AndARM.ps1
 
       - name: Build
         working-directory: ${{github.workspace}}

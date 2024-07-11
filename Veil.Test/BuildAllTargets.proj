@@ -3,7 +3,7 @@
   DefaultTargets="Restore;Build"
   xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
-    <SolutionPath>$(MSBuildThisFileDirectory)Veil.Test.sln</SolutionPath>
+    <SolutionPath>$(MSBuildThisFileDirectory)*.sln</SolutionPath>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="$(SolutionPath)">
