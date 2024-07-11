@@ -12240,6 +12240,15 @@ RtlFlsSetValue(
 );
 #endif
 
+#if (NTDDI_VERSION >= NTDDI_WIN11_GE)
+NTSYSAPI
+PVOID
+NTAPI
+RtlFlsGetValue2(
+    _In_ ULONG FlsIndex
+);
+#endif
+
 //
 // File System
 // 
