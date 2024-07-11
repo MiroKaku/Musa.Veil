@@ -2136,7 +2136,7 @@ NtCopyFileChunk(
     _In_ ULONG Flags
 );
 
-_IRQL_requires_max_(PASSIVE_LEVEL)
+//_IRQL_requires_max_(PASSIVE_LEVEL)
 NTSYSAPI
 NTSTATUS
 NTAPI

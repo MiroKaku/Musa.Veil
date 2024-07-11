@@ -8191,25 +8191,25 @@ ExReleasePushLockSharedEx(
 _Must_inspect_result_
 _IRQL_requires_max_(APC_LEVEL)
 _Requires_lock_held_(_Global_critical_region_)
-_Post_satisfies_(return == FALSE || return == TRUE)
+_Post_satisfies_(return == 0 || return == 1)
 NTKERNELAPI
 BOOLEAN
 FASTCALL
 ExTryAcquirePushLockExclusiveEx(
-    _When_(return != FALSE, _Requires_lock_not_held_(*_Curr_) _Acquires_lock_(*_Curr_))
+    _When_(return != 0, _Requires_lock_not_held_(*_Curr_) _Acquires_lock_(*_Curr_))
     _Inout_ PEX_PUSH_LOCK PushLock,
     _In_ ULONG Flags
 );
 
 _Must_inspect_result_
-_IRQL_requires_max_(APC_LEVEL)
+_IRQL_requires_max_(DISPATCH_LEVEL)
 _Requires_lock_held_(_Global_critical_region_)
-_Post_satisfies_(return == FALSE || return == TRUE)
+_Post_satisfies_(return == 0 || return == 1)
 NTKERNELAPI
 BOOLEAN
 FASTCALL
 ExTryAcquirePushLockSharedEx(
-    _When_(return != FALSE, _Requires_lock_not_held_(*_Curr_) _Acquires_lock_(*_Curr_))
+    _When_(return != 0, _Requires_lock_not_held_(*_Curr_) _Acquires_lock_(*_Curr_))
     _Inout_ PEX_PUSH_LOCK PushLock,
     _In_ ULONG Flags
 );
