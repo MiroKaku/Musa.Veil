@@ -6,12 +6,14 @@
     <SolutionPath>$(MSBuildThisFileDirectory)*.sln</SolutionPath>
   </PropertyGroup>
   <ItemGroup>
+    <!--
     <ProjectReference Include="$(SolutionPath)">
       <AdditionalProperties>Configuration=Debug;Platform=x86</AdditionalProperties>   
     </ProjectReference>
     <ProjectReference Include="$(SolutionPath)">
       <AdditionalProperties>Configuration=Release;Platform=x86</AdditionalProperties>   
     </ProjectReference>
+    -->
     <ProjectReference Include="$(SolutionPath)">
       <AdditionalProperties>Configuration=Debug;Platform=x64</AdditionalProperties>   
     </ProjectReference>
