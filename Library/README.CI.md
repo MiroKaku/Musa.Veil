@@ -4,7 +4,7 @@ Usually when linking with a certain dll, you’d use an import library provided 
 In our case, no such ci.lib file is provided and we need to generate it ourselves.
 This lib file should be added as a linker input in the project properties.
 
-## 64 bit
+## x64 and AMD64
 
 Get the exported functions from the dll, using dumpbin utility: 
 
@@ -32,7 +32,8 @@ EXPORTS
 
 Generate the .lib file using the lib utility:
 
-`lib /def:ci.def /machine:x64 /out:ci.lib`
+`lib /def:CI.def /machine:x64 /out:ci.lib`
+`lib /def:CI.def /machine:AMD64 /out:ci.lib`
 
 
 ## 32 bit
@@ -68,15 +69,15 @@ An example of such file is included in this repo under the name Stub.Ci.cpp
 
 ```bat
 
-> SET KM_IncludePath="C:\Program Files (x86)\Windows Kits\10\Include\10.0.22000.0\km"
-> SET CRT_IncludePath="C:\Program Files (x86)\Windows Kits\10\Include\10.0.22000.0\km\crt"
-> SET KIT_SHARED_IncludePath="C:\Program Files (x86)\Windows Kits\10\Include\10.0.22000.0\shared"
+> SET KM_IncludePath="C:\Program Files (x86)\Windows Kits\10\Include\10.0.22621.0\km"
+> SET CRT_IncludePath="C:\Program Files (x86)\Windows Kits\10\Include\10.0.22621.0\km\crt"
+> SET KIT_SHARED_IncludePath="C:\Program Files (x86)\Windows Kits\10\Include\10.0.22621.0\shared"
 >
-> cl Stub.Ci.cpp /c /kernel /Zc:wchar_t /I%KM_IncludePath% /I%CRT_IncludePath% /I%KIT_SHARED_IncludePath% /D _X86_=1 /D i386=1 /DSTD_CALL /D_MINCRYPT_LIB
+> cl CI.Stub.cpp /c /kernel /Zc:wchar_t /I%KM_IncludePath% /I%CRT_IncludePath% /I%KIT_SHARED_IncludePath% /D _X86_=1 /D i386=1 /DSTD_CALL /D_MINCRYPT_LIB
 ```
 
 - Generate the .lib file using the lib utility, this time with the OBJ file:
 
 ```bat
-> lib /def:ci.def /machine:x86 /out:ci.lib Stub.Ci.obj
+> lib /def:CI.def /machine:x86 /out:ci.lib CI.Stub.obj
 ```

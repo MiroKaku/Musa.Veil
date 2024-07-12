@@ -19,6 +19,17 @@
  *
  */
 
+ /*
+  * PROJECT:   https://github.com/kanren3/ci
+  * FILE:      ci.h
+  * PURPOSE:   Definition for the ci.dll API and Struct.
+  *
+  * LICENSE:   MIT License
+  *
+  * DEVELOPER: kanren3
+  *
+  */
+
 #pragma once
 
 // Warnings which disabled for compiling
@@ -263,22 +274,43 @@ typedef struct _MINCRYPT_NAME_BLOB
 
 }MINCRYPT_NAME_BLOB, * PMINCRYPT_NAME_BLOB;
 
+typedef enum _MINCRYPT_KNOWN_ROOT_ID {
+    MincryptKnownRootNone = 0x0,
+    MincryptKnownRootUnknown = 0x1,
+    MincryptKnownRootSelfsigned = 0x2,
+    MincryptKnownRootMicrosoftAuthenticodeRoot = 0x3,
+    MincryptKnownRootMicrosoftProductRoot1997 = 0x4,
+    MincryptKnownRootMicrosoftProductRoot2001 = 0x5,
+    MincryptKnownRootMicrosoftProductRoot2010 = 0x6,
+    MincryptKnownRootMicrosoftStandardRoot2011 = 0x7,
+    MincryptKnownRootMicrosoftCodeVerificationRoot2006 = 0x8,
+    MincryptKnownRootMicrosoftTestRoot1999 = 0x9,
+    MincryptKnownRootMicrosoftTestRoot2010 = 0xA,
+    MincryptKnownRootMicrosoftDMDTestRoot2005 = 0xB,
+    MincryptKnownRootMicrosoftDMDRoot2005 = 0xC,
+    MincryptKnownRootMicrosoftDMDPreviewRoot2005 = 0xD,
+    MincryptKnownRootMicrosoftFlightRoot2014 = 0xE,
+} MINCRYPT_KNOWN_ROOT_ID;
+
+typedef struct _MINCRYPT_STRING {
+    PCHAR Buffer;
+    USHORT Length;
+    UCHAR Asn1EncodingTag;
+    UCHAR Spare[ANYSIZE_ARRAY];
+} MINCRYPT_STRING, * PMINCRYPT_STRING;
+
 #define MINCRYPT_MAX_HASH_LENGTH    (64)
 #define MINCRYPT_SHA1_LENGTH        (160/8)
 #define MINCRYPT_SHA256_LENGTH      (256/8)
 
-typedef struct _MINCRYPT_CHAIN_ELEMENT
-{
-    ALG_ID          HashAlgId;  // CALG_SHA1,       CALG_SHA_256
-    UINT32          HashSize;   // SHA1(160bit/8),  SHA256(256bit/8)
-    UINT8           Hash[MINCRYPT_MAX_HASH_LENGTH];
-
-    MINCRYPT_NAME_BLOB Subject;
-    MINCRYPT_NAME_BLOB Issuer;
-
-    MINCERT_BLOB    Certificate;
-
-}MINCRYPT_CHAIN_ELEMENT, * PMINCRYPT_CHAIN_ELEMENT;
+typedef struct _MINCRYPT_SIGNER_INFO {
+    ULONG ToBeSignedHashAlgorithm;
+    ULONG ToBeSignedHashLength;
+    UCHAR ToBeSignedHash[MINCRYPT_MAX_HASH_LENGTH];
+    MINCRYPT_STRING PublisherCommonName;
+    MINCRYPT_STRING IssuerCommonName;
+    MINCERT_BLOB EncodedCertificate;
+} MINCRYPT_SIGNER_INFO, * PMINCRYPT_SIGNER_INFO;
 
 typedef struct _MINCRYPT_CHAIN_INFO
 {
@@ -292,27 +324,26 @@ typedef struct _MINCRYPT_CHAIN_INFO
 
 #if (NTDDI_VERSION >= NTDDI_WIN10)
 
-    PMINCRYPT_CHAIN_ELEMENT ChainElements;
-    UINT32          NumberOfChainElement;
+    PMINCRYPT_SIGNER_INFO   SignerInfos;
+    UINT32                  NumberOfSignerInfo;
 
-    // ASN.1 blob of authenticated attributes - spcSpOpusInfo, contentType, etc.
-    MINCRYPT_ATTR_BLOB AuthenticodeAttributes;
-
-    // UINT8 Hash[32];
+    MINCRYPT_KNOWN_ROOT_ID  KnownRoot;
+    MINCRYPT_ATTR_BLOB      AuthenticatedAttributes;
+    UCHAR                   PlatformManifestID[32];
 
 #endif // NTDDI_VERSION >= NTDDI_WIN10
 
-    /* memory layout */
+    /* Memory Layout */
 
     // EKUs[NumberOfEKUs]
 
     // PublicKeys[NumberOfPublicKeys]
 
-    // AuthenticodeAttributes.Data[AuthenticodeAttributes.Size]
+    // AuthenticatedAttributes.Data[AuthenticatedAttributes.Size]
 
-    // ChainElements[NumberOfChainElement]
+    // SignerInfos[NumberOfSignerInfo]
 
-}MINCRYPT_CHAIN_INFO, * PMINCRYPT_CHAIN_INFO;
+} MINCRYPT_CHAIN_INFO, * PMINCRYPT_CHAIN_INFO;
 
 typedef struct _MINCRYPT_POLICY_INFO
 {
@@ -320,14 +351,14 @@ typedef struct _MINCRYPT_POLICY_INFO
     UINT32          VerificationStatus;
     UINT32          PolicyBits;
 
-    MINCRYPT_CHAIN_INFO* ChainInfo;
+    PMINCRYPT_CHAIN_INFO ChainInfo;
 
     LARGE_INTEGER   RevocationTime;     // When was the certificate revoked (if applicable)
 
 #if (NTDDI_VERSION >= NTDDI_WIN10)
 
-    LARGE_INTEGER   NotBefore;          // The certificate is not valid before this time
-    LARGE_INTEGER   NotAfter;           // The certificate is not valid after  this time
+    LARGE_INTEGER   NotValidBefore;     // The certificate is not valid before this time
+    LARGE_INTEGER   NotValidAfter;      // The certificate is not valid after  this time
 
 #endif // NTDDI_VERSION >= NTDDI_WIN10
 
@@ -387,14 +418,14 @@ MINCRYPTAPI
 NTSTATUS
 NTAPI
 CiCheckSignedFile(
-    _In_ PVOID                  Hash,
-    _In_ UINT32                 HashSize,
-    _In_ ALG_ID                 HashAlgId,
-    _In_ PVOID                  SecurityDirectory,
-    _In_ UINT32                 SizeOfSecurityDirectory,
-    _Out_ MINCRYPT_POLICY_INFO* PolicyInfo,
-    _Out_ LARGE_INTEGER* SigningTime,
-    _Out_ MINCRYPT_POLICY_INFO* TimeStampPolicyInfo
+    _In_ PUCHAR FileHash,
+    _In_ ULONG HashLength,
+    _In_ ALG_ID HashAlgorithm,
+    _In_ PUCHAR CertBuffer,
+    _In_ ULONG CertSize,
+    _Out_ PMINCRYPT_POLICY_INFO PolicyInfo,
+    _Out_opt_ PLARGE_INTEGER SigningTime,
+    _Out_opt_ PMINCRYPT_POLICY_INFO TimeStampPolicyInfo
 );
 
 
@@ -413,9 +444,9 @@ CiCheckSignedFile(
 *
 *  @param  IsReloadCatalogs - is reload catalogs cache.
 *
-*  @param  Always0 - this is for IsReloadCatalogs, Always0 != 0 ? 16 : 24;
+*  @param  SecureProcess - this is for Recheck, Always0 != 0 ? 16 : 24;
 * 
-*  @param  Always2007F - unknown, always 0x2007F, maybe a mask.
+*  @param  AcceptRoots - unknown, always 0x2007F, maybe a mask.
 *
 *  @param  PolicyInfo[out] - PolicyInfo containing information about the signer certificate chain.
 *
@@ -436,16 +467,16 @@ MINCRYPTAPI
 NTSTATUS
 NTAPI
 CiVerifyHashInCatalog(
-    _In_ PVOID                  Hash,
-    _In_ UINT32                 HashSize,
-    _In_ ALG_ID                 HashAlgId,
-    _In_ BOOLEAN                IsReloadCatalogs,
-    _In_ UINT32                 Always0,
-    _In_ UINT32                 Always2007F,
-    _Out_ MINCRYPT_POLICY_INFO* PolicyInfo,
-    _Out_opt_ UNICODE_STRING*   CatalogName,
-    _Out_ LARGE_INTEGER*        SigningTime,
-    _Out_ MINCRYPT_POLICY_INFO* TimeStampPolicyInfo
+    _In_ PUCHAR FileHash,
+    _In_ ULONG HashLength,
+    _In_ ALG_ID HashAlgorithm,
+    _In_ ULONG Recheck,
+    _In_ ULONG SecureProcess,
+    _In_ ULONG AcceptRoots,
+    _Out_opt_ PMINCRYPT_POLICY_INFO PolicyInfo,
+    _Out_opt_ PUNICODE_STRING CatalogName,
+    _Out_opt_ PLARGE_INTEGER SigningTime,
+    _Out_opt_ PMINCRYPT_POLICY_INFO TimeStampPolicyInfo
 );
 
 
@@ -462,6 +493,7 @@ MINCRYPT_ALLOCATE_ROUTINE(
 );
 typedef MINCRYPT_ALLOCATE_ROUTINE* PMINCRYPT_ALLOCATE_ROUTINE;
 
+
 /**
 *  Parse the publisher name from the certificate
 *
@@ -473,6 +505,7 @@ typedef MINCRYPT_ALLOCATE_ROUTINE* PMINCRYPT_ALLOCATE_ROUTINE;
 *
 *  @return buffer length.
 */
+_IRQL_requires_max_(PASSIVE_LEVEL)
 MINCRYPTAPI
 NTSTATUS
 NTAPI
@@ -483,6 +516,7 @@ CiGetCertPublisherName(
 );
 
 
+_IRQL_requires_max_(PASSIVE_LEVEL)
 MINCRYPTAPI
 VOID
 NTAPI
@@ -490,15 +524,16 @@ CiSetTrustedOriginClaimId(
     _In_ UINT32 ClaimId
 );
 
+
 /**
 *  Given a file object, verify the signature and provide information regarding
 *   the certificates that was used for signing (the entire certificate chain)
 *
 *  @param  FileObject - FileObject of the PE in question
 *
-*  @param  Unkonwn1 - unknown, 0 is a valid value. (Unkonwn1 and Unkonwn2 together calculate the minimum support algorithm)
+*  @param  SecureRequired - unknown, 0 is a valid value. 
 *
-*  @param  Unkonwn2 - unknown, 0 is a valid value. (^ the words above refer to 'CipGetHashAlgorithmForLegacyScenario')
+*  @param  RequestedSigningLevel - unknown, 0 is a valid value.
 *
 *  @param  PolicyInfo[out] - PolicyInfo containing information about the signer certificate chain.
 *
@@ -523,15 +558,15 @@ MINCRYPTAPI
 NTSTATUS
 NTAPI
 CiValidateFileObject(
-    _In_ FILE_OBJECT*           FileObject,
-    _In_opt_ UINT32             Unkonwn1,
-    _In_opt_ UINT32             Unkonwn2,
-    _Out_ MINCRYPT_POLICY_INFO* PolicyInfo,
-    _Out_ MINCRYPT_POLICY_INFO* TimeStampPolicyInfo,
-    _Out_ LARGE_INTEGER*        SigningTime,
-    _Out_ UINT8*                Hash,
-    _Inout_ UINT32*             HashSize,
-    _Out_ ALG_ID*               HashAlgId
+    _In_ PFILE_OBJECT FileObject,
+    _In_ ULONG SecureRequired,
+    _In_ UCHAR RequestedSigningLevel,
+    _Out_ PMINCRYPT_POLICY_INFO PolicyInfo,
+    _Out_ PMINCRYPT_POLICY_INFO TimeStampPolicyInfo,
+    _Out_ PLARGE_INTEGER SigningTime,
+    _Out_ PUCHAR FileHash,
+    _Inout_ PULONG FileHashSize,
+    _Out_ ALG_ID* FileHashAlgorithm
 );
 
 #endif // NTDDI_VERSION >= NTDDI_WIN10
