@@ -12088,6 +12088,30 @@ RtlIsMultiUsersInSessionSku(
 #endif // NTDDI_VERSION < NTDDI_WIN10_RS1
 
 //
+// Windows Session Manager
+//
+
+#ifndef _KERNEL_MODE
+NTSYSAPI
+NTSTATUS
+NTAPI
+RtlConnectToSm(
+    _In_ PCUNICODE_STRING ApiPortName,
+    _In_ HANDLE ApiPortHandle,
+    _In_ DWORD ProcessImageType,
+    _Out_ PHANDLE SmssConnection
+);
+
+NTSYSAPI
+NTSTATUS
+NTAPI
+RtlSendMsgToSm(
+    _In_ HANDLE ApiPortHandle,
+    _In_ PPORT_MESSAGE MessageData
+);
+#endif
+
+//
 // Appcontainer
 //
 
