@@ -363,7 +363,7 @@ NTAPI
 NtQuerySecurityObject(
     _In_ HANDLE Handle,
     _In_ SECURITY_INFORMATION SecurityInformation,
-    _Out_writes_bytes_opt_(Length) PSECURITY_DESCRIPTOR SecurityDescriptor,
+    _Out_writes_bytes_to_(Length, *LengthNeeded) PSECURITY_DESCRIPTOR SecurityDescriptor,
     _In_ ULONG Length,
     _Out_ PULONG LengthNeeded
 );
