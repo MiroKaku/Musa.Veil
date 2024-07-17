@@ -50,6 +50,47 @@ typedef struct _SYSTEM_HIBERFILE_INFORMATION
     LARGE_INTEGER Mcb[1];
 } SYSTEM_HIBERFILE_INFORMATION, * PSYSTEM_HIBERFILE_INFORMATION;
 
+#define POWER_PERF_SCALE    100
+#define PERF_LEVEL_TO_PERCENT(_x_) ((_x_ * 1000) / (POWER_PERF_SCALE * 10))
+#define PERCENT_TO_PERF_LEVEL(_x_) ((_x_ * POWER_PERF_SCALE * 10) / 1000)
+#define PO_REASON_STATE_STANDBY (PO_REASON_STATE_S1 | \
+                                 PO_REASON_STATE_S2 | \
+                                 PO_REASON_STATE_S3)
+
+#define PO_REASON_STATE_ALL     (PO_REASON_STATE_STANDBY | \
+                                 PO_REASON_STATE_S4 | \
+                                 PO_REASON_STATE_S4FIRM)
+
+typedef struct _SYSTEM_POWER_LOGGING_ENTRY
+{
+    ULONG Reason;
+    ULONG States;
+} SYSTEM_POWER_LOGGING_ENTRY, * PSYSTEM_POWER_LOGGING_ENTRY;
+
+typedef enum _POWER_STATE_DISABLED_TYPE
+{
+    PoDisabledStateSleeping1 = 0,
+    PoDisabledStateSleeping2 = 1,
+    PoDisabledStateSleeping3 = 2,
+    PoDisabledStateSleeping4 = 3,
+    PoDisabledStateSleeping0Idle = 4,
+    PoDisabledStateReserved5 = 5,
+    PoDisabledStateSleeping4Firmware = 6,
+    PoDisabledStateMaximum = 7
+} POWER_STATE_DISABLED_TYPE, PPOWER_STATE_DISABLED_TYPE;
+
+#define POWER_STATE_DISABLED_TYPE_MAX  8
+
+_Struct_size_bytes_(sizeof(SYSTEM_POWER_STATE_DISABLE_REASON) + PowerReasonLength)
+typedef struct _SYSTEM_POWER_STATE_DISABLE_REASON
+{
+    BOOLEAN AffectedState[POWER_STATE_DISABLED_TYPE_MAX];
+    ULONG PowerReasonCode;
+    ULONG PowerReasonLength;
+    //UCHAR PowerReasonInfo[ANYSIZE_ARRAY];
+} SYSTEM_POWER_STATE_DISABLE_REASON, * PSYSTEM_POWER_STATE_DISABLE_REASON;
+
+// Reason Context
 #define POWER_REQUEST_CONTEXT_NOT_SPECIFIED DIAGNOSTIC_REASON_NOT_SPECIFIED
 
 // enum _POWER_REQUEST_TYPE
@@ -507,6 +548,11 @@ typedef enum _POWER_INFORMATION_LEVEL_INTERNAL
     PowerInternalGetAcpiTimeAndAlarmCapabilities, // since 22H2
     PowerInternalSuspendResumeRequest,
     PowerInternalEnergyEstimationInfo, // since 23H2
+    PowerInternalProvSocIdentifierOperation, // since 24H2
+    PowerInternalGetVmPerfPrioritySupport,
+    PowerInternalGetVmPerfPriorityConfig,
+    PowerInternalNotifyWin32kPowerRequestQueued,
+    PowerInternalNotifyWin32kPowerRequestCompleted,
     PowerInformationInternalMaximum
 } POWER_INFORMATION_LEVEL_INTERNAL;
 
@@ -563,7 +609,7 @@ typedef struct _POWER_PROCESSOR_LATENCY_HINT
 {
     POWER_INFORMATION_INTERNAL_HEADER PowerInformationInternalHeader;
     ULONG Type;
-} POWER_PROCESSOR_LATENCY_HINT, * PPO_PROCESSOR_LATENCY_HINT;
+} POWER_PROCESSOR_LATENCY_HINT, * PPOWER_PROCESSOR_LATENCY_HINT;
 
 typedef struct _POWER_STANDBY_NETWORK_REQUEST
 {
