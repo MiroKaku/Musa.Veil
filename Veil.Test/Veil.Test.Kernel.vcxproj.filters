@@ -10,8 +10,16 @@
     <ClCompile Include="Veil.Test.Main.cpp">
       <Filter>Source</Filter>
     </ClCompile>
+    <ClCompile Include="Universal.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Inf Include="Veil.inf" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Universal.h">
+      <Filter>Source</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

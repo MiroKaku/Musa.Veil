@@ -16,6 +16,9 @@
             <TreatWarningAsError>true</TreatWarningAsError>
             <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
             <ObjectFileName>$(IntDir)anyname\%(RelativeDir)%(FileName).obj</ObjectFileName>
+            <PrecompiledHeader>Use</PrecompiledHeader>
+            <PrecompiledHeaderFile>universal.h</PrecompiledHeaderFile>
+            <ForcedIncludeFiles>%(PrecompiledHeaderFile);%(ForcedIncludeFiles)</ForcedIncludeFiles>
         </ClCompile>
     </ItemDefinitionGroup>
 
