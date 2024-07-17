@@ -88,10 +88,14 @@ STATIC_ASSERT(sizeof(XINPUT_STATE_EX) == 20);
 #define ORDINAL_XInputGetCapabilitiesEx         ((LPCSTR)108)
 
 #ifndef WIN_NOEXCEPT
-    #if _MSC_VER >= 1900
-        #define WIN_NOEXCEPT noexcept
+    #if defined __cplusplus
+        #if _MSC_VER >= 1900
+            #define WIN_NOEXCEPT noexcept
+        #else
+            #define WIN_NOEXCEPT throw()
+        #endif
     #else
-        #define WIN_NOEXCEPT throw()
+        #define WIN_NOEXCEPT
     #endif
 #endif
 

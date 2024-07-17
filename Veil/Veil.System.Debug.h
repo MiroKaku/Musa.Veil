@@ -18,6 +18,8 @@
 #pragma warning(push)
 // nonstandard extension used : nameless struct/union
 #pragma warning(disable:4201)
+// nonstandard extension used : bit field types other than int
+#pragma warning(disable:4214)
 // 'struct_name' : structure was padded due to __declspec(align())
 #pragma warning(disable:4324)
 // 'enumeration': a forward declaration of an unscoped enumeration must have an
