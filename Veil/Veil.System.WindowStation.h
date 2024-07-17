@@ -1104,8 +1104,6 @@ WinStationGetProcessSid(
 
 // Services isolation
 
-#if (PHNT_VERSION >= PHNT_VISTA)
-
 // rev
 NTSYSAPI
 BOOLEAN
@@ -1121,8 +1119,6 @@ NTAPI
 WinStationRevertFromServicesSession(
     VOID
 );
-
-#endif
 
 // Misc.
 NTSYSAPI
