@@ -306,5 +306,6 @@ struct IUnknown;
 #include "Veil/Veil.System.TransactionManager.h"
 #include "Veil/Veil.System.VDM.h"
 #include "Veil/Veil.System.Prefetcher.h"
+#include "Veil/Veil.System.WindowStation.h"
 
 #endif // _VEIL_

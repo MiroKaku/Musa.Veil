@@ -9027,7 +9027,7 @@ RtlGetInterruptTimePrecise(
 //
 
 // fix: WPP error: type redefinition
-typedef struct _RTL_TIME_ZONE_INFORMATION_V
+typedef struct _RTL_TIME_ZONE_INFORMATION
 {
     LONG Bias;
     WCHAR StandardName[32];
@@ -9036,20 +9036,20 @@ typedef struct _RTL_TIME_ZONE_INFORMATION_V
     WCHAR DaylightName[32];
     TIME_FIELDS DaylightStart;
     LONG DaylightBias;
-} RTL_TIME_ZONE_INFORMATION_V, * PRTL_TIME_ZONE_INFORMATION_V;
+} RTL_TIME_ZONE_INFORMATION, * PRTL_TIME_ZONE_INFORMATION;
 
 NTSYSAPI
 NTSTATUS
 NTAPI
 RtlQueryTimeZoneInformation(
-    _Out_ PRTL_TIME_ZONE_INFORMATION_V TimeZoneInformation
+    _Out_ PRTL_TIME_ZONE_INFORMATION TimeZoneInformation
 );
 
 NTSYSAPI
 NTSTATUS
 NTAPI
 RtlSetTimeZoneInformation(
-    _In_ PRTL_TIME_ZONE_INFORMATION_V TimeZoneInformation
+    _In_ PRTL_TIME_ZONE_INFORMATION TimeZoneInformation
 );
 
 //
