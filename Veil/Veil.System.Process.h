@@ -223,6 +223,8 @@ typedef struct _TELEMETRY_COVERAGE_HEADER
 } TELEMETRY_COVERAGE_HEADER, * PTELEMETRY_COVERAGE_HEADER;
 
 // symbols
+typedef struct _RTL_BITMAP* PRTL_BITMAP;
+
 typedef struct _PEB
 {
     BOOLEAN InheritedAddressSpace;
@@ -280,7 +282,7 @@ typedef struct _PEB
     ULONG AtlThunkSListPtr32;
     PAPI_SET_NAMESPACE ApiSetMap;
     ULONG TlsExpansionCounter;
-    PVOID TlsBitmap;
+    PRTL_BITMAP TlsBitmap;
     ULONG TlsBitmapBits[2]; // TLS_MINIMUM_AVAILABLE
 
     PVOID ReadOnlySharedMemoryBase;
@@ -470,7 +472,7 @@ typedef struct _PEB32
     ULONG AtlThunkSListPtr32;
     struct _API_SET_NAMESPACE* POINTER_32 ApiSetMap;
     ULONG TlsExpansionCounter;
-    PVOID32 TlsBitmap;
+    struct _RTL_BITMAP* POINTER_32 TlsBitmap;
     ULONG TlsBitmapBits[2];
 
     PVOID32 ReadOnlySharedMemoryBase;
@@ -695,7 +697,11 @@ typedef struct _TEB
     ULONG FpSoftwareStatusRegister;
     PVOID ReservedForDebuggerInstrumentation[16];
 #ifdef _WIN64
-    PVOID SystemReserved1[30];
+    PVOID SystemReserved1[25];
+
+    PVOID HeapFlsData;
+
+    ULONG_PTR RngState[4];
 #else
     PVOID SystemReserved1[26];
 #endif
@@ -790,8 +796,8 @@ typedef struct _TEB
     PVOID ThreadPoolData;
     PVOID* TlsExpansionSlots;
 #ifdef _WIN64
-    PVOID DeallocationBStore;
-    PVOID BStoreLimit;
+    PVOID ChpeV2CpuAreaInfo; // CHPEV2_CPUAREA_INFO // previously DeallocationBStore
+    PVOID Unused; // previously BStoreLimit
 #endif
     ULONG MuiGeneration;
     ULONG IsImpersonating;
@@ -848,9 +854,14 @@ typedef struct _TEB
     ULONGLONG LastSleepCounter; // Win11
     ULONG SpinCallCount;
     ULONGLONG ExtendedFeatureDisableMask;
+    PVOID SchedulerSharedDataSlot; // 24H2
+    PVOID HeapWalkContext;
+    GROUP_AFFINITY PrimaryGroupAffinity;
+    ULONG Rcu[2];
 } TEB, * PTEB;
 
-STATIC_ASSERT(sizeof(TEB) == (sizeof(void*) == sizeof(__int32) ? 0x1018 : 0x1850)); // WIN11
+//STATIC_ASSERT(sizeof(TEB) == (sizeof(void*) == sizeof(__int32) ? 0x1018 : 0x1850)); // WIN11
+STATIC_ASSERT(sizeof(TEB) == (sizeof(void*) == sizeof(__int32) ? 0x1038 : 0x1878)); // 24H2
 
 typedef struct _TEB32
 {
