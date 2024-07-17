@@ -764,6 +764,9 @@ typedef enum _WOW64_SHARED_INFORMATION
     Wow64SharedPageEntriesCount
 } WOW64_SHARED_INFORMATION;
 
+#define PS_SYSTEM_DLL_INIT_BLOCK_V1 0x0F0
+#define PS_SYSTEM_DLL_INIT_BLOCK_V2 0x128
+
 // private
 typedef struct _PS_SYSTEM_DLL_INIT_BLOCK
 {
@@ -787,10 +790,17 @@ typedef struct _PS_SYSTEM_DLL_INIT_BLOCK
     ULONG_PTR Wow64CfgBitMap;
     ULONG_PTR Wow64CfgBitMapSize;
     PS_MITIGATION_AUDIT_OPTIONS_MAP MitigationAuditOptionsMap; // REDSTONE3
+    ULONG_PTR ScpCfgCheckFunction; // since 24H2
+    ULONG_PTR ScpCfgCheckESFunction;
+    ULONG_PTR ScpCfgDispatchFunction;
+    ULONG_PTR ScpCfgDispatchESFunction;
+    ULONG_PTR ScpArm64EcCallCheck;
+    ULONG_PTR ScpArm64EcCfgCheckFunction;
+    ULONG_PTR ScpArm64EcCfgCheckESFunction;
 } PS_SYSTEM_DLL_INIT_BLOCK, * PPS_SYSTEM_DLL_INIT_BLOCK;
 
-#if (NTDDI_VERSION >= NTDDI_WINTHRESHOLD)
 // rev
+#if (NTDDI_VERSION >= NTDDI_WINTHRESHOLD)
 NTSYSAPI PS_SYSTEM_DLL_INIT_BLOCK LdrSystemDllInitBlock;
 #endif
 #endif // _KERNEL_MODE
@@ -1202,7 +1212,23 @@ typedef struct _RTL_PROCESS_MODULES SYSTEM_MODULES, * PSYSTEM_MODULES;
 typedef struct _RTL_PROCESS_MODULE_INFORMATION_EX
 {
     USHORT NextOffset;
-    RTL_PROCESS_MODULE_INFORMATION BaseInfo;
+    union
+    {
+        RTL_PROCESS_MODULE_INFORMATION BaseInfo;
+        struct
+        {
+            PVOID Section;
+            PVOID MappedBase;
+            PVOID ImageBase;
+            ULONG ImageSize;
+            ULONG Flags;
+            USHORT LoadOrderIndex;
+            USHORT InitOrderIndex;
+            USHORT LoadCount;
+            USHORT OffsetToFileName;
+            UCHAR FullPathName[256];
+        };
+    };
     ULONG ImageChecksum;
     ULONG TimeDateStamp;
     PVOID DefaultBase;
