@@ -253,6 +253,8 @@ struct IUnknown;
 // Kernel-Mode
 //
 
+#define NT_INLINE_GET_CURRENT_IRQL
+
 #ifndef UNICODE
 #define UNICODE 1
 #endif
