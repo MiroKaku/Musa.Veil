@@ -9022,6 +9022,20 @@ RtlGetInterruptTimePrecise(
 );
 #endif
 
+NTSYSAPI
+ULONG
+NTAPI
+RtlGetTickCount(
+    VOID
+);
+
+NTSYSAPI
+LARGE_INTEGER
+NTAPI
+RtlGetTickCount64(
+    VOID
+);
+
 //
 // Time zones
 //
