@@ -349,7 +349,7 @@ typedef struct _LDR_DATA_TABLE_ENTRY32
 
 STATIC_ASSERT(sizeof(LDR_DATA_TABLE_ENTRY32) == 184);
 
-#ifndef _KERNEL_MODE
+#if !defined(_KERNEL_MODE) || defined(_WINDOWS_)
 NTSYSAPI
 VOID
 NTAPI
