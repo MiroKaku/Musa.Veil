@@ -3266,8 +3266,8 @@ _VEIL_DEFINE_IAT_RAW_SYMBOL(RtlUTF8StringToUnicodeString@12, _VEIL_IMPL_RtlUTF8S
 
 #elif defined _M_X64 || defined _M_ARM || defined _M_ARM64
 
-_VEIL_DEFINE_IAT_RAW_SYMBOL(RtlUnicodeStringToUTF8String, _VEIL_IMPL_RtlUnicodeStringToUTF8String);
-_VEIL_DEFINE_IAT_RAW_SYMBOL(RtlUTF8StringToUnicodeString, _VEIL_IMPL_RtlUTF8StringToUnicodeString);
+_VEIL_DEFINE_IAT_SYMBOL(RtlUnicodeStringToUTF8String, _VEIL_IMPL_RtlUnicodeStringToUTF8String);
+_VEIL_DEFINE_IAT_SYMBOL(RtlUTF8StringToUnicodeString, _VEIL_IMPL_RtlUTF8StringToUnicodeString);
 
 #endif
 #endif // if (NTDDI_VERSION < NTDDI_WIN10_VB)
@@ -5499,87 +5499,6 @@ RtlImageRvaToVa(
     _In_ ULONG Rva,
     _Inout_opt_ PIMAGE_SECTION_HEADER* LastRvaSection
 );
-
-#ifdef _KERNEL_MODE
-inline
-PIMAGE_SECTION_HEADER
-NTAPI
-_VEIL_IMPL_RtlImageRvaToSection(
-    _In_ PIMAGE_NT_HEADERS NtHeaders,
-    _In_ PVOID BaseOfImage,
-    _In_ ULONG Rva
-)
-{
-    ULONG i = 0ul;
-    PIMAGE_SECTION_HEADER NtSection = NULL;
-
-    UNREFERENCED_PARAMETER(BaseOfImage);
-
-    NtSection = IMAGE_FIRST_SECTION(NtHeaders);
-    for (i = 0; i < NtHeaders->FileHeader.NumberOfSections; i++) {
-        if (Rva >= NtSection->VirtualAddress &&
-            Rva < NtSection->VirtualAddress + NtSection->SizeOfRawData
-            ) {
-            return NtSection;
-        }
-        ++NtSection;
-    }
-
-    return NULL;
-}
-
-inline
-PVOID
-NTAPI
-_VEIL_IMPL_RtlImageRvaToVa(
-    _In_ PIMAGE_NT_HEADERS NtHeaders,
-    _In_ PVOID BaseOfImage,
-    _In_ ULONG Rva,
-    _Inout_opt_ PIMAGE_SECTION_HEADER* LastRvaSection
-)
-{
-    PIMAGE_SECTION_HEADER NtSection = NULL;
-
-    if (LastRvaSection != NULL)
-    {
-        NtSection = *LastRvaSection;
-    }
-
-    if ((NtSection == NULL) ||
-        (Rva < NtSection->VirtualAddress) ||
-        (Rva >= NtSection->VirtualAddress + NtSection->SizeOfRawData))
-    {
-        NtSection = RtlImageRvaToSection(NtHeaders, BaseOfImage, Rva);
-        if (NtSection == NULL)
-        {
-            return NULL;
-        }
-
-        if (LastRvaSection != NULL)
-        {
-            *LastRvaSection = NtSection;
-        }
-    }
-
-    return (PVOID)((ULONG_PTR)BaseOfImage
-        + Rva
-        + NtSection->PointerToRawData
-        - NtSection->VirtualAddress);
-}
-
-#if defined _M_IX86
-
-_VEIL_DEFINE_IAT_RAW_SYMBOL(RtlImageRvaToSection@12, _VEIL_IMPL_RtlImageRvaToSection);
-_VEIL_DEFINE_IAT_RAW_SYMBOL(RtlImageRvaToVa@16, _VEIL_IMPL_RtlImageRvaToVa);
-
-#elif defined _M_X64 || defined _M_ARM || defined _M_ARM64
-
-_VEIL_DEFINE_IAT_SYMBOL(RtlImageRvaToSection, _VEIL_IMPL_RtlImageRvaToSection);
-_VEIL_DEFINE_IAT_SYMBOL(RtlImageRvaToVa, _VEIL_IMPL_RtlImageRvaToVa);
-
-#endif
-
-#endif // if _KERNEL_MODE
 
 #if (NTDDI_VERSION >= NTDDI_WIN10)
 // rev
@@ -8325,56 +8244,8 @@ RtlLoadString(
 
 #ifdef _KERNEL_MODE
 
-NTSYSAPI
-NTSTATUS
-NTAPI
-RtlLoadLibraryAsDataFile(
-    _In_  PCUNICODE_STRING FileName,
-    _Out_ PVOID* ModBase,
-    _Out_ SIZE_T* ModSize
-);
-
-NTSYSAPI
-NTSTATUS
-NTAPI
-RtlFreeLibraryAsDataFile(
-    _In_ PVOID ModBase
-);
-
-inline
-NTSTATUS
-NTAPI
-_VEIL_IMPL_RtlLoadLibraryAsDataFile(
-    _In_  PCUNICODE_STRING FileName,
-    _Out_ PVOID* ModBase,
-    _Out_ SIZE_T* ModSize
-)
-{
-    return LdrLoadDataFile(FileName, ModBase, ModSize);
-}
-
-inline
-NTSTATUS
-NTAPI
-_VEIL_IMPL_RtlFreeLibraryAsDataFile(
-    _In_ PVOID ModBase
-)
-{
-    return LdrUnloadDataFile(ModBase);
-}
-
-#if defined _M_IX86
-
-_VEIL_DEFINE_IAT_RAW_SYMBOL(RtlLoadLibraryAsDataFile@12, _VEIL_IMPL_RtlLoadLibraryAsDataFile);
-_VEIL_DEFINE_IAT_RAW_SYMBOL(RtlFreeLibraryAsDataFile@4, _VEIL_IMPL_RtlFreeLibraryAsDataFile);
-
-#elif defined _M_X64 || defined _M_ARM || defined _M_ARM64
-
-_VEIL_DEFINE_IAT_SYMBOL(RtlLoadLibraryAsDataFile, _VEIL_IMPL_RtlLoadLibraryAsDataFile);
-_VEIL_DEFINE_IAT_SYMBOL(RtlFreeLibraryAsDataFile, _VEIL_IMPL_RtlFreeLibraryAsDataFile);
-
-#endif
-
+// Only used in Musa.Core
+_IRQL_requires_max_(PASSIVE_LEVEL)
 NTSYSAPI
 NTSTATUS
 NTAPI
@@ -8383,6 +8254,8 @@ RtlMapResourceId(
     _In_  LPCWSTR    From
 );
 
+// Only used in Musa.Core
+_IRQL_requires_max_(PASSIVE_LEVEL)
 NTSYSAPI
 VOID
 NTAPI
@@ -8390,117 +8263,21 @@ RtlUnmapResourceId(
     _In_ ULONG_PTR Id
 );
 
-inline
-NTSTATUS
-NTAPI
-_VEIL_IMPL_RtlMapResourceId(
-    _Out_ ULONG_PTR* To,
-    _In_  LPCWSTR    From
-)
-{
-    NTSTATUS Status = STATUS_SUCCESS;
-
-    do
-    {
-        __try
-        {
-            *To = (ULONG_PTR)-1;
-
-            if ((ULONG_PTR)From >= LDR_RESOURCE_ID_NAME_MINVAL)
-            {
-                if (*From == L'#')
-                {
-                    UNICODE_STRING UnicodeString = { 0 };
-                    RtlInitUnicodeString(&UnicodeString, From + 1);
-
-                    ULONG Integer = 0ul;
-                    Status = RtlUnicodeStringToInteger(&UnicodeString, 10, &Integer);
-
-                    #pragma warning(suppress: 26450)
-                    if (!NT_SUCCESS(Status) || Integer > LDR_RESOURCE_ID_NAME_MASK)
-                    {
-                        if (NT_SUCCESS(Status))
-                        {
-                            Status = STATUS_INVALID_PARAMETER;
-                        }
-                    }
-                    else
-                    {
-                        *To = Integer;
-                    }
-                }
-                else
-                {
-                    #pragma warning(suppress: 4996 28751)
-                    PWSTR String = (PWSTR)ExAllocatePool(PagedPool, (wcslen(From) + 1) * sizeof(WCHAR));
-                    if (String == NULL)
-                    {
-                        Status = STATUS_INSUFFICIENT_RESOURCES;
-                    }
-                    else
-                    {
-                        *To = (ULONG_PTR)String;
-
-                        while (*From != UNICODE_NULL)
-                        {
-                            *String++ = RtlUpcaseUnicodeChar(*From++);
-                        }
-
-                        *String = UNICODE_NULL;
-                    }
-                }
-            }
-            else
-            {
-                *To = (ULONG_PTR)From;
-            }
-        }
-        __except (EXCEPTION_EXECUTE_HANDLER)
-        {
-            *To = (ULONG_PTR)-1;
-        }
-
-    } while (FALSE);
-
-    return Status;
-}
-
-inline
-VOID
-NTAPI
-_VEIL_IMPL_RtlUnmapResourceId(
-    _In_ ULONG_PTR Id
-)
-{
-    if (Id >= LDR_RESOURCE_ID_NAME_MINVAL && Id != -1)
-    {
-        ExFreePool((PVOID)Id);
-    }
-}
-
-#if defined _M_IX86
-
-_VEIL_DEFINE_IAT_RAW_SYMBOL(RtlMapResourceId@8, _VEIL_IMPL_RtlMapResourceId);
-_VEIL_DEFINE_IAT_RAW_SYMBOL(RtlUnmapResourceId@4, _VEIL_IMPL_RtlUnmapResourceId);
-
-#elif defined _M_X64 || defined _M_ARM || defined _M_ARM64
-
-_VEIL_DEFINE_IAT_SYMBOL(RtlMapResourceId, _VEIL_IMPL_RtlMapResourceId);
-_VEIL_DEFINE_IAT_SYMBOL(RtlUnmapResourceId, _VEIL_IMPL_RtlUnmapResourceId);
-
-#endif
-
+// Only used in Musa.Core
+_IRQL_requires_max_(PASSIVE_LEVEL)
 NTSYSAPI
 NTSTATUS
 NTAPI
 RtlFindResource(
-    _Out_ HRSRC* ResBase,
-    _In_  PVOID   ModBase,
+    _Out_ HRSRC*  ResBase,
+    _In_  PVOID   DllHandle,
     _In_  LPCWSTR Name,
     _In_  LPCWSTR Type,
     _In_  UINT16  Language
 );
 
+// Only used in Musa.Core
+_IRQL_requires_max_(PASSIVE_LEVEL)
 NTSYSAPI
 NTSTATUS
 NTAPI
@@ -8508,100 +8285,8 @@ RtlLoadResource(
     _Out_ PVOID* ResBuff,
     _Out_ ULONG* ResSize,
     _In_  HRSRC  ResBase,
-    _In_  PVOID  ModBase
+    _In_  PVOID  DllHandle
 );
-
-inline
-NTSTATUS
-NTAPI
-_VEIL_IMPL_RtlFindResource(
-    _Out_ HRSRC* ResBase,
-    _In_  PVOID   ModBase,
-    _In_  LPCWSTR Name,
-    _In_  LPCWSTR Type,
-    _In_  UINT16  Language
-)
-{
-    NTSTATUS Status = STATUS_SUCCESS;
-    LDR_RESOURCE_INFO IdPath = { 0 };
-
-    do
-    {
-        __try
-        {
-            Status = RtlMapResourceId(&IdPath.Type, Type);
-            if (!NT_SUCCESS(Status))
-            {
-                break;
-            }
-
-            Status = RtlMapResourceId(&IdPath.Name, Name);
-            if (!NT_SUCCESS(Status))
-            {
-                break;
-            }
-
-            IdPath.Language = Language;
-
-            Status = LdrFindResource_U(ModBase, &IdPath, LDR_RESOURCE_LEVEL_DATA, (PIMAGE_RESOURCE_DATA_ENTRY*)ResBase);
-            if (!NT_SUCCESS(Status))
-            {
-                break;
-            }
-        }
-        __except (EXCEPTION_EXECUTE_HANDLER)
-        {
-            Status = GetExceptionCode();
-        }
-
-    } while (FALSE);
-
-    RtlUnmapResourceId(IdPath.Type);
-    RtlUnmapResourceId(IdPath.Name);
-
-    return Status;
-}
-
-inline
-NTSTATUS
-NTAPI
-_VEIL_IMPL_RtlLoadResource(
-    _Out_ PVOID* ResBuff,
-    _Out_ ULONG* ResSize,
-    _In_  HRSRC  ResBase,
-    _In_  PVOID  ModBase
-)
-{
-    NTSTATUS Status = STATUS_SUCCESS;
-
-    do
-    {
-        __try
-        {
-            Status = LdrAccessResource(ModBase,
-                (PIMAGE_RESOURCE_DATA_ENTRY)ResBase, ResBuff, ResSize);
-        }
-        __except (EXCEPTION_EXECUTE_HANDLER)
-        {
-            Status = GetExceptionCode();
-        }
-
-    } while (FALSE);
-
-    return Status;
-}
-
-#if defined _M_IX86
-
-_VEIL_DEFINE_IAT_RAW_SYMBOL(RtlFindResource@20, _VEIL_IMPL_RtlFindResource);
-_VEIL_DEFINE_IAT_RAW_SYMBOL(RtlLoadResource@16, _VEIL_IMPL_RtlLoadResource);
-
-#elif defined _M_X64 || defined _M_ARM || defined _M_ARM64
-
-_VEIL_DEFINE_IAT_SYMBOL(RtlFindResource, _VEIL_IMPL_RtlFindResource);
-_VEIL_DEFINE_IAT_SYMBOL(RtlLoadResource, _VEIL_IMPL_RtlLoadResource);
-
-#endif
 
 #endif // if _KERNEL_MODE
 

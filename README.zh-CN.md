@@ -2,7 +2,7 @@
 
 [![Actions Status](https://github.com/MiroKaku/Veil/workflows/Build/badge.svg)](https://github.com/MiroKaku/Veil/actions)
 [![LICENSE](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/MiroKaku/Veil/blob/main/LICENSE)
-[![nuget](https://img.shields.io/nuget/v/Musa.Veil)](https://www.nuget.org/packages/Musa.Veil/)
+[![Downloads](https://img.shields.io/nuget/dt/Musa.Veil?logo=NuGet&logoColor=blue)](https://www.nuget.org/packages/Musa.Veil/)
 
 * [English](https://github.com/MiroKaku/Veil/blob/main/README.md)
 

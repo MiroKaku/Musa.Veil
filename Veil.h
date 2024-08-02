@@ -72,21 +72,6 @@
         _VEIL_DECLARE_ALTERNATE_NAME_PREFIX_DATA #alternate_name    \
         ))
 
-// Fix: __imp_ is optimized away
-#ifdef __cplusplus
-#define _VEIL_FORCE_INCLUDE(name) \
-    extern"C" __declspec(selectany) void const* const _VEIL_CONCATENATE(__forceinclude_, name) = reinterpret_cast<void const*>(&name)
-
-#define _VEIL_FORCE_INCLUDE_RAW_SYMBOLS(name) \
-    extern"C" __declspec(selectany) void const* const __identifier(_VEIL_STRINGIZE(_VEIL_CONCATENATE(__forceinclude_, name))) \
-        = reinterpret_cast<void const*>(&__identifier(_VEIL_STRINGIZE(name)))
-#else
-#define _VEIL_FORCE_INCLUDE(name) \
-    extern __declspec(selectany) void const* const _VEIL_CONCATENATE(__forceinclude_, name) = (void const*)(&name)
-
-#define _VEIL_FORCE_INCLUDE_RAW_SYMBOLS(name)
-#endif
-
 // The _VEIL_DEFINE_IAT_SYMBOL macro provides an architecture-neutral way of
 // defining IAT symbols (__imp_- or _imp__-prefixed symbols).
 #ifdef _M_IX86
@@ -98,19 +83,16 @@
 #ifdef __cplusplus
 #define _VEIL_DEFINE_IAT_SYMBOL(sym, fun) \
     extern "C" __declspec(selectany) void const* const _VEIL_DEFINE_IAT_SYMBOL_MAKE_NAME(sym) \
-        = reinterpret_cast<void const*>(fun); \
-    _VEIL_FORCE_INCLUDE(_VEIL_DEFINE_IAT_SYMBOL_MAKE_NAME(sym))
+        = reinterpret_cast<void const*>(fun);
 
 #define _VEIL_DEFINE_IAT_RAW_SYMBOL(sym, fun) \
     __pragma(warning(suppress:4483)) \
     extern "C" __declspec(selectany) void const* const __identifier(_VEIL_STRINGIZE(_VEIL_DEFINE_IAT_SYMBOL_MAKE_NAME(sym))) \
-        = reinterpret_cast<void const*>(fun); \
-    _VEIL_FORCE_INCLUDE_RAW_SYMBOLS(_VEIL_DEFINE_IAT_SYMBOL_MAKE_NAME(sym))
+        = reinterpret_cast<void const*>(fun);
 
 #else
 #define _VEIL_DEFINE_IAT_SYMBOL(sym, fun) \
-    extern __declspec(selectany) void const* const _VEIL_DEFINE_IAT_SYMBOL_MAKE_NAME(sym) = (void const*)(fun); \
-    _VEIL_FORCE_INCLUDE(_VEIL_DEFINE_IAT_SYMBOL_MAKE_NAME(sym))
+    extern __declspec(selectany) void const* const _VEIL_DEFINE_IAT_SYMBOL_MAKE_NAME(sym) = (void const*)(fun);
 
 // C don't support __identifier keyword
 #define _VEIL_DEFINE_IAT_RAW_SYMBOL(sym, fun)
@@ -252,8 +234,6 @@ struct IUnknown;
 //
 // Kernel-Mode
 //
-
-#define NT_INLINE_GET_CURRENT_IRQL
 
 #ifndef UNICODE
 #define UNICODE 1

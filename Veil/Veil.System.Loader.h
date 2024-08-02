@@ -913,6 +913,7 @@ typedef struct _VS_FILEINFO_LANG_CODEPAGE
 
 }VS_FILEINFO_LANG_CODEPAGE, *PVS_FILEINFO_LANG_CODEPAGE;
 
+_IRQL_requires_max_(PASSIVE_LEVEL)
 NTSYSAPI
 NTSTATUS
 NTAPI
@@ -1052,130 +1053,24 @@ LdrUnloadAlternateResourceModuleEx(
 
 #ifdef _KERNEL_MODE
 
+// Only used in Musa.Core
+_IRQL_requires_max_(PASSIVE_LEVEL)
 NTSYSAPI
 NTSTATUS
 NTAPI
 LdrLoadDataFile(
-    _In_  PCUNICODE_STRING FileName,
-    _Out_ PVOID* ModBase,
-    _Out_ SIZE_T* ModSize
+    _In_  PCWSTR DllName,
+    _Out_ PVOID* DllHandle
 );
 
+// Only used in Musa.Core
+_IRQL_requires_max_(APC_LEVEL)
 NTSYSAPI
 NTSTATUS
 NTAPI
 LdrUnloadDataFile(
-    _In_ PVOID ModBase
+    _In_ PVOID DllHandle
 );
-
-NTSYSAPI
-NTSTATUS
-NTAPI
-MmCreateSection(
-    _Deref_out_ PVOID* SectionObject,
-    _In_ ACCESS_MASK DesiredAccess,
-    _In_opt_ POBJECT_ATTRIBUTES ObjectAttributes,
-    _In_ PLARGE_INTEGER InputMaximumSize,
-    _In_ ULONG SectionPageProtection,
-    _In_ ULONG AllocationAttributes,
-    _In_opt_ HANDLE FileHandle,
-    _In_opt_ PFILE_OBJECT FileObject
-);
-
-inline
-NTSTATUS
-NTAPI
-_VEIL_IMPL_LdrLoadDataFile(
-    _In_  PCUNICODE_STRING FileName,
-    _Out_ PVOID* ModBase,
-    _Out_ SIZE_T* ModSize
-)
-{
-    NTSTATUS Status        = STATUS_SUCCESS;
-    HANDLE   FileHandle    = NULL;
-    PVOID    SectionObject = NULL;
-
-    do
-    {
-        *ModBase = NULL;
-        *ModSize = 0;
-
-        OBJECT_ATTRIBUTES ObjectAttributes = { 0 };
-        InitializeObjectAttributes(
-            &ObjectAttributes,
-            (PUNICODE_STRING)FileName,
-            OBJ_CASE_INSENSITIVE | OBJ_KERNEL_HANDLE,
-            NULL, NULL);
-
-        IO_STATUS_BLOCK IoStatusBlock = { 0 };
-
-        Status = ZwOpenFile(
-            &FileHandle,
-            FILE_GENERIC_READ,
-            &ObjectAttributes,
-            &IoStatusBlock,
-            FILE_SHARE_READ | FILE_SHARE_DELETE,
-            FILE_NON_DIRECTORY_FILE);
-        if (!NT_SUCCESS(Status))
-        {
-            break;
-        }
-
-        LARGE_INTEGER MaximumSize = { 0 };
-
-        Status = MmCreateSection(&SectionObject, SECTION_MAP_READ, NULL,
-            &MaximumSize, PAGE_READONLY, SEC_IMAGE | SEC_NOCACHE, FileHandle, NULL);
-        if (!NT_SUCCESS(Status))
-        {
-            break;
-        }
-
-        Status = MmMapViewInSystemSpace(SectionObject, ModBase, ModSize);
-        if (!NT_SUCCESS(Status))
-        {
-            break;
-        }
-
-    } while (FALSE);
-
-    if (SectionObject)
-    {
-        ObDereferenceObject(SectionObject);
-    }
-    if (FileHandle)
-    {
-        ZwClose(FileHandle);
-    }
-
-    return Status;
-}
-
-inline
-NTSTATUS
-NTAPI
-_VEIL_IMPL_LdrUnloadDataFile(
-    _In_ PVOID ModBase
-)
-{
-    if (ModBase)
-    {
-        return MmUnmapViewInSystemSpace(ModBase);
-    }
-
-    return STATUS_SUCCESS;
-}
-
-#if defined _M_IX86
-
-_VEIL_DEFINE_IAT_RAW_SYMBOL(LdrLoadDataFile@12, _VEIL_IMPL_LdrLoadDataFile);
-_VEIL_DEFINE_IAT_RAW_SYMBOL(LdrUnloadDataFile@4, _VEIL_IMPL_LdrUnloadDataFile);
-
-#elif defined _M_X64 || defined _M_ARM || defined _M_ARM64
-
-_VEIL_DEFINE_IAT_SYMBOL(LdrLoadDataFile, _VEIL_IMPL_LdrLoadDataFile);
-_VEIL_DEFINE_IAT_SYMBOL(LdrUnloadDataFile, _VEIL_IMPL_LdrUnloadDataFile);
-
-#endif
 
 #endif // if _KERNEL_MODE
 
