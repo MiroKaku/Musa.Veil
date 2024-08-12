@@ -39,6 +39,29 @@
 #define _VEIL_CONCATENATE(a, b)  _VEIL_CONCATENATE_(a, b)
 
 
+//
+// Force Include
+//
+
+#if defined _M_IX86
+#define _VEIL_LINKER_SYMBOL_PREFIX "_"
+#elif defined _M_X64 || defined _M_ARM || defined _M_ARM64
+#define _VEIL_LINKER_SYMBOL_PREFIX ""
+#else
+#error Unsupported architecture
+#endif
+
+#define _VEIL_LINKER_FORCE_INCLUDE(name) \
+    __pragma(comment(linker,            \
+        "/include:"                     \
+        _VEIL_LINKER_SYMBOL_PREFIX #name \
+        ))
+
+
+//
+// Alternate Name
+//
+
 #if defined _M_IX86
 #if defined _M_HYBRID
 #define _VEIL_DECLARE_ALTERNATE_NAME_PREFIX "#"
@@ -72,6 +95,11 @@
         _VEIL_DECLARE_ALTERNATE_NAME_PREFIX_DATA #alternate_name    \
         ))
 
+
+//
+// Static IAT Hook
+//
+
 // The _VEIL_DEFINE_IAT_SYMBOL macro provides an architecture-neutral way of
 // defining IAT symbols (__imp_- or _imp__-prefixed symbols).
 #ifdef _M_IX86
@@ -99,6 +127,10 @@
 #endif
 
 
+//
+// Declare Helper
+//
+
 #define VEIL_DECLARE_STRUCT(name) \
     typedef struct _VEIL_CONCATENATE(_, name) name; \
     typedef struct _VEIL_CONCATENATE(_, name) * _VEIL_CONCATENATE(P, name); \
@@ -118,23 +150,9 @@
     union _VEIL_CONCATENATE(_, name)
 
 
-#ifndef __cplusplus
-#ifndef CINTERFACE
-#define CINTERFACE
-#endif
-
-#ifndef COBJMACROS
-#define COBJMACROS
-#endif
-#endif
-
-#ifndef __cplusplus
-// This is needed to workaround C17 preprocessor errors when using legacy versions of the Windows SDK. (dmex)
-#ifndef MICROSOFT_WINDOWS_WINBASE_H_DEFINE_INTERLOCKED_CPLUSPLUS_OVERLOADS
-#define MICROSOFT_WINDOWS_WINBASE_H_DEFINE_INTERLOCKED_CPLUSPLUS_OVERLOADS 0
-#endif
-#endif
-
+//
+// Versions
+//
 
 #define NTDDI_WIN6                          0x06000000      // Windows Vista
 #define NTDDI_WIN6SP1                       0x06000100      // Windows Vista SP1
@@ -185,8 +203,13 @@
 #define NTDDI_WIN11_GA                      0x0A00000F      // Windows 10.0.25905-25941  / Gallium
 #define NTDDI_WIN11_GE                      0x0A000010      // Windows 10.0.25947-26100  / Germanium    / 24H2
 
- // Fix WDK
+// Fix WDK
 #define NTDDI_THRESHOLD                     NTDDI_WINTHRESHOLD
+
+
+//
+// C bool
+//
 
 #ifndef __cplusplus
 #ifndef __bool_true_false_are_defined
@@ -196,6 +219,28 @@
 #define true  1
 #endif
 #define  nullptr NULL
+#endif
+
+
+//
+// Headers
+//
+
+#ifndef __cplusplus
+#ifndef CINTERFACE
+#define CINTERFACE
+#endif
+
+#ifndef COBJMACROS
+#define COBJMACROS
+#endif
+#endif
+
+#ifndef __cplusplus
+// This is needed to workaround C17 preprocessor errors when using legacy versions of the Windows SDK. (dmex)
+#ifndef MICROSOFT_WINDOWS_WINBASE_H_DEFINE_INTERLOCKED_CPLUSPLUS_OVERLOADS
+#define MICROSOFT_WINDOWS_WINBASE_H_DEFINE_INTERLOCKED_CPLUSPLUS_OVERLOADS 0
+#endif
 #endif
 
 #ifndef ENABLE_RTL_NUMBER_OF_V2
