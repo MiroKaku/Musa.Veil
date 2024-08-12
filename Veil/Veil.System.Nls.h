@@ -75,6 +75,8 @@ typedef struct _NLSTABLEINFO
 
 #else // !_KERNEL_MODE
 
+NTSYSAPI USHORT NlsOemCodePage;
+
 //
 //  Code Page Default Values.
 //  Please Use Unicode, either UTF-16 (as in WCHAR) or UTF-8 (code page CP_ACP)
