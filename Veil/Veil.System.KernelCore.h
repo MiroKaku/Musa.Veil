@@ -5,7 +5,7 @@
  *
  * LICENSE:   MIT License
  *
- * DEVELOPER: MeeSong (kkmi04@outlook.com)
+ * DEVELOPER: MeeSong (meesong@outlook.com)
  */
 
 #pragma once
