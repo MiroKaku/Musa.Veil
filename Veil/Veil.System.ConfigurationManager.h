@@ -1,4 +1,4 @@
-/*
+ /*
  * PROJECT:   Veil
  * FILE:      Veil.System.ConfigurationManager.h
  * PURPOSE:   This file is part of Veil.
@@ -125,17 +125,36 @@ typedef struct _KEY_FLAGS_INFORMATION
 } KEY_FLAGS_INFORMATION, * PKEY_FLAGS_INFORMATION;
 
 #ifndef _KERNEL_MODE
+/**
+ * The KEY_VIRTUALIZATION_INFORMATION structure contains information about the virtualization state of a key.
+ *
+ * The flags include:
+ * - VirtualizationCandidate: The key is part of the virtualization namespace scope (only HKLM\Software for now).
+ * - VirtualizationEnabled: Virtualization is enabled on this key. Can be 1 only if VirtualizationCandidate is 1.
+ * - VirtualTarget: The key is a virtual key. Can be 1 only if VirtualizationCandidate and VirtualizationEnabled are 0. Valid only on the virtual store key handles.
+ * - VirtualStore: The key is a part of the virtual store path. Valid only on the virtual store key handles.
+ * - VirtualSource: The key has ever been virtualized, can be 1 only if VirtualizationCandidate is 1.
+ * - Reserved: Reserved bits.
+ */
 typedef struct _KEY_VIRTUALIZATION_INFORMATION
 {
-    ULONG VirtualizationCandidate : 1; // Tells whether the key is part of the virtualization namespace scope (only HKLM\Software for now).
-    ULONG VirtualizationEnabled : 1; // Tells whether virtualization is enabled on this key. Can be 1 only if above flag is 1.
-    ULONG VirtualTarget : 1; // Tells if the key is a virtual key. Can be 1 only if above 2 are 0. Valid only on the virtual store key handles.
-    ULONG VirtualStore : 1; // Tells if the key is a part of the virtual store path. Valid only on the virtual store key handles.
-    ULONG VirtualSource : 1; // Tells if the key has ever been virtualized, can be 1 only if VirtualizationCandidate is 1.
+    ULONG VirtualizationCandidate : 1;
+    ULONG VirtualizationEnabled : 1;
+    ULONG VirtualTarget : 1;
+    ULONG VirtualStore : 1;
+    ULONG VirtualSource : 1;
     ULONG Reserved : 27;
 } KEY_VIRTUALIZATION_INFORMATION, * PKEY_VIRTUALIZATION_INFORMATION;
 
 // private
+/**
+ * The KEY_TRUST_INFORMATION structure contains information about the trust status of a key.
+ *
+ * The flags include:
+ * - TrustedKey: Indicates whether the key is trusted. When set, this flag signifies that the key is considered
+ *   to be secure and reliable.
+ * - Reserved: Reserved bits.
+ */
 typedef struct _KEY_TRUST_INFORMATION
 {
     ULONG TrustedKey : 1;
@@ -143,6 +162,24 @@ typedef struct _KEY_TRUST_INFORMATION
 } KEY_TRUST_INFORMATION, * PKEY_TRUST_INFORMATION;
 
 // private
+/**
+ * The KEY_LAYER_INFORMATION structure contains information about a key layer.
+ *
+ * The flags include:
+ * - IsTombstone: Indicates whether the key layer is a tombstone. A tombstone is a marker that indicates
+ *   that the key has been deleted but not yet purged from the registry. It is used to maintain the
+ *   integrity of the registry and ensure that deleted keys are not immediately reused.
+ * - IsSupersedeLocal: Indicates whether the key layer supersedes the local key. When set, this flag
+ *   indicates that the key layer should replace the local key's information, effectively overriding
+ *   any local changes or settings.
+ * - IsSupersedeTree: Indicates whether the key layer supersedes the entire key tree. When set, this flag
+ *   indicates that the key layer should replace the entire subtree of keys, overriding any changes or
+ *   settings in the subtree.
+ * - ClassIsInherited: Indicates whether the key layer's class is inherited. When set, this flag indicates
+ *   that the class information of the key layer is inherited from its parent key, rather than being
+ *   explicitly defined.
+ * - Reserved: Reserved bits.
+ */
 typedef struct _KEY_LAYER_INFORMATION
 {
     ULONG IsTombstone : 1;
@@ -164,21 +201,59 @@ typedef enum _KEY_SET_INFORMATION_CLASS
     MaxKeySetInfoClass
 } KEY_SET_INFORMATION_CLASS;
 
+/**
+ * Structure representing the last write time of a registry key.
+ * 
+ * The values include:
+ * - LastWriteTime: Contains the timestamp of the last write operation performed on a registry key.
+ */
 typedef struct _KEY_WRITE_TIME_INFORMATION
 {
     LARGE_INTEGER LastWriteTime;
 } KEY_WRITE_TIME_INFORMATION, * PKEY_WRITE_TIME_INFORMATION;
 
+/**
+ * The KEY_WOW64_FLAGS_INFORMATION structure contains information about the WOW64 flags for a key.
+ *
+ * The fields include:
+ * - UserFlags: A set of user-defined flags associated with the key. These flags are used to store
+ *   additional information about the key in the context of WOW64 (Windows 32-bit on Windows 64-bit).
+ */
 typedef struct _KEY_WOW64_FLAGS_INFORMATION
 {
     ULONG UserFlags;
 } KEY_WOW64_FLAGS_INFORMATION, * PKEY_WOW64_FLAGS_INFORMATION;
 
+/**
+ * The KEY_HANDLE_TAGS_INFORMATION structure contains information about the handle tags for a key.
+ *
+ * The fields include:
+ * - HandleTags: A set of tags associated with the key handle. These tags are used to store additional
+ *   metadata or state information about the key handle.
+ */
 typedef struct _KEY_HANDLE_TAGS_INFORMATION
 {
     ULONG HandleTags;
 } KEY_HANDLE_TAGS_INFORMATION, * PKEY_HANDLE_TAGS_INFORMATION;
 
+/**
+ * The KEY_SET_LAYER_INFORMATION structure contains information about a key layer.
+ *
+ * The flags include:
+ * - IsTombstone: Indicates whether the key layer is a tombstone. A tombstone is a marker that indicates
+ *   that the key has been deleted but not yet purged from the registry. It is used to maintain the
+ *   integrity of the registry and ensure that deleted keys are not immediately reused.
+ * - IsSupersedeLocal: Indicates whether the key layer supersedes the local key. When set, this flag
+ *   indicates that the key layer should replace the local key's information, effectively overriding
+ *   any local changes or settings.
+ * - IsSupersedeTree: Indicates whether the key layer supersedes the entire key tree. When set, this flag
+ *   indicates that the key layer should replace the entire subtree of keys, overriding any changes or
+ *   settings in the subtree.
+ * - ClassIsInherited: Indicates whether the key layer's class is inherited. When set, this flag indicates
+ *   that the class information of the key layer is inherited from its parent key, rather than being
+ *   explicitly defined.
+ * - Reserved: Reserved bits.
+ */
 typedef struct _KEY_SET_LAYER_INFORMATION
 {
     ULONG IsTombstone : 1;
@@ -188,6 +263,13 @@ typedef struct _KEY_SET_LAYER_INFORMATION
     ULONG Reserved : 28;
 } KEY_SET_LAYER_INFORMATION, * PKEY_SET_LAYER_INFORMATION;
 
+/**
+ * The KEY_CONTROL_FLAGS_INFORMATION structure contains control flags for a key.
+ *
+ * The fields include:
+ * - ControlFlags: A set of control flags associated with the key. These flags are used to store
+ *   additional control information about the key, which can affect its behavior or state.
+ */
 typedef struct _KEY_CONTROL_FLAGS_INFORMATION
 {
     ULONG ControlFlags;
@@ -324,7 +406,9 @@ typedef struct _KEY_OPEN_SUBKEYS_INFORMATION
     KEY_PID_ARRAY KeyArray[1];
 } KEY_OPEN_SUBKEYS_INFORMATION, * PKEY_OPEN_SUBKEYS_INFORMATION;
 
+//
 // Differencing registry & virtualization // since REDSTONE
+//
 
 // rev
 #define VR_DEVICE_NAME L"\\Device\\VRegDriver"
@@ -358,9 +442,9 @@ typedef struct _VR_LOAD_DIFFERENCING_HIVE
     ULONG NextLayerIsHost;
     ULONG Flags; // VR_FLAG_*
     ULONG LoadFlags; // NtLoadKeyEx flags
-    WORD KeyPathLength;
-    WORD HivePathLength;
-    WORD NextLayerKeyPathLength;
+    USHORT KeyPathLength;
+    USHORT HivePathLength;
+    USHORT NextLayerKeyPathLength;
     HANDLE FileAccessToken; // since 20H1
     WCHAR Strings[ANYSIZE_ARRAY];
     // ...
@@ -373,8 +457,8 @@ typedef struct _VR_LOAD_DIFFERENCING_HIVE
 typedef struct _VR_CREATE_NAMESPACE_NODE
 {
     HANDLE Job;
-    WORD ContainerPathLength;
-    WORD HostPathLength;
+    USHORT ContainerPathLength;
+    USHORT HostPathLength;
     ULONG Flags;
     ACCESS_MASK AccessMask; // since 20H1
     WCHAR Strings[ANYSIZE_ARRAY];
@@ -395,8 +479,8 @@ typedef struct _VR_MODIFY_FLAGS
 typedef struct _NAMESPACE_NODE_DATA
 {
     ACCESS_MASK AccessMask;
-    WORD ContainerPathLength;
-    WORD HostPathLength;
+    USHORT ContainerPathLength;
+    USHORT HostPathLength;
     ULONG Flags;
     WCHAR Strings[ANYSIZE_ARRAY];
     // ...
@@ -441,9 +525,9 @@ typedef struct _VR_LOAD_DIFFERENCING_HIVE_FOR_HOST
 {
     ULONG LoadFlags; // NtLoadKeyEx flags
     ULONG Flags; // VR_FLAG_* // since REDSTONE2
-    WORD KeyPathLength;
-    WORD HivePathLength;
-    WORD NextLayerKeyPathLength;
+    USHORT KeyPathLength;
+    USHORT HivePathLength;
+    USHORT NextLayerKeyPathLength;
     HANDLE FileAccessToken; // since 20H1
     WCHAR Strings[ANYSIZE_ARRAY];
     // ...
@@ -456,12 +540,91 @@ typedef struct _VR_LOAD_DIFFERENCING_HIVE_FOR_HOST
 typedef struct _VR_UNLOAD_DIFFERENCING_HIVE_FOR_HOST
 {
     ULONG Reserved;
-    WORD TargetKeyPathLength;
+    USHORT TargetKeyPathLength;
     WCHAR TargetKeyPath[ANYSIZE_ARRAY];
 } VR_UNLOAD_DIFFERENCING_HIVE_FOR_HOST, * PVR_UNLOAD_DIFFERENCING_HIVE_FOR_HOST;
 
-// System calls
+//
+// Key Open/Create Options
+//
+#define REG_OPTION_RESERVED             (0x00000000L)   // Parameter is reserved.
+#define REG_OPTION_NON_VOLATILE         (0x00000000L)   // Key is preserved when system is rebooted.
+#define REG_OPTION_VOLATILE             (0x00000001L)   // Key is not preserved when system is rebooted
+#define REG_OPTION_CREATE_LINK          (0x00000002L)   // Created key is a symbolic link
+#define REG_OPTION_BACKUP_RESTORE       (0x00000004L)   // open for backup or restore special access rules privilege required
+#define REG_OPTION_OPEN_LINK            (0x00000008L)   // Open symbolic link
+#define REG_OPTION_DONT_VIRTUALIZE      (0x00000010L)   // Disable Open/Read/Write virtualization for this open and the resulting handle.
 
+#ifndef REG_LEGAL_OPTION
+#define REG_LEGAL_OPTION \
+    (REG_OPTION_RESERVED | REG_OPTION_NON_VOLATILE |\
+     REG_OPTION_VOLATILE | REG_OPTION_CREATE_LINK |\
+     REG_OPTION_BACKUP_RESTORE | REG_OPTION_OPEN_LINK |\
+     REG_OPTION_DONT_VIRTUALIZE)
+#endif
+
+#ifndef REG_OPEN_LEGAL_OPTION
+#define REG_OPEN_LEGAL_OPTION \
+    (REG_OPTION_RESERVED | REG_OPTION_BACKUP_RESTORE | \
+     REG_OPTION_OPEN_LINK | REG_OPTION_DONT_VIRTUALIZE)
+#endif
+
+//
+// Key creation/open disposition
+//
+#define REG_CREATED_NEW_KEY         (0x00000001L)   // New Registry Key created
+#define REG_OPENED_EXISTING_KEY     (0x00000002L)   // Existing Key opened
+
+//
+// hive format to be used by Reg(Nt)SaveKeyEx
+//
+#define REG_STANDARD_FORMAT     1
+#define REG_LATEST_FORMAT       2
+#define REG_NO_COMPRESSION      4
+
+//
+// Key restore & hive load flags
+//
+#define REG_WHOLE_HIVE_VOLATILE         (0x00000001L)   // Restore whole hive volatile
+#define REG_REFRESH_HIVE                (0x00000002L)   // Unwind changes to last flush
+#define REG_NO_LAZY_FLUSH               (0x00000004L)   // Never lazy flush this hive
+#define REG_FORCE_RESTORE               (0x00000008L)   // Force the restore process even when we have open handles on subkeys
+#define REG_APP_HIVE                    (0x00000010L)   // Loads the hive visible to the calling process
+#define REG_PROCESS_PRIVATE             (0x00000020L)   // Hive cannot be mounted by any other process while in use
+#define REG_START_JOURNAL               (0x00000040L)   // Starts Hive Journal
+#define REG_HIVE_EXACT_FILE_GROWTH      (0x00000080L)   // Grow hive file in exact 4k increments
+#define REG_HIVE_NO_RM                  (0x00000100L)   // No RM is started for this hive (no transactions)
+#define REG_HIVE_SINGLE_LOG             (0x00000200L)   // Legacy single logging is used for this hive
+#define REG_BOOT_HIVE                   (0x00000400L)   // This hive might be used by the OS loader
+#define REG_LOAD_HIVE_OPEN_HANDLE       (0x00000800L)   // Load the hive and return a handle to its root kcb
+#define REG_FLUSH_HIVE_FILE_GROWTH      (0x00001000L)   // Flush changes to primary hive file size as part of all flushes
+#define REG_OPEN_READ_ONLY              (0x00002000L)   // Open a hive's files in read-only mode
+#define REG_IMMUTABLE                   (0x00004000L)   // Load the hive, but don't allow any modification of it
+#define REG_NO_IMPERSONATION_FALLBACK   (0x00008000L)   // Do not fall back to impersonating the caller if hive file access fails
+#define REG_APP_HIVE_OPEN_READ_ONLY     (REG_OPEN_READ_ONLY)   // Open an app hive's files in read-only mode (if the hive was not previously loaded)
+
+//
+// Unload Flags
+//
+#define REG_FORCE_UNLOAD            1
+#define REG_UNLOAD_LEGAL_FLAGS      (REG_FORCE_UNLOAD)
+
+//
+// System calls
+//
+
+/**
+ * Creates a new registry key routine or opens an existing one.
+ *
+ * @param[out] KeyHandle A pointer to a handle that receives the key handle.
+ * @param[in] DesiredAccess The access mask that specifies the desired access rights.
+ * @param[in] ObjectAttributes A pointer to an OBJECT_ATTRIBUTES structure that specifies the object attributes.
+ * @param[in] TitleIndex Reserved.
+ * @param[in, optional] Class A pointer to a UNICODE_STRING structure that specifies the class of the key.
+ * @param[in] CreateOptions The options to use when creating the key.
+ * @param[out, optional] Disposition A pointer to a variable that receives the disposition value.
+ * @return NTSTATUS The status of the operation.
+ */
 __kernel_entry __kernel_entry NTSYSCALLAPI
 NTSTATUS
 NTAPI
@@ -489,6 +652,19 @@ ZwCreateKey(
     _Out_opt_ PULONG Disposition
 );
 
+/**
+ * Creates a new registry key or opens an existing one, and it associates the key with a transaction.
+ *
+ * @param[out] KeyHandle A pointer to a handle that receives the key handle.
+ * @param[in] DesiredAccess The access mask that specifies the desired access rights.
+ * @param[in] ObjectAttributes A pointer to an OBJECT_ATTRIBUTES structure that specifies the object attributes.
+ * @param[in] TitleIndex Reserved.
+ * @param[in, optional] Class A pointer to a UNICODE_STRING structure that specifies the class of the key.
+ * @param[in] CreateOptions The options to use when creating the key.
+ * @param[in] TransactionHandle A handle to the transaction.
+ * @param[out, optional] Disposition A pointer to a variable that receives the disposition value.
+ * @return NTSTATUS The status of the operation.
+ */
 __kernel_entry NTSYSCALLAPI
 NTSTATUS
 NTAPI
@@ -517,6 +693,15 @@ ZwCreateKeyTransacted(
     _Out_opt_ PULONG Disposition
 );
 
+/**
+ * Opens an existing registry key.
+ *
+ * @param[out] KeyHandle A pointer to a handle that receives the key handle.
+ * @param[in] DesiredAccess The access mask that specifies the desired access rights.
+ * @param[in] ObjectAttributes A pointer to an OBJECT_ATTRIBUTES structure that specifies the object attributes.
+ * @return NTSTATUS The status of the operation.
+ * @remarks NtOpenKey ignores the security information in the ObjectAttributes structure.
+ */
 __kernel_entry NTSYSCALLAPI
 NTSTATUS
 NTAPI
@@ -536,6 +721,15 @@ ZwOpenKey(
     _In_ POBJECT_ATTRIBUTES ObjectAttributes
 );
 
+/**
+ * Opens an existing registry key and associates the key with a transaction.
+ *
+ * @param[out] KeyHandle A pointer to a handle that receives the key handle.
+ * @param[in] DesiredAccess The access mask that specifies the desired access rights.
+ * @param[in] ObjectAttributes A pointer to an OBJECT_ATTRIBUTES structure that specifies the object attributes.
+ * @param[in] TransactionHandle A handle to the transaction.
+ * @return NTSTATUS The status of the operation.
+ */
 __kernel_entry NTSYSCALLAPI
 NTSTATUS
 NTAPI
@@ -557,6 +751,15 @@ ZwOpenKeyTransacted(
     _In_ HANDLE TransactionHandle
 );
 
+/**
+ * Opens an existing registry key with extended options.
+ *
+ * @param[out] KeyHandle A pointer to a handle that receives the key handle.
+ * @param[in] DesiredAccess The access mask that specifies the desired access rights.
+ * @param[in] ObjectAttributes A pointer to an OBJECT_ATTRIBUTES structure that specifies the object attributes.
+ * @param[in] OpenOptions The options to use when opening the key.
+ * @return NTSTATUS The status of the operation.
+ */
 __kernel_entry NTSYSCALLAPI
 NTSTATUS
 NTAPI
@@ -578,6 +781,16 @@ ZwOpenKeyEx(
     _In_ ULONG OpenOptions
 );
 
+/**
+ * Opens an existing registry key in a transaction with extended options.
+ *
+ * @param[out] KeyHandle A pointer to a handle that receives the key handle.
+ * @param[in] DesiredAccess The access mask that specifies the desired access rights.
+ * @param[in] ObjectAttributes A pointer to an OBJECT_ATTRIBUTES structure that specifies the object attributes.
+ * @param[in] OpenOptions The options to use when opening the key.
+ * @param[in] TransactionHandle A handle to the transaction.
+ * @return NTSTATUS The status of the operation.
+ */
 __kernel_entry NTSYSCALLAPI
 NTSTATUS
 NTAPI
@@ -601,6 +814,12 @@ ZwOpenKeyTransactedEx(
     _In_ HANDLE TransactionHandle
 );
 
+/**
+ * Deletes a registry key.
+ *
+ * @param[in] KeyHandle A handle to the key to be deleted.
+ * @return NTSTATUS The status of the operation.
+ */
 __kernel_entry NTSYSCALLAPI
 NTSTATUS
 NTAPI
@@ -616,6 +835,13 @@ ZwDeleteKey(
     _In_ HANDLE KeyHandle
 );
 
+/**
+ * Renames a registry key.
+ *
+ * @param[in] KeyHandle A handle to the key to be renamed.
+ * @param[in] NewName A pointer to a UNICODE_STRING structure that specifies the new name of the key.
+ * @return NTSTATUS The status of the operation.
+ */
 __kernel_entry NTSYSCALLAPI
 NTSTATUS
 NTAPI
@@ -633,6 +859,13 @@ ZwRenameKey(
     _In_ PUNICODE_STRING NewName
 );
 
+/**
+ * Deletes a value from a registry key.
+ *
+ * @param[in] KeyHandle A handle to the key that contains the value to be deleted.
+ * @param[in] ValueName A pointer to a UNICODE_STRING structure that specifies the name of the value to be deleted.
+ * @return NTSTATUS The status of the operation.
+ */
 __kernel_entry NTSYSCALLAPI
 NTSTATUS
 NTAPI
@@ -650,6 +883,16 @@ ZwDeleteValueKey(
     _In_ PUNICODE_STRING ValueName
 );
 
+/**
+ * Queries information about a registry key.
+ *
+ * @param[in] KeyHandle A handle to the key to be queried.
+ * @param[in] KeyInformationClass The type of information to be queried.
+ * @param[out] KeyInformation A pointer to a buffer that receives the key information.
+ * @param[in] Length The size of the buffer.
+ * @param[out] ResultLength A pointer to a variable that receives the size of the data returned.
+ * @return NTSTATUS The status of the operation.
+ */
 __kernel_entry NTSYSCALLAPI
 NTSTATUS
 NTAPI
@@ -677,6 +920,15 @@ ZwQueryKey(
     _Out_ PULONG ResultLength
 );
 
+/**
+ * Sets information for a registry key.
+ *
+ * @param[in] KeyHandle A handle to the key to be modified.
+ * @param[in] KeySetInformationClass The type of information to be set.
+ * @param[in] KeySetInformation A pointer to a buffer that contains the key information.
+ * @param[in] KeySetInformationLength The size of the buffer.
+ * @return NTSTATUS The status of the operation.
+ */
 __kernel_entry NTSYSCALLAPI
 NTSTATUS
 NTAPI
@@ -699,6 +951,17 @@ ZwSetInformationKey(
     _In_ ULONG KeySetInformationLength
 );
 
+/**
+ * Queries the value of a registry key.
+ *
+ * @param[in] KeyHandle A handle to the key to be queried.
+ * @param[in] ValueName A pointer to a UNICODE_STRING structure that specifies the name of the value to be queried.
+ * @param[in] KeyValueInformationClass The type of information to be queried.
+ * @param[out] KeyValueInformation A pointer to a buffer that receives the value information.
+ * @param[in] Length The size of the buffer.
+ * @param[out] ResultLength A pointer to a variable that receives the size of the data returned.
+ * @return NTSTATUS The status of the operation.
+ */
 __kernel_entry NTSYSCALLAPI
 NTSTATUS
 NTAPI
@@ -729,6 +992,17 @@ ZwQueryValueKey(
     _Out_ PULONG ResultLength
 );
 
+/**
+ * Sets the value of a registry key.
+ *
+ * @param[in] KeyHandle A handle to the key to be modified.
+ * @param[in] ValueName A pointer to a UNICODE_STRING structure that specifies the name of the value to be set.
+ * @param[in, optional] TitleIndex Reserved.
+ * @param[in] Type The type of the value.
+ * @param[in] Data A pointer to a buffer that contains the value data.
+ * @param[in] DataSize The size of the buffer.
+ * @return NTSTATUS The status of the operation.
+ */
 __kernel_entry NTSYSCALLAPI
 NTSTATUS
 NTAPI
@@ -754,6 +1028,17 @@ ZwSetValueKey(
     _In_ ULONG DataSize
 );
 
+/**
+ * Queries multiple values of a registry key.
+ *
+ * @param[in] KeyHandle A handle to the key to be queried.
+ * @param[in, out] ValueEntries A pointer to an array of KEY_VALUE_ENTRY structures that specify the values to be queried.
+ * @param[in] EntryCount The number of entries in the array.
+ * @param[out] ValueBuffer A pointer to a buffer that receives the value data.
+ * @param[in, out] BufferLength A pointer to a variable that specifies the size of the buffer and receives the size of the data returned.
+ * @param[out, optional] RequiredBufferLength A pointer to a variable that receives the size of the buffer required to hold the data.
+ * @return NTSTATUS The status of the operation.
+ */
 __kernel_entry NTSYSCALLAPI
 NTSTATUS
 NTAPI
@@ -779,6 +1064,17 @@ ZwQueryMultipleValueKey(
     _Out_opt_ PULONG RequiredBufferLength
 );
 
+/**
+ * Enumerates the subkeys of a registry key.
+ *
+ * @param[in] KeyHandle A handle to the key to be enumerated.
+ * @param[in] Index The index of the subkey to be enumerated.
+ * @param[in] KeyInformationClass The type of information to be queried.
+ * @param[out] KeyInformation A pointer to a buffer that receives the key information.
+ * @param[in] Length The size of the buffer.
+ * @param[out] ResultLength A pointer to a variable that receives the size of the data returned.
+ * @return NTSTATUS The status of the operation.
+ */
 __kernel_entry NTSYSCALLAPI
 NTSTATUS
 NTAPI
@@ -808,6 +1104,17 @@ ZwEnumerateKey(
     _Out_ PULONG ResultLength
 );
 
+/**
+ * Enumerates the values of a registry key.
+ *
+ * @param[in] KeyHandle A handle to the key to be enumerated.
+ * @param[in] Index The index of the value to be enumerated.
+ * @param[in] KeyValueInformationClass The type of information to be queried.
+ * @param[out] KeyValueInformation A pointer to a buffer that receives the value information.
+ * @param[in] Length The size of the buffer.
+ * @param[out] ResultLength A pointer to a variable that receives the size of the data returned.
+ * @return NTSTATUS The status of the operation.
+ */
 __kernel_entry NTSYSCALLAPI
 NTSTATUS
 NTAPI
@@ -837,6 +1144,12 @@ ZwEnumerateValueKey(
     _Out_ PULONG ResultLength
 );
 
+/**
+ * Flushes the changes to a registry key.
+ *
+ * @param[in] KeyHandle A handle to the key to be flushed.
+ * @return NTSTATUS The status of the operation.
+ */
 __kernel_entry NTSYSCALLAPI
 NTSTATUS
 NTAPI
@@ -852,6 +1165,13 @@ ZwFlushKey(
     _In_ HANDLE KeyHandle
 );
 
+/**
+ * Compacts the specified registry keys.
+ *
+ * @param[in] Count The number of keys to be compacted.
+ * @param[in] KeyArray An array of handles to the keys to be compacted.
+ * @return NTSTATUS The status of the operation.
+ */
 __kernel_entry NTSYSCALLAPI
 NTSTATUS
 NTAPI
@@ -869,6 +1189,12 @@ ZwCompactKeys(
     _In_reads_(Count) HANDLE* KeyArray
 );
 
+/**
+ * Compresses a registry key.
+ *
+ * @param[in] KeyHandle A handle to the key to be compressed.
+ * @return NTSTATUS The status of the operation.
+ */
 __kernel_entry NTSYSCALLAPI
 NTSTATUS
 NTAPI
@@ -884,6 +1210,13 @@ ZwCompressKey(
     _In_ HANDLE KeyHandle
 );
 
+/**
+ * Loads a registry key from a file.
+ *
+ * @param[in] TargetKey A pointer to an OBJECT_ATTRIBUTES structure that specifies the target key.
+ * @param[in] SourceFile A pointer to an OBJECT_ATTRIBUTES structure that specifies the source file.
+ * @return NTSTATUS The status of the operation.
+ */
 __kernel_entry NTSYSCALLAPI
 NTSTATUS
 NTAPI
@@ -901,6 +1234,14 @@ ZwLoadKey(
     _In_ POBJECT_ATTRIBUTES SourceFile
 );
 
+/**
+ * Loads a registry key from a file with additional options.
+ *
+ * @param[in] TargetKey A pointer to an OBJECT_ATTRIBUTES structure that specifies the target key.
+ * @param[in] SourceFile A pointer to an OBJECT_ATTRIBUTES structure that specifies the source file.
+ * @param[in] Flags The options to use when loading the key.
+ * @return NTSTATUS The status of the operation.
+ */
 __kernel_entry NTSYSCALLAPI
 NTSTATUS
 NTAPI
@@ -920,6 +1261,19 @@ ZwLoadKey2(
     _In_ ULONG Flags
 );
 
+/**
+ * Loads a registry key from a file with extended options.
+ *
+ * @param[in] TargetKey A pointer to an OBJECT_ATTRIBUTES structure that specifies the target key.
+ * @param[in] SourceFile A pointer to an OBJECT_ATTRIBUTES structure that specifies the source file.
+ * @param[in] Flags The options to use when loading the key.
+ * @param[in, optional] TrustClassKey A handle to the trust class key.
+ * @param[in, optional] Event A handle to an event.
+ * @param[in, optional] DesiredAccess The access mask that specifies the desired access rights.
+ * @param[out, optional] RootHandle A pointer to a handle that receives the root handle.
+ * @param[in, reserved] Reserved Reserved.
+ * @return NTSTATUS The status of the operation.
+ */
 __kernel_entry NTSYSCALLAPI
 NTSTATUS
 NTAPI
@@ -950,6 +1304,19 @@ ZwLoadKeyEx(
 );
 
 // rev by tyranid
+/**
+ * Loads a registry key from a file with extended parameters.
+ *
+ * @param[in] TargetKey A pointer to an OBJECT_ATTRIBUTES structure that specifies the target key.
+ * @param[in] SourceFile A pointer to an OBJECT_ATTRIBUTES structure that specifies the source file.
+ * @param[in] Flags The options to use when loading the key.
+ * @param[in] ExtendedParameters A pointer to an array of extended parameters.
+ * @param[in] ExtendedParameterCount The number of extended parameters.
+ * @param[in, optional] DesiredAccess The access mask that specifies the desired access rights.
+ * @param[out, optional] RootHandle A pointer to a handle that receives the root handle.
+ * @param[in, reserved] Reserved Reserved.
+ * @return NTSTATUS The status of the operation.
+ */
 #if (NTDDI_VERSION >= NTDDI_WIN10_VB)
 __kernel_entry NTSYSCALLAPI
 NTSTATUS
@@ -981,6 +1348,14 @@ ZwLoadKey3(
 );
 #endif // NTDDI_VERSION >= NTDDI_WIN10_VB
 
+/**
+ * Replaces a registry key.
+ *
+ * @param[in] NewFile A pointer to an OBJECT_ATTRIBUTES structure that specifies the new file.
+ * @param[in] TargetHandle A handle to the target key.
+ * @param[in] OldFile A pointer to an OBJECT_ATTRIBUTES structure that specifies the old file.
+ * @return NTSTATUS The status of the operation.
+ */
 __kernel_entry NTSYSCALLAPI
 NTSTATUS
 NTAPI
@@ -1000,6 +1375,13 @@ ZwReplaceKey(
     _In_ POBJECT_ATTRIBUTES OldFile
 );
 
+/**
+ * Saves the specified registry key to a file.
+ *
+ * @param KeyHandle Handle to the registry key.
+ * @param FileHandle Handle to the file where the key will be saved.
+ * @return NTSTATUS Successful or errant status.
+ */
 __kernel_entry NTSYSCALLAPI
 NTSTATUS
 NTAPI
@@ -1017,6 +1399,14 @@ ZwSaveKey(
     _In_ HANDLE FileHandle
 );
 
+/**
+ * Saves the specified registry key to a file with a specified format.
+ *
+ * @param KeyHandle Handle to the registry key.
+ * @param FileHandle Handle to the file where the key will be saved.
+ * @param Format Format in which the key will be saved.
+ * @return NTSTATUS Successful or errant status.
+ */
 __kernel_entry NTSYSCALLAPI
 NTSTATUS
 NTAPI
@@ -1036,6 +1426,14 @@ ZwSaveKeyEx(
     _In_ ULONG Format
 );
 
+/**
+ * Merges two registry keys and saves the result to a file.
+ *
+ * @param HighPrecedenceKeyHandle Handle to the high precedence registry key.
+ * @param LowPrecedenceKeyHandle Handle to the low precedence registry key.
+ * @param FileHandle Handle to the file where the merged key will be saved.
+ * @return NTSTATUS Successful or errant status.
+ */
 __kernel_entry NTSYSCALLAPI
 NTSTATUS
 NTAPI
@@ -1055,6 +1453,14 @@ ZwSaveMergedKeys(
     _In_ HANDLE FileHandle
 );
 
+/**
+ * Restores a registry key from a file.
+ *
+ * @param KeyHandle Handle to the registry key.
+ * @param FileHandle Handle to the file from which the key will be restored.
+ * @param Flags Flags for the restore operation.
+ * @return NTSTATUS Successful or errant status.
+ */
 __kernel_entry NTSYSCALLAPI
 NTSTATUS
 NTAPI
@@ -1074,6 +1480,12 @@ ZwRestoreKey(
     _In_ ULONG Flags
 );
 
+/**
+ * Unloads a registry key.
+ *
+ * @param TargetKey Pointer to the object attributes of the target key.
+ * @return NTSTATUS Successful or errant status.
+ */
 __kernel_entry NTSYSCALLAPI
 NTSTATUS
 NTAPI
@@ -1089,12 +1501,14 @@ ZwUnloadKey(
     _In_ POBJECT_ATTRIBUTES TargetKey
 );
 
-//
-// NtUnloadKey2 Flags (from winnt.h)
-//
-//#define REG_FORCE_UNLOAD            1
-//#define REG_UNLOAD_LEGAL_FLAGS      (REG_FORCE_UNLOAD)
-
+/**
+ * Unloads a registry key with additional flags.
+ *
+ * @param TargetKey Pointer to the object attributes of the target key.
+ * @param Flags Flags for the unload operation.
+ * @return NTSTATUS Successful or errant status.
+ * @remarks Valid flags are REG_FORCE_UNLOAD and REG_UNLOAD_LEGAL_FLAGS. (from winnt.h)
+ */
 __kernel_entry NTSYSCALLAPI
 NTSTATUS
 NTAPI
@@ -1112,6 +1526,13 @@ ZwUnloadKey2(
     _In_ ULONG Flags
 );
 
+/**
+ * Unloads a registry key and optionally signals an event.
+ *
+ * @param TargetKey Pointer to the object attributes of the target key.
+ * @param Event Optional handle to an event to be signaled.
+ * @return NTSTATUS Successful or errant status.
+ */
 __kernel_entry NTSYSCALLAPI
 NTSTATUS
 NTAPI
@@ -1129,6 +1550,21 @@ ZwUnloadKeyEx(
     _In_opt_ HANDLE Event
 );
 
+/**
+ * Notifies of changes to a registry key.
+ *
+ * @param KeyHandle Handle to the registry key.
+ * @param Event Optional handle to an event to be signaled.
+ * @param ApcRoutine Optional APC routine to be called.
+ * @param ApcContext Optional context for the APC routine.
+ * @param IoStatusBlock Pointer to an IO status block.
+ * @param CompletionFilter Filter for the types of changes to notify.
+ * @param WatchTree Whether to watch the entire tree.
+ * @param Buffer Optional buffer for change data.
+ * @param BufferSize Size of the buffer.
+ * @param Asynchronous Whether the operation is asynchronous.
+ * @return NTSTATUS Successful or errant status.
+ */
 __kernel_entry NTSYSCALLAPI
 NTSTATUS
 NTAPI
@@ -1162,6 +1598,23 @@ ZwNotifyChangeKey(
     _In_ BOOLEAN Asynchronous
 );
 
+/**
+ * Requests notification when a registry key or any of its subkeys changes.
+ *
+ * @param MasterKeyHandle A handle to an open key. The handle must be opened with the KEY_NOTIFY access right.
+ * @param Count The number of subkeys under the key specified by the MasterKeyHandle parameter.
+ * @param SubordinateObjects Pointer to an array of OBJECT_ATTRIBUTES structures, one for each subkey. This array can contain one OBJECT_ATTRIBUTES structure.
+ * @param Event A handle to an event created by the caller. If Event is not NULL, the caller waits until the operation succeeds, at which time the event is signaled.
+ * @param ApcRoutine A pointer to an asynchronous procedure call (APC) function supplied by the caller. If ApcRoutine is not NULL, the specified APC function executes after the operation completes.
+ * @param ApcContext A pointer to a context supplied by the caller for its APC function. This value is passed to the APC function when it is executed. The Asynchronous parameter must be TRUE. If ApcContext is specified, the Event parameter must be NULL.
+ * @param IoStatusBlock A pointer to an IO_STATUS_BLOCK structure that contains the final status and information about the operation. For successful calls that return data, the number of bytes written to the Buffer parameter is supplied in the Information member of the IO_STATUS_BLOCK structure.
+ * @param CompletionFilter A bitmap of operations that trigger notification. This parameter can be one or more of the following flags. REG_NOTIFY_CHANGE_NAME, REG_NOTIFY_CHANGE_ATTRIBUTES, REG_NOTIFY_CHANGE_LAST_SET, REG_NOTIFY_CHANGE_SECURITY.
+ * @param WatchTree If this parameter is TRUE, the caller is notified about changes to all subkeys of the specified key. If this parameter is FALSE, the caller is notified only about changes to the specified key.
+ * @param Buffer Reserved for system use. This parameter must be NULL.
+ * @param BufferSize Reserved for system use. This parameter must be zero.
+ * @param Asynchronous Whether the operation is asynchronous.
+ * @return NTSTATUS Successful or errant status.
+ */
 __kernel_entry NTSYSCALLAPI
 NTSTATUS
 NTAPI
@@ -1199,6 +1652,13 @@ ZwNotifyChangeMultipleKeys(
     _In_ BOOLEAN Asynchronous
 );
 
+/**
+ * Queries the number of open subkeys of a registry key.
+ *
+ * @param TargetKey Pointer to the object attributes of the target key.
+ * @param HandleCount Pointer to a variable to receive the handle count.
+ * @return NTSTATUS Successful or errant status.
+ */
 __kernel_entry NTSYSCALLAPI
 NTSTATUS
 NTAPI
@@ -1216,6 +1676,16 @@ ZwQueryOpenSubKeys(
     _Out_ PULONG HandleCount
 );
 
+/**
+ * Queries the open subkeys of a registry key with additional information.
+ *
+ * @param TargetKey Pointer to the object attributes of the target key.
+ * @param BufferLength Length of the buffer.
+ * @param Buffer Optional buffer to receive the subkey information.
+ * @param RequiredSize Pointer to a variable to receive the required size.
+ * @return NTSTATUS Successful or errant status.
+ * @remarks Returns an array of KEY_OPEN_SUBKEYS_INFORMATION structures.
+ */
 __kernel_entry NTSYSCALLAPI
 NTSTATUS
 NTAPI
@@ -1237,6 +1707,12 @@ ZwQueryOpenSubKeysEx(
     _Out_ PULONG RequiredSize
 );
 
+/**
+ * Initializes the registry.
+ *
+ * @param BootCondition Condition for the boot.
+ * @return NTSTATUS Successful or errant status.
+ */
 __kernel_entry NTSYSCALLAPI
 NTSTATUS
 NTAPI
@@ -1252,6 +1728,12 @@ ZwInitializeRegistry(
     _In_ USHORT BootCondition
 );
 
+/**
+ * Locks the registry key and prevents changes from being written to disk.
+ *
+ * @param KeyHandle Handle to the registry key.
+ * @return NTSTATUS Successful or errant status.
+ */
 __kernel_entry NTSYSCALLAPI
 NTSTATUS
 NTAPI
@@ -1267,6 +1749,13 @@ ZwLockRegistryKey(
     _In_ HANDLE KeyHandle
 );
 
+/**
+ * Locks the product activation keys.
+ *
+ * @param pPrivateVer Optional pointer to a private version variable.
+ * @param pSafeMode Optional pointer to a safe mode variable.
+ * @return NTSTATUS Successful or errant status.
+ */
 __kernel_entry NTSYSCALLAPI
 NTSTATUS
 NTAPI
@@ -1284,7 +1773,12 @@ ZwLockProductActivationKeys(
     _Out_opt_ ULONG* pSafeMode
 );
 
-// private
+/**
+ * Freezes the registry and prevents changes from being flushed to disk.
+ *
+ * @param TimeOutInSeconds Timeout in seconds.
+ * @return NTSTATUS Successful or errant status.
+ */
 __kernel_entry NTSYSCALLAPI
 NTSTATUS
 NTAPI
@@ -1301,7 +1795,11 @@ ZwFreezeRegistry(
     _In_ ULONG TimeOutInSeconds
 );
 
-// private
+/**
+ * Thaws the registry and enables flushing changes to disk.
+ *
+ * @return NTSTATUS Successful or errant status.
+ */
 __kernel_entry NTSYSCALLAPI
 NTSTATUS
 NTAPI
@@ -1319,6 +1817,15 @@ ZwThawRegistry(
 );
 
 #if (NTDDI_VERSION >= NTDDI_WIN10_TH2)
+/**
+ * Creates a registry transaction.
+ *
+ * @param RegistryTransactionHandle Pointer to a variable to receive the handle.
+ * @param DesiredAccess Desired access mask.
+ * @param ObjAttributes Optional pointer to object attributes.
+ * @param CreateOptions Reserved for future use.
+ * @return NTSTATUS Successful or errant status.
+ */
 __kernel_entry NTSYSCALLAPI
 NTSTATUS
 NTAPI
@@ -1341,6 +1848,14 @@ ZwCreateRegistryTransaction(
     _In_opt_ ULONG CreateOptions
 );
 
+/**
+ * Opens a registry transaction.
+ *
+ * @param RegistryTransactionHandle Pointer to a variable to receive the handle.
+ * @param DesiredAccess Desired access mask.
+ * @param ObjAttributes Pointer to object attributes.
+ * @return NTSTATUS Successful or errant status.
+ */
 _Must_inspect_result_
 _IRQL_requires_max_(PASSIVE_LEVEL)
 __kernel_entry NTSYSCALLAPI
@@ -1362,6 +1877,13 @@ ZwOpenRegistryTransaction(
     _In_ POBJECT_ATTRIBUTES ObjAttributes
 );
 
+/**
+ * Commits a registry transaction.
+ *
+ * @param RegistryTransactionHandle Handle to the registry transaction.
+ * @param Flags Reserved for future use.
+ * @return NTSTATUS Successful or errant status.
+ */
 __kernel_entry NTSYSCALLAPI
 NTSTATUS
 NTAPI
@@ -1379,6 +1901,13 @@ ZwCommitRegistryTransaction(
     _In_ ULONG Flags
 );
 
+/**
+ * Rolls back a registry transaction.
+ *
+ * @param RegistryTransactionHandle Handle to the registry transaction.
+ * @param Flags Reserved for future use.
+ * @return NTSTATUS Successful or errant status.
+ */
 _IRQL_requires_max_(PASSIVE_LEVEL)
 __kernel_entry NTSYSCALLAPI
 NTSTATUS

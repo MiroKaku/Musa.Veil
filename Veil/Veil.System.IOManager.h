@@ -298,6 +298,14 @@ typedef struct _EXTENDED_CREATE_INFORMATION_32
 
 #endif // !_KERNEL_MODE
 
+// Sharing mode
+
+#define FILE_SHARE_NONE                 0x00000000
+#define FILE_SHARE_READ                 0x00000001
+#define FILE_SHARE_WRITE                0x00000002
+#define FILE_SHARE_DELETE               0x00000004
+#define FILE_SHARE_VALID_FLAGS          0x00000007
+
 // Win32 pipe instance limit (0xff)
 #define FILE_PIPE_UNLIMITED_INSTANCES   0xffffffff 
 
@@ -848,14 +856,6 @@ typedef struct _FILE_REMOTE_PROTOCOL_INFORMATION
 
     // Protocol specific information
 
-#if (NTDDI_VERSION < NTDDI_WIN8)
-    struct
-    {
-        ULONG Reserved[16];
-    } ProtocolSpecificReserved;
-#endif
-
-#if (NTDDI_VERSION >= NTDDI_WIN8)
     union
     {
         struct
@@ -867,21 +867,15 @@ typedef struct _FILE_REMOTE_PROTOCOL_INFORMATION
             struct
             {
                 ULONG Capabilities;
-#if (NTDDI_VERSION >= NTDDI_WIN10_FE)
-                ULONG ShareFlags;
-#else
-                ULONG CachingFlags;
-#endif
-#if (NTDDI_VERSION >= NTDDI_WIN10_RS5)
-                UCHAR ShareType;
+                ULONG ShareFlags;   // previoulsly CachingFlags before 21H1
+                UCHAR ShareType;    // RS5
                 UCHAR Reserved0[3];
                 ULONG Reserved1;
-#endif
             } Share;
         } Smb2;
         ULONG Reserved[16];
     } ProtocolSpecific;
-#endif
+
 } FILE_REMOTE_PROTOCOL_INFORMATION, * PFILE_REMOTE_PROTOCOL_INFORMATION;
 
 #define CHECKSUM_ENFORCEMENT_OFF 0x00000001
@@ -3828,6 +3822,381 @@ typedef struct _MOUNTMGR_VOLUME_PATHS
      (s)->Length == 98 && \
      (s)->Buffer[1] == '?')
 
+
+// Filter manager
+
+// rev
+#define FLT_SYMLINK_NAME     L"\\Global??\\FltMgr"
+#define FLT_MSG_SYMLINK_NAME L"\\Global??\\FltMgrMsg"
+#define FLT_DEVICE_NAME      L"\\FileSystem\\Filters\\FltMgr"
+#define FLT_MSG_DEVICE_NAME  L"\\FileSystem\\Filters\\FltMgrMsg"
+
+// private
+typedef struct _FLT_CONNECT_CONTEXT
+{
+    PUNICODE_STRING PortName;
+    PUNICODE_STRING64 PortName64;
+    USHORT SizeOfContext;
+    UCHAR Padding[6]; // unused
+    _Field_size_bytes_(SizeOfContext) UCHAR Context[ANYSIZE_ARRAY];
+} FLT_CONNECT_CONTEXT, * PFLT_CONNECT_CONTEXT;
+
+// rev
+#define FLT_PORT_EA_NAME "FLTPORT"
+#define FLT_PORT_CONTEXT_MAX 0xFFE8
+
+// combined FILE_FULL_EA_INFORMATION and FLT_CONNECT_CONTEXT
+typedef struct _FLT_PORT_FULL_EA
+{
+    ULONG NextEntryOffset; // 0
+    UCHAR Flags;           // 0
+    UCHAR EaNameLength;    // sizeof(FLT_PORT_EA_NAME) - sizeof(ANSI_NULL)
+    USHORT EaValueLength;  // RTL_SIZEOF_THROUGH_FIELD(FLT_CONNECT_CONTEXT, Padding) + SizeOfContext
+    CHAR EaName[8];        // FLTPORT\0  
+    FLT_CONNECT_CONTEXT EaValue;
+} FLT_PORT_FULL_EA, * PFLT_PORT_FULL_EA;
+
+#define FLT_PORT_FULL_EA_SIZE \
+    (sizeof(FILE_FULL_EA_INFORMATION) + (sizeof(FLT_PORT_EA_NAME) - sizeof(ANSI_NULL)))
+#define FLT_PORT_FULL_EA_VALUE_SIZE \
+    RTL_SIZEOF_THROUGH_FIELD(FLT_CONNECT_CONTEXT, Padding)
+
+// begin_rev
+
+// IOCTLs for unlinked FltMgr handles
+#define FLT_CTL_LOAD                CTL_CODE(FILE_DEVICE_DISK_FILE_SYSTEM, 1, METHOD_BUFFERED, FILE_WRITE_ACCESS) // in: FLT_LOAD_PARAMETERS // requires SeLoadDriverPrivilege
+#define FLT_CTL_UNLOAD              CTL_CODE(FILE_DEVICE_DISK_FILE_SYSTEM, 2, METHOD_BUFFERED, FILE_WRITE_ACCESS) // in: FLT_LOAD_PARAMETERS // requires SeLoadDriverPrivilege
+#define FLT_CTL_LINK_HANDLE         CTL_CODE(FILE_DEVICE_DISK_FILE_SYSTEM, 3, METHOD_BUFFERED, FILE_READ_ACCESS)  // in: FLT_LINK // specializes the handle
+#define FLT_CTL_ATTACH              CTL_CODE(FILE_DEVICE_DISK_FILE_SYSTEM, 4, METHOD_BUFFERED, FILE_WRITE_ACCESS) // in: FLT_ATTACH
+#define FLT_CTL_DETATCH             CTL_CODE(FILE_DEVICE_DISK_FILE_SYSTEM, 5, METHOD_BUFFERED, FILE_WRITE_ACCESS) // in: FLT_INSTANCE_PARAMETERS
+
+// IOCTLs for port-specific FltMgrMsg handles (opened using the extended attribute)
+#define FLT_CTL_SEND_MESSAGE        CTL_CODE(FILE_DEVICE_DISK_FILE_SYSTEM, 6, METHOD_NEITHER, FILE_WRITE_ACCESS)  // in, out: filter-specific
+#define FLT_CTL_GET_MESSAGE         CTL_CODE(FILE_DEVICE_DISK_FILE_SYSTEM, 7, METHOD_NEITHER, FILE_READ_ACCESS)   // out: filter-specific
+#define FLT_CTL_REPLY_MESSAGE       CTL_CODE(FILE_DEVICE_DISK_FILE_SYSTEM, 8, METHOD_NEITHER, FILE_WRITE_ACCESS)  // in: filter-specific
+
+// IOCTLs for linked FltMgr handles; depend on previously used FLT_LINK_TYPE
+//
+// Find first/next:
+//   FILTER                - enumerates nested instances; in: INSTANCE_INFORMATION_CLASS
+//   FILTER_VOLUME         - enumerates nested instances; in: INSTANCE_INFORMATION_CLASS
+//   FILTER_MANAGER        - enumerates all filters;      in: FILTER_INFORMATION_CLASS
+//   FILTER_MANAGER_VOLUME - enumerates all volumes;      in: FILTER_VOLUME_INFORMATION_CLASS
+//
+// Get information:
+//   FILTER                - queries filter;              in: FILTER_INFORMATION_CLASS
+//   FILTER_INSTANCE       - queries instance;            in: INSTANCE_INFORMATION_CLASS
+//
+#define FLT_CTL_FIND_FIRST          CTL_CODE(FILE_DEVICE_DISK_FILE_SYSTEM, 9, METHOD_BUFFERED, FILE_READ_ACCESS)  // in: *_INFORMATION_CLASS, out: *_INFORMATION (from fltUserStructures.h)
+#define FLT_CTL_FIND_NEXT           CTL_CODE(FILE_DEVICE_DISK_FILE_SYSTEM, 10, METHOD_BUFFERED, FILE_READ_ACCESS) // in: *_INFORMATION_CLASS, out: *_INFORMATION (from fltUserStructures.h)
+#define FLT_CTL_GET_INFORMATION     CTL_CODE(FILE_DEVICE_DISK_FILE_SYSTEM, 11, METHOD_BUFFERED, FILE_READ_ACCESS) // in: *_INFORMATION_CLASS, out: *_INFORMATION (from fltUserStructures.h)
+
+// end_rev
+
+// private
+typedef struct _FLT_LOAD_PARAMETERS
+{
+    USHORT FilterNameSize;
+    _Field_size_bytes_(FilterNameSize) WCHAR FilterName[ANYSIZE_ARRAY];
+} FLT_LOAD_PARAMETERS, * PFLT_LOAD_PARAMETERS;
+
+// private
+typedef enum _FLT_LINK_TYPE
+{
+    FILTER = 0,                // FLT_FILTER_PARAMETERS
+    FILTER_INSTANCE = 1,       // FLT_INSTANCE_PARAMETERS
+    FILTER_VOLUME = 2,         // FLT_VOLUME_PARAMETERS
+    FILTER_MANAGER = 3,        // nothing
+    FILTER_MANAGER_VOLUME = 4, // nothing
+} FLT_LINK_TYPE, * PFLT_LINK_TYPE;
+
+// private
+typedef struct _FLT_LINK
+{
+    FLT_LINK_TYPE Type;
+    ULONG ParametersOffset; // from this struct
+} FLT_LINK, * PFLT_LINK;
+
+// rev
+typedef struct _FLT_FILTER_PARAMETERS
+{
+    USHORT FilterNameSize;
+    USHORT FilterNameOffset; // to WCHAR[] from this struct
+} FLT_FILTER_PARAMETERS, * PFLT_FILTER_PARAMETERS;
+
+// private
+typedef struct _FLT_INSTANCE_PARAMETERS
+{
+    USHORT FilterNameSize;
+    USHORT FilterNameOffset; // to WCHAR[] from this struct
+    USHORT VolumeNameSize;
+    USHORT VolumeNameOffset; // to WCHAR[] from this struct
+    USHORT InstanceNameSize;
+    USHORT InstanceNameOffset; // to WCHAR[] from this struct
+} FLT_INSTANCE_PARAMETERS, * PFLT_INSTANCE_PARAMETERS;
+
+// rev
+typedef struct _FLT_VOLUME_PARAMETERS
+{
+    USHORT VolumeNameSize;
+    USHORT VolumeNameOffset; // to WCHAR[] from this struct
+} FLT_VOLUME_PARAMETERS, * PFLT_VOLUME_PARAMETERS;
+
+// private
+typedef enum _ATTACH_TYPE
+{
+    AltitudeBased = 0,
+    InstanceNameBased = 1,
+} ATTACH_TYPE, * PATTACH_TYPE;
+
+// private
+typedef struct _FLT_ATTACH
+{
+    USHORT FilterNameSize;
+    USHORT FilterNameOffset; // to WCHAR[] from this struct
+    USHORT VolumeNameSize;
+    USHORT VolumeNameOffset; // to WCHAR[] from this struct
+    ATTACH_TYPE Type;
+    USHORT InstanceNameSize;
+    USHORT InstanceNameOffset; // to WCHAR[] from this struct
+    USHORT AltitudeSize;
+    USHORT AltitudeOffset; // to WCHAR[] from this struct
+} FLT_ATTACH, * PFLT_ATTACH;
+
+#ifndef _KERNEL_MODE
+//
+// Major Function Codes
+//
+#define IRP_MJ_CREATE                                0x00
+#define IRP_MJ_CREATE_NAMED_PIPE                     0x01
+#define IRP_MJ_CLOSE                                 0x02
+#define IRP_MJ_READ                                  0x03
+#define IRP_MJ_WRITE                                 0x04
+#define IRP_MJ_QUERY_INFORMATION                     0x05
+#define IRP_MJ_SET_INFORMATION                       0x06
+#define IRP_MJ_QUERY_EA                              0x07
+#define IRP_MJ_SET_EA                                0x08
+#define IRP_MJ_FLUSH_BUFFERS                         0x09
+#define IRP_MJ_QUERY_VOLUME_INFORMATION              0x0a
+#define IRP_MJ_SET_VOLUME_INFORMATION                0x0b
+#define IRP_MJ_DIRECTORY_CONTROL                     0x0c
+#define IRP_MJ_FILE_SYSTEM_CONTROL                   0x0d
+#define IRP_MJ_DEVICE_CONTROL                        0x0e
+#define IRP_MJ_INTERNAL_DEVICE_CONTROL               0x0f
+#define IRP_MJ_SHUTDOWN                              0x10
+#define IRP_MJ_LOCK_CONTROL                          0x11
+#define IRP_MJ_CLEANUP                               0x12
+#define IRP_MJ_CREATE_MAILSLOT                       0x13
+#define IRP_MJ_QUERY_SECURITY                        0x14
+#define IRP_MJ_SET_SECURITY                          0x15
+#define IRP_MJ_POWER                                 0x16
+#define IRP_MJ_SYSTEM_CONTROL                        0x17
+#define IRP_MJ_DEVICE_CHANGE                         0x18
+#define IRP_MJ_QUERY_QUOTA                           0x19
+#define IRP_MJ_SET_QUOTA                             0x1a
+#define IRP_MJ_PNP                                   0x1b
+#define IRP_MJ_PNP_POWER                             IRP_MJ_PNP      // Obsolete....
+#define IRP_MJ_MAXIMUM_FUNCTION                      0x1b
+#define IRP_MJ_ACQUIRE_FOR_SECTION_SYNCHRONIZATION   ((UCHAR)-1)
+#define IRP_MJ_RELEASE_FOR_SECTION_SYNCHRONIZATION   ((UCHAR)-2)
+#define IRP_MJ_ACQUIRE_FOR_MOD_WRITE                 ((UCHAR)-3)
+#define IRP_MJ_RELEASE_FOR_MOD_WRITE                 ((UCHAR)-4)
+#define IRP_MJ_ACQUIRE_FOR_CC_FLUSH                  ((UCHAR)-5)
+#define IRP_MJ_RELEASE_FOR_CC_FLUSH                  ((UCHAR)-6)
+#define IRP_MJ_QUERY_OPEN                            ((UCHAR)-7)
+#define IRP_MJ_FAST_IO_CHECK_IF_POSSIBLE             ((UCHAR)-13)
+#define IRP_MJ_NETWORK_QUERY_OPEN                    ((UCHAR)-14)
+#define IRP_MJ_MDL_READ                              ((UCHAR)-15)
+#define IRP_MJ_MDL_READ_COMPLETE                     ((UCHAR)-16)
+#define IRP_MJ_PREPARE_MDL_WRITE                     ((UCHAR)-17)
+#define IRP_MJ_MDL_WRITE_COMPLETE                    ((UCHAR)-18)
+#define IRP_MJ_VOLUME_MOUNT                          ((UCHAR)-19)
+#define IRP_MJ_VOLUME_DISMOUNT                       ((UCHAR)-20)
+#define FLT_INTERNAL_OPERATION_COUNT                 22
+//
+// Minor Function Codes
+//
+#define IRP_MN_SCSI_CLASS                   0x01
+// PNP minor function codes
+#define IRP_MN_START_DEVICE                 0x00
+#define IRP_MN_QUERY_REMOVE_DEVICE          0x01
+#define IRP_MN_REMOVE_DEVICE                0x02
+#define IRP_MN_CANCEL_REMOVE_DEVICE         0x03
+#define IRP_MN_STOP_DEVICE                  0x04
+#define IRP_MN_QUERY_STOP_DEVICE            0x05
+#define IRP_MN_CANCEL_STOP_DEVICE           0x06
+#define IRP_MN_QUERY_DEVICE_RELATIONS       0x07
+#define IRP_MN_QUERY_INTERFACE              0x08
+#define IRP_MN_QUERY_CAPABILITIES           0x09
+#define IRP_MN_QUERY_RESOURCES              0x0A
+#define IRP_MN_QUERY_RESOURCE_REQUIREMENTS  0x0B
+#define IRP_MN_QUERY_DEVICE_TEXT            0x0C
+#define IRP_MN_FILTER_RESOURCE_REQUIREMENTS 0x0D
+#define IRP_MN_READ_CONFIG                  0x0F
+#define IRP_MN_WRITE_CONFIG                 0x10
+#define IRP_MN_EJECT                        0x11
+#define IRP_MN_SET_LOCK                     0x12
+#define IRP_MN_QUERY_ID                     0x13
+#define IRP_MN_QUERY_PNP_DEVICE_STATE       0x14
+#define IRP_MN_QUERY_BUS_INFORMATION        0x15
+#define IRP_MN_DEVICE_USAGE_NOTIFICATION    0x16
+#define IRP_MN_SURPRISE_REMOVAL             0x17
+#define IRP_MN_DEVICE_ENUMERATED            0x19
+
+// POWER minor function codes
+#define IRP_MN_WAIT_WAKE                    0x00
+#define IRP_MN_POWER_SEQUENCE               0x01
+#define IRP_MN_SET_POWER                    0x02
+#define IRP_MN_QUERY_POWER                  0x03
+// WMI minor function codes under IRP_MJ_SYSTEM_CONTROL
+#define IRP_MN_QUERY_ALL_DATA               0x00
+#define IRP_MN_QUERY_SINGLE_INSTANCE        0x01
+#define IRP_MN_CHANGE_SINGLE_INSTANCE       0x02
+#define IRP_MN_CHANGE_SINGLE_ITEM           0x03
+#define IRP_MN_ENABLE_EVENTS                0x04
+#define IRP_MN_DISABLE_EVENTS               0x05
+#define IRP_MN_ENABLE_COLLECTION            0x06
+#define IRP_MN_DISABLE_COLLECTION           0x07
+#define IRP_MN_REGINFO                      0x08
+#define IRP_MN_EXECUTE_METHOD               0x09
+// Minor code 0x0a is reserved
+#define IRP_MN_REGINFO_EX                   0x0b
+// Minor code 0x0c is reserved
+// Minor code 0x0d is reserved
+//
+// Filter Manager Callback Data Flags
+//
+#define FLTFL_CALLBACK_DATA_REISSUE_MASK        0x0000FFFF
+#define FLTFL_CALLBACK_DATA_IRP_OPERATION       0x00000001 // Set for Irp operations
+#define FLTFL_CALLBACK_DATA_FAST_IO_OPERATION   0x00000002 // Set for Fast Io operations
+#define FLTFL_CALLBACK_DATA_FS_FILTER_OPERATION 0x00000004 // Set for Fs Filter operations
+#define FLTFL_CALLBACK_DATA_SYSTEM_BUFFER       0x00000008 // Set if the buffer passed in for the i/o was a system buffer
+#define FLTFL_CALLBACK_DATA_GENERATED_IO        0x00010000 // Set if this is I/O generated by a mini-filter
+#define FLTFL_CALLBACK_DATA_REISSUED_IO         0x00020000 // Set if this I/O was reissued
+#define FLTFL_CALLBACK_DATA_DRAINING_IO         0x00040000 // set if this operation is being drained. If set,
+#define FLTFL_CALLBACK_DATA_POST_OPERATION      0x00080000 // Set if this is a POST operation
+#define FLTFL_CALLBACK_DATA_NEW_SYSTEM_BUFFER   0x00100000
+#define FLTFL_CALLBACK_DATA_DIRTY               0x80000000 // Set by caller if parameters were changed
+//
+// IRP Flags
+//
+#define IRP_NOCACHE                     0x00000001
+#define IRP_PAGING_IO                   0x00000002
+#define IRP_MOUNT_COMPLETION            0x00000002
+#define IRP_SYNCHRONOUS_API             0x00000004
+#define IRP_ASSOCIATED_IRP              0x00000008
+#define IRP_BUFFERED_IO                 0x00000010
+#define IRP_DEALLOCATE_BUFFER           0x00000020
+#define IRP_INPUT_OPERATION             0x00000040
+#define IRP_SYNCHRONOUS_PAGING_IO       0x00000040
+#define IRP_CREATE_OPERATION            0x00000080
+#define IRP_READ_OPERATION              0x00000100
+#define IRP_WRITE_OPERATION             0x00000200
+#define IRP_CLOSE_OPERATION             0x00000400
+#define IRP_DEFER_IO_COMPLETION         0x00000800
+#define IRP_OB_QUERY_NAME               0x00001000
+#define IRP_HOLD_DEVICE_QUEUE           0x00002000
+#define IRP_UM_DRIVER_INITIATED_IO      0x00400000
+//
+// File Object Flags
+//
+#define FO_FILE_OPEN                    0x00000001
+#define FO_SYNCHRONOUS_IO               0x00000002
+#define FO_ALERTABLE_IO                 0x00000004
+#define FO_NO_INTERMEDIATE_BUFFERING    0x00000008
+#define FO_WRITE_THROUGH                0x00000010
+#define FO_SEQUENTIAL_ONLY              0x00000020
+#define FO_CACHE_SUPPORTED              0x00000040
+#define FO_NAMED_PIPE                   0x00000080
+#define FO_STREAM_FILE                  0x00000100
+#define FO_MAILSLOT                     0x00000200
+#define FO_GENERATE_AUDIT_ON_CLOSE      0x00000400
+#define FO_QUEUE_IRP_TO_THREAD          FO_GENERATE_AUDIT_ON_CLOSE
+#define FO_DIRECT_DEVICE_OPEN           0x00000800
+#define FO_FILE_MODIFIED                0x00001000
+#define FO_FILE_SIZE_CHANGED            0x00002000
+#define FO_CLEANUP_COMPLETE             0x00004000
+#define FO_TEMPORARY_FILE               0x00008000
+#define FO_DELETE_ON_CLOSE              0x00010000
+#define FO_OPENED_CASE_SENSITIVE        0x00020000
+#define FO_HANDLE_CREATED               0x00040000
+#define FO_FILE_FAST_IO_READ            0x00080000
+#define FO_RANDOM_ACCESS                0x00100000
+#define FO_FILE_OPEN_CANCELLED          0x00200000
+#define FO_VOLUME_OPEN                  0x00400000
+#define FO_BYPASS_IO_ENABLED            0x00800000  //when set BYPASS IO is enabled on this handle
+#define FO_REMOTE_ORIGIN                0x01000000
+#define FO_DISALLOW_EXCLUSIVE           0x02000000
+#define FO_SKIP_COMPLETION_PORT         FO_DISALLOW_EXCLUSIVE
+#define FO_SKIP_SET_EVENT               0x04000000
+#define FO_SKIP_SET_FAST_IO             0x08000000
+#define FO_INDIRECT_WAIT_OBJECT         0x10000000
+#define FO_SECTION_MINSTORE_TREATMENT   0x20000000
+//
+// Define stack location (IO_STACK_LOCATION) flags
+//
+#define SL_PENDING_RETURNED                0x01
+#define SL_ERROR_RETURNED                  0x02
+#define SL_INVOKE_ON_CANCEL                0x20
+#define SL_INVOKE_ON_SUCCESS               0x40
+#define SL_INVOKE_ON_ERROR                 0x80
+// Create / Create Named Pipe (IRP_MJ_CREATE/IRP_MJ_CREATE_NAMED_PIPE)
+#define SL_FORCE_ACCESS_CHECK              0x01
+#define SL_OPEN_PAGING_FILE                0x02
+#define SL_OPEN_TARGET_DIRECTORY           0x04
+#define SL_STOP_ON_SYMLINK                 0x08
+#define SL_IGNORE_READONLY_ATTRIBUTE       0x40
+#define SL_CASE_SENSITIVE                  0x80
+// Read / Write (IRP_MJ_READ/IRP_MJ_WRITE)
+#define SL_KEY_SPECIFIED                   0x01
+#define SL_OVERRIDE_VERIFY_VOLUME          0x02
+#define SL_WRITE_THROUGH                   0x04
+#define SL_FT_SEQUENTIAL_WRITE             0x08
+#define SL_FORCE_DIRECT_WRITE              0x10
+#define SL_REALTIME_STREAM                 0x20    // valid only with optical media
+#define SL_PERSISTENT_MEMORY_FIXED_MAPPING 0x20    // valid only with persistent memory device and IRP_MJ_WRITE
+#define SL_BYPASS_IO                       0x40
+//  IRP_MJ_FLUSH_BUFFERS
+#define SL_FORCE_ASYNCHRONOUS              0x01
+// Device I/O Control
+#define SL_READ_ACCESS_GRANTED             0x01
+#define SL_WRITE_ACCESS_GRANTED            0x04    // Gap for SL_OVERRIDE_VERIFY_VOLUME
+// Lock (IRP_MJ_LOCK_CONTROL)
+#define SL_FAIL_IMMEDIATELY                0x01
+#define SL_EXCLUSIVE_LOCK                  0x02
+// QueryDirectory / QueryEa / QueryQuota (IRP_MJ_DIRECTORY_CONTROL/IRP_MJ_QUERY_EA/IRP_MJ_QUERY_QUOTA))
+#define SL_RESTART_SCAN                    0x01
+#define SL_RETURN_SINGLE_ENTRY             0x02
+#define SL_INDEX_SPECIFIED                 0x04
+#define SL_RETURN_ON_DISK_ENTRIES_ONLY     0x08
+#define SL_NO_CURSOR_UPDATE                0x10
+#define SL_QUERY_DIRECTORY_MASK            0x1b
+// NotifyDirectory (IRP_MJ_DIRECTORY_CONTROL)
+#define SL_WATCH_TREE                      0x01
+// FileSystemControl (IRP_MJ_FILE_SYSTEM_CONTROL)
+#define SL_ALLOW_RAW_MOUNT                 0x01
+//  SetInformationFile (IRP_MJ_SET_INFORMATION) / QueryInformationFile
+#define SL_BYPASS_ACCESS_CHECK             0x01
+#define SL_INFO_FORCE_ACCESS_CHECK         0x01
+#define SL_INFO_IGNORE_READONLY_ATTRIBUTE  0x40  // same value as IO_IGNORE_READONLY_ATTRIBUTE
+//
+// Device Object (DO) flags
+//
+#define DO_VERIFY_VOLUME                0x00000002
+#define DO_BUFFERED_IO                  0x00000004
+#define DO_EXCLUSIVE                    0x00000008
+#define DO_DIRECT_IO                    0x00000010
+#define DO_MAP_IO_BUFFER                0x00000020
+#define DO_DEVICE_INITIALIZING          0x00000080
+#define DO_SHUTDOWN_REGISTERED          0x00000800
+#define DO_BUS_ENUMERATED_DEVICE        0x00001000
+#define DO_POWER_PAGABLE                0x00002000
+#define DO_POWER_INRUSH                 0x00004000
+#define DO_DEVICE_TO_BE_RESET           0x04000000
+#define DO_DAX_VOLUME 0x10000000
+#endif // !_KERNEL_MODE
+
+
 // KSecDD FS control definitions
 
 #define KSEC_DEVICE_NAME L"\\Device\\KSecDD"
@@ -4019,6 +4388,20 @@ typedef struct _OPLOCK_KEY_CONTEXT {
 
 #endif /*(NTDDI_VERSION >= NTDDI_WIN10_RS2) */
 #endif /*NTDDI_VERSION >= NTDDI_WIN8 */
+
+
+// WIN11
+#define SUPPORTED_FS_FEATURES_VALID_MASK_V3 (SUPPORTED_FS_FEATURES_OFFLOAD_READ | \
+                                             SUPPORTED_FS_FEATURES_OFFLOAD_WRITE | \
+                                             SUPPORTED_FS_FEATURES_QUERY_OPEN | \
+                                             SUPPORTED_FS_FEATURES_BYPASS_IO)
+// WIN10-RS2
+#define SUPPORTED_FS_FEATURES_VALID_MASK_V2 (SUPPORTED_FS_FEATURES_OFFLOAD_READ | \
+                                             SUPPORTED_FS_FEATURES_OFFLOAD_WRITE | \
+                                             SUPPORTED_FS_FEATURES_QUERY_OPEN)
+// WIN8
+#define SUPPORTED_FS_FEATURES_VALID_MASK_V1 (SUPPORTED_FS_FEATURES_OFFLOAD_READ | \
+                                             SUPPORTED_FS_FEATURES_OFFLOAD_WRITE)
 
 
 #endif // !_KERNEL_MODE

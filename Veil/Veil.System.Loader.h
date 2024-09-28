@@ -1074,6 +1074,129 @@ LdrUnloadDataFile(
 
 #endif // if _KERNEL_MODE
 
+
+#if (NTDDI_VERSION >= NTDDI_WIN8)
+/**
+ * The LdrResFindResource function finds a resource in a DLL.
+ *
+ * @param DllHandle A handle to the DLL.
+ * @param Type The type of the resource.
+ * @param Name The name of the resource.
+ * @param Language The language of the resource.
+ * @param ResourceBuffer An optional pointer to receive the resource buffer.
+ * @param ResourceLength An optional pointer to receive the resource length.
+ * @param CultureName An optional buffer to receive the culture name.
+ * @param CultureNameLength An optional pointer to receive the length of the culture name.
+ * @param Flags Flags for the resource search.
+ * @return NTSTATUS Successful or errant status.
+ */
+NTSYSAPI
+NTSTATUS
+NTAPI
+LdrResFindResource(
+    _In_ PVOID DllHandle,
+    _In_ ULONG_PTR Type,
+    _In_ ULONG_PTR Name,
+    _In_ ULONG_PTR Language,
+    _Out_opt_ PVOID* ResourceBuffer,
+    _Out_opt_ PULONG ResourceLength,
+    _Out_writes_bytes_opt_(CultureNameLength) PVOID CultureName, // WCHAR buffer[6]
+    _Out_opt_ PULONG CultureNameLength,
+    _In_ ULONG Flags
+);
+
+/**
+ * The LdrResFindResourceDirectory function finds a resource directory in a DLL.
+ *
+ * @param DllHandle A handle to the DLL.
+ * @param Type The type of the resource.
+ * @param Name The name of the resource.
+ * @param ResourceDirectory An optional pointer to receive the resource directory.
+ * @param CultureName An optional buffer to receive the culture name.
+ * @param CultureNameLength An optional pointer to receive the length of the culture name.
+ * @param Flags Flags for the resource search.
+ * @return NTSTATUS Successful or errant status.
+ */
+NTSYSAPI
+NTSTATUS
+NTAPI
+LdrResFindResourceDirectory(
+    _In_ PVOID DllHandle,
+    _In_ ULONG_PTR Type,
+    _In_ ULONG_PTR Name,
+    _Out_opt_ PIMAGE_RESOURCE_DIRECTORY* ResourceDirectory,
+    _Out_writes_bytes_opt_(CultureNameLength) PVOID CultureName, // WCHAR buffer[6]
+    _Out_opt_ PULONG CultureNameLength,
+    _In_ ULONG Flags
+);
+
+/**
+* The LdrResSearchResource function searches for a resource in a DLL.
+*
+* @param DllHandle A handle to the DLL.
+* @param ResourceInfo A pointer to the resource information.
+* @param Level The level of the resource.
+* @param Flags Flags for the resource search.
+* @param ResourceBuffer An optional pointer to receive the resource buffer.
+* @param ResourceLength An optional pointer to receive the resource length.
+* @param CultureName An optional buffer to receive the culture name.
+* @param CultureNameLength An optional pointer to receive the length of the culture name.
+* @return NTSTATUS Successful or errant status.
+*/
+NTSYSAPI
+NTSTATUS
+NTAPI
+LdrResSearchResource(
+    _In_ PVOID DllHandle,
+    _In_ PLDR_RESOURCE_INFO ResourceInfo,
+    _In_ ULONG Level,
+    _In_ ULONG Flags,
+    _Out_opt_ PVOID* ResourceBuffer,
+    _Out_opt_ PSIZE_T ResourceLength,
+    _Out_writes_bytes_opt_(CultureNameLength) PVOID CultureName, // WCHAR buffer[6]
+    _Out_opt_ PULONG CultureNameLength
+);
+
+/**
+ * The LdrResGetRCConfig function retrieves the RC configuration for a DLL.
+ *
+ * @param DllHandle A handle to the DLL.
+ * @param Length The length of the configuration buffer.
+ * @param Config A buffer to receive the configuration.
+ * @param Flags Flags for the operation.
+ * @param AlternateResource Indicates if an alternate resource should be loaded.
+ * @return NTSTATUS Successful or errant status.
+ */
+NTSYSAPI
+NTSTATUS
+NTAPI
+LdrResGetRCConfig(
+    _In_ PVOID DllHandle,
+    _In_ SIZE_T Length,
+    _Out_writes_bytes_opt_(Length) PVOID Config,
+    _In_ ULONG Flags,
+    _In_ BOOLEAN AlternateResource // LdrLoadAlternateResourceModule
+);
+
+/**
+ * The LdrResRelease function releases a resource in a DLL.
+ *
+ * @param DllHandle A handle to the DLL.
+ * @param CultureNameOrId An optional culture name or ID.
+ * @param Flags Flags for the operation.
+ * @return NTSTATUS Successful or errant status.
+ */
+NTSYSAPI
+NTSTATUS
+NTAPI
+LdrResRelease(
+    _In_ PVOID DllHandle,
+    _In_opt_ ULONG_PTR CultureNameOrId, // MAKEINTRESOURCE
+    _In_ ULONG Flags
+);
+#endif // (NTDDI_VERSION >= NTDDI_WIN8)
+
+
 //
 // Module information
 //
@@ -1325,15 +1448,41 @@ NTAPI
 LdrSetImplicitPathOptions(
     _In_ ULONG ImplicitPathOptions
 );
+#endif
 
-// rev
+#if (NTDDI_VERSION >= NTDDI_THRESHOLD)
+/**
+ * The LdrControlFlowGuardEnforced function checks if Control Flow Guard is enforced.
+ *
+ * @return BOOLEAN TRUE if Control Flow Guard is enforced, FALSE otherwise.
+ */
 NTSYSAPI
 BOOLEAN
 NTAPI
 LdrControlFlowGuardEnforced(
     VOID
 );
+
+inline
+BOOLEAN
+NTAPI
+_VEIL_IMPL_LdrControlFlowGuardEnforced(
+    VOID
+)
+{
+    return LdrSystemDllInitBlock.CfgBitMap && (LdrSystemDllInitBlock.Flags & 1) == 0;
+}
+
+#if defined _M_IX86
+
+_VEIL_DEFINE_IAT_RAW_SYMBOL(LdrControlFlowGuardEnforced@0, _VEIL_IMPL_LdrControlFlowGuardEnforced);
+
+#elif defined _M_X64 || defined _M_ARM || defined _M_ARM64
+
+_VEIL_DEFINE_IAT_SYMBOL(LdrControlFlowGuardEnforced, _VEIL_IMPL_LdrControlFlowGuardEnforced);
+
 #endif
+#endif // (NTDDI_VERSION >= NTDDI_THRESHOLD)
 
 #if (NTDDI_VERSION >= NTDDI_WIN10_19H1)
 // rev

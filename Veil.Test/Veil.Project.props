@@ -3,8 +3,8 @@
 
     <!-- General -->
     <PropertyGroup>
-    <OutDir>$(SolutionDir)Output\Binaries\$(Configuration)\$(PlatformShortName)\</OutDir>
-    <IntDir>$(SolutionDir)Output\Objects\$(MSBuildProjectName)\$(Configuration)\$(PlatformShortName)\</IntDir>
+        <OutDir>$(SolutionDir)Output\Binaries\$(Configuration)\$(PlatformShortName)\</OutDir>
+        <IntDir>$(SolutionDir)Output\Objects\$(MSBuildProjectName)\$(Configuration)\$(PlatformShortName)\</IntDir>
     </PropertyGroup>
 
     <!-- Global -->
@@ -22,4 +22,8 @@
         </ClCompile>
     </ItemDefinitionGroup>
 
+    <PropertyGroup Label="Configuration">
+        <SpectreMitigation>false</SpectreMitigation>
+        <Driver_SpectreMitigation>false</Driver_SpectreMitigation>
+    </PropertyGroup>
 </Project>

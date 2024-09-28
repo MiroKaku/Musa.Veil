@@ -1727,7 +1727,7 @@ PerfIsGroupOnInGroupMask(
 //
 // Data structure used for WMI Kernel Events
 //
-// **NB** the hardware events are described in software traceing, if they
+// **NB** the hardware events are described in software tracing, if they
 //        change in layout please update sdktools\trace\tracefmt\default.tmf
 
 

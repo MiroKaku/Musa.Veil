@@ -4425,7 +4425,7 @@ typedef struct _RTL_USER_PROCESS_PARAMETERS
 
     UNICODE_STRING RedirectionDllName; // REDSTONE4
     UNICODE_STRING HeapPartitionName; // 19H1
-    ULONG_PTR DefaultThreadpoolCpuSetMasks;
+    PULONGLONG DefaultThreadpoolCpuSetMasks;
     ULONG DefaultThreadpoolCpuSetMaskCount;
     ULONG DefaultThreadpoolThreadMaximum;
     ULONG HeapMemoryTypeMask; // WIN11
@@ -5432,7 +5432,7 @@ RtlQueryInformationActiveActivationContext(
 //
 
 extern IMAGE_DOS_HEADER __ImageBase;
-#define RtlCurrentImageBase() ((PVOID)&__ImageBase)
+#define RtlCurrentImageBase() ((PIMAGE_DOS_HEADER)&__ImageBase)
 
 NTSYSAPI
 PIMAGE_NT_HEADERS
@@ -6392,7 +6392,6 @@ RtlGetFullPathName_Ustr(
     _Out_ RTL_PATH_TYPE* InputPathType
 );
 
-#if (NTDDI_VERSION >= NTDDI_WS03)
 NTSYSAPI
 NTSTATUS
 NTAPI
@@ -6406,7 +6405,6 @@ RtlGetFullPathName_UstrEx(
     _Out_ RTL_PATH_TYPE* InputPathType,
     _Out_opt_ SIZE_T* BytesRequired
 );
-#endif
 
 NTSYSAPI
 ULONG
@@ -6468,7 +6466,6 @@ RtlDosPathNameToNtPathName_U(
     _Out_opt_ PRTL_RELATIVE_NAME_U RelativeName
 );
 
-#if (NTDDI_VERSION >= NTDDI_WS03)
 NTSYSAPI
 NTSTATUS
 NTAPI
@@ -6478,7 +6475,6 @@ RtlDosPathNameToNtPathName_U_WithStatus(
     _Out_opt_ PWSTR* FilePart,
     _Out_opt_ PRTL_RELATIVE_NAME_U RelativeName
 );
-#endif
 
 #if (NTDDI_VERSION >= NTDDI_WIN10_RS3)
 // rev
@@ -6493,7 +6489,6 @@ RtlDosLongPathNameToNtPathName_U_WithStatus(
 );
 #endif
 
-#if (NTDDI_VERSION >= NTDDI_WS03)
 NTSYSAPI
 BOOLEAN
 NTAPI
@@ -6503,9 +6498,7 @@ RtlDosPathNameToRelativeNtPathName_U(
     _Out_opt_ PWSTR* FilePart,
     _Out_opt_ PRTL_RELATIVE_NAME_U RelativeName
 );
-#endif
 
-#if (NTDDI_VERSION >= NTDDI_WS03)
 NTSYSAPI
 NTSTATUS
 NTAPI
@@ -6515,7 +6508,6 @@ RtlDosPathNameToRelativeNtPathName_U_WithStatus(
     _Out_opt_ PWSTR* FilePart,
     _Out_opt_ PRTL_RELATIVE_NAME_U RelativeName
 );
-#endif
 
 #if (NTDDI_VERSION >= NTDDI_WIN10_RS3)
 // rev
@@ -6530,14 +6522,12 @@ RtlDosLongPathNameToRelativeNtPathName_U_WithStatus(
 );
 #endif
 
-#if (NTDDI_VERSION >= NTDDI_WS03)
 NTSYSAPI
 VOID
 NTAPI
 RtlReleaseRelativeName(
     _Inout_ PRTL_RELATIVE_NAME_U RelativeName
 );
-#endif
 
 NTSYSAPI
 ULONG
@@ -8507,6 +8497,61 @@ RtlLargeIntegerToChar(
     _In_ LONG OutputLength,
     _Out_ PSTR String
 );
+
+
+#define RtlLargeIntegerGreaterThan(X,Y) (                              \
+    (((X).HighPart == (Y).HighPart) && ((X).LowPart > (Y).LowPart)) || \
+    ((X).HighPart > (Y).HighPart)                                      \
+)
+
+#define RtlLargeIntegerGreaterThanOrEqualTo(X,Y) (                      \
+    (((X).HighPart == (Y).HighPart) && ((X).LowPart >= (Y).LowPart)) || \
+    ((X).HighPart > (Y).HighPart)                                       \
+)
+
+#define RtlLargeIntegerEqualTo(X,Y) (                              \
+    !(((X).LowPart ^ (Y).LowPart) | ((X).HighPart ^ (Y).HighPart)) \
+)
+
+#define RtlLargeIntegerNotEqualTo(X,Y) (                          \
+    (((X).LowPart ^ (Y).LowPart) | ((X).HighPart ^ (Y).HighPart)) \
+)
+
+#define RtlLargeIntegerLessThan(X,Y) (                                 \
+    (((X).HighPart == (Y).HighPart) && ((X).LowPart < (Y).LowPart)) || \
+    ((X).HighPart < (Y).HighPart)                                      \
+)
+
+#define RtlLargeIntegerLessThanOrEqualTo(X,Y) (                         \
+    (((X).HighPart == (Y).HighPart) && ((X).LowPart <= (Y).LowPart)) || \
+    ((X).HighPart < (Y).HighPart)                                       \
+)
+
+#define RtlLargeIntegerGreaterThanZero(X) (       \
+    (((X).HighPart == 0) && ((X).LowPart > 0)) || \
+    ((X).HighPart > 0 )                           \
+)
+
+#define RtlLargeIntegerGreaterOrEqualToZero(X) ( \
+    (X).HighPart >= 0                            \
+)
+
+#define RtlLargeIntegerEqualToZero(X) ( \
+    !((X).LowPart | (X).HighPart)       \
+)
+
+#define RtlLargeIntegerNotEqualToZero(X) ( \
+    ((X).LowPart | (X).HighPart)           \
+)
+
+#define RtlLargeIntegerLessThanZero(X) ( \
+    ((X).HighPart < 0)                   \
+)
+
+#define RtlLargeIntegerLessOrEqualToZero(X) (           \
+    ((X).HighPart < 0) || !((X).LowPart | (X).HighPart) \
+)
+
 
 _IRQL_requires_max_(PASSIVE_LEVEL)
 _At_(String->MaximumLength, _Const_)
@@ -12371,6 +12416,7 @@ typedef enum _RTL_BSD_ITEM_TYPE
     RtlBsdItemChecksum, // q: s: UCHAR
     RtlBsdPowerTransitionExtension,
     RtlBsdItemFeatureConfigurationState, // q; s: ULONG
+    RtlBsdItemRevocationListInfo, // 24H2
     RtlBsdItemMax
 } RTL_BSD_ITEM_TYPE;
 

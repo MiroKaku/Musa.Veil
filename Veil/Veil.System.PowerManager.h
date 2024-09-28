@@ -656,17 +656,20 @@ typedef struct _POWER_INTERNAL_HOST_ENERGY_SAVER_STATE
     BOOLEAN EsEnabledOnHost;
 } POWER_INTERNAL_HOST_ENERGY_SAVER_STATE, * PPOWER_INTERNAL_HOST_ENERGY_SAVER_STATE;
 
-typedef struct _POWER_INTERNAL_PROCESSOR_BRANDED_FREQENCY_INPUT
+typedef struct _POWER_INTERNAL_PROCESSOR_BRANDED_FREQUENCY_INPUT
 {
     POWER_INFORMATION_LEVEL_INTERNAL InternalType;
     PROCESSOR_NUMBER ProcessorNumber; // ULONG_MAX
-} POWER_INTERNAL_PROCESSOR_BRANDED_FREQENCY_INPUT, * PPOWER_INTERNAL_PROCESSOR_BRANDED_FREQENCY_INPUT;
+} POWER_INTERNAL_PROCESSOR_BRANDED_FREQUENCY_INPUT, * PPOWER_INTERNAL_PROCESSOR_BRANDED_FREQUENCY_INPUT;
 
-typedef struct _POWER_INTERNAL_PROCESSOR_BRANDED_FREQENCY_OUTPUT
+#define POWER_INTERNAL_PROCESSOR_BRANDED_FREQUENCY_VERSION 1
+
+// rev
+typedef struct _POWER_INTERNAL_PROCESSOR_BRANDED_FREQUENCY_OUTPUT
 {
     ULONG Version;
     ULONG NominalFrequency; // if (Domain) Prcb->PowerState.CheckContext.Domain.NominalFrequency else Prcb->MHz
-} POWER_INTERNAL_PROCESSOR_BRANDED_FREQENCY_OUTPUT, * PPOWER_INTERNAL_PROCESSOR_BRANDED_FREQENCY_OUTPUT;
+} POWER_INTERNAL_PROCESSOR_BRANDED_FREQUENCY_OUTPUT, * PPOWER_INTERNAL_PROCESSOR_BRANDED_FREQUENCY_OUTPUT;
 
 // rev
 typedef struct _POWER_INTERNAL_BOOTAPP_DIAGNOSTIC
@@ -675,6 +678,16 @@ typedef struct _POWER_INTERNAL_BOOTAPP_DIAGNOSTIC
     ULONG BootAppFailureStatus; // bcdedit last status
 } POWER_INTERNAL_BOOTAPP_DIAGNOSTIC, * PPOWER_INTERNAL_BOOTAPP_DIAGNOSTIC;
 
+/**
+ * The NtPowerInformation routine sets or retrieves system power information.
+ *
+ * @param InformationLevel Specifies the requested information level, which indicates the specific power information to be set or retrieved.
+ * @param InputBuffer Optional pointer to a caller-allocated input buffer.
+ * @param InputBufferLength Size, in bytes, of the buffer at InputBuffer.
+ * @param OutputBuffer Optional pointer to an output buffer. The type depends on the InformationLevel requested.
+ * @param OutputBufferLength Size, in bytes, of the output buffer.
+ * @return Successful or errant status.
+ */
 _IRQL_requires_max_(APC_LEVEL)
 __kernel_entry NTSYSCALLAPI
 NTSTATUS
@@ -699,6 +712,14 @@ ZwPowerInformation(
     _In_ ULONG OutputBufferLength
 );
 
+/**
+ * Enables an application to inform the system that it is in use,
+ * thereby preventing the system from entering sleep or turning off the display while the application is running.
+ *
+ * @param NewFlags New execution state flags.
+ * @param PreviousFlags Pointer to receive the previous execution state flags.
+ * @return Successful or errant status.
+ */
 __kernel_entry NTSYSCALLAPI
 NTSTATUS
 NTAPI
@@ -716,6 +737,36 @@ ZwSetThreadExecutionState(
     _Out_ EXECUTION_STATE* PreviousFlags
 );
 
+/**
+ * Requests the system resume latency.
+ *
+ * @param latency The desired latency time.
+ * @return Successful or errant status.
+ */
+__kernel_entry NTSYSCALLAPI
+NTSTATUS
+NTAPI
+NtRequestWakeupLatency(
+    _In_ LATENCY_TIME latency
+);
+
+_IRQL_requires_max_(PASSIVE_LEVEL)
+NTSYSAPI
+NTSTATUS
+NTAPI
+ZwRequestWakeupLatency(
+    _In_ LATENCY_TIME latency
+);
+
+/**
+ * Initiates a power action of the current system.
+ *
+ * @param SystemAction The system power action.
+ * @param LightestSystemState The lightest system power state.
+ * @param Flags Flags for the power action.
+ * @param Asynchronous Whether the action is asynchronous.
+ * @return Successful or errant status.
+ */
 __kernel_entry NTSYSCALLAPI
 NTSTATUS
 NTAPI
@@ -737,6 +788,15 @@ ZwInitiatePowerAction(
     _In_ BOOLEAN Asynchronous
 );
 
+/**
+ * Initiates a power action of the current system. Depending on the Flags parameter, the function either
+ * suspends operation immediately or requests permission from all applications and device drivers before doing so.
+ *
+ * @param SystemAction The system power action.
+ * @param LightestSystemState The lightest system power state.
+ * @param Flags Flags for the power action.
+ * @return Successful or errant status.
+ */
 __kernel_entry NTSYSCALLAPI
 NTSTATUS
 NTAPI
@@ -756,6 +816,16 @@ ZwSetSystemPowerState(
     _In_ ULONG Flags // POWER_ACTION_* flags
 );
 
+/**
+ * Retrieves the current power state of the specified device. This function cannot be used to query the power state of a display device.
+ *
+ * @param Device A handle to an object on the device, such as a file or socket, or a handle to the device itself.
+ * @param State A pointer to the variable that receives the power state.
+ * @return Successful or errant status.
+ * @remarks An application can use NtGetDevicePowerState to determine whether a device is in the working state or a low-power state.
+ * If the device is in a low-power state, accessing the device may cause it to either queue or fail any I/O requests, or transition the device into the working state.
+ * The exact behavior depends on the implementation of the device.
+ */
 __kernel_entry NTSYSCALLAPI
 NTSTATUS
 NTAPI
@@ -773,6 +843,11 @@ ZwGetDevicePowerState(
     _Out_ PDEVICE_POWER_STATE State
 );
 
+/**
+ * Checks if the system resume is automatic.
+ *
+ * @return BOOLEAN TRUE if the system resume is automatic, FALSE otherwise.
+ */
 __kernel_entry NTSYSCALLAPI
 BOOLEAN
 NTAPI
