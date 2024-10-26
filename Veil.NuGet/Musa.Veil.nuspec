@@ -15,7 +15,7 @@
     <projectUrl>https://github.com/MiroKaku/Veil</projectUrl>
     <repository type="git" url="https://github.com/MiroKaku/Veil.git" branch="main" commit="$commit$" />
     <dependencies>
-      <dependency id="YY.NuGet.Import.Helper" version="1.0.0.4" />
+      <dependency id="YY.NuGet.Import.Helper" version="1.0.1" />
     </dependencies>
   </metadata>
   <files>
