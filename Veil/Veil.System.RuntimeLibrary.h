@@ -150,6 +150,9 @@ RtlFailFast(
 
 #define RTL_STATIC_LIST_HEAD(x) LIST_ENTRY x = { &x, &x }
 
+#define RTL_LIST_FOREACH(Entry, ListHead) \
+    for ((Entry) = &(ListHead); (Entry) != &(ListHead); (Entry) = (Entry)->Flink)
+
 FORCEINLINE
 VOID
 InitializeListHead(
@@ -2371,6 +2374,16 @@ RtlAcquireReleaseSRWLockExclusive(
     _Inout_ PRTL_SRWLOCK SRWLock
 );
 
+#if (NTDDI_VERSION >= NTDDI_WIN10)
+// rev
+NTSYSAPI
+BOOLEAN
+NTAPI
+RtlConvertSRWLockExclusiveToShared(
+    _Inout_ PRTL_SRWLOCK SRWLock
+);
+#endif
+
 // winbase:InitializeConditionVariable
 NTSYSAPI
 VOID
@@ -2482,9 +2495,24 @@ RtlWakeAddressAll(
 NTSYSAPI
 VOID
 NTAPI
+RtlWakeAddressAllNoFence(
+    _In_ PVOID Address
+);
+
+NTSYSAPI
+VOID
+NTAPI
 RtlWakeAddressSingle(
     _In_ PVOID Address
 );
+
+NTSYSAPI
+VOID
+NTAPI
+RtlWakeAddressSingleNoFence(
+    _In_ PVOID Address
+);
+
 #endif
 // end_rev
 
@@ -2999,6 +3027,53 @@ NTAPI
 RtlEraseUnicodeString(
     _Inout_ PUNICODE_STRING String
 );
+
+#if (NTDDI_VERSION >= NTDDI_WIN2K)
+_IRQL_requires_max_(PASSIVE_LEVEL)
+NTSYSAPI
+ULONG
+NTAPI
+RtlxUnicodeStringToAnsiSize(
+    _In_ PCUNICODE_STRING UnicodeString
+);
+#endif
+
+//
+//  NTSYSAPI
+//  ULONG
+//  NTAPI
+//  RtlUnicodeStringToAnsiSize(
+//      PUNICODE_STRING UnicodeString
+//      );
+//
+
+#define RtlUnicodeStringToAnsiSize(STRING) (                  \
+    RtlxUnicodeStringToAnsiSize(STRING)                       \
+)
+
+
+#if (NTDDI_VERSION >= NTDDI_WIN2K)
+_IRQL_requires_max_(PASSIVE_LEVEL)
+NTSYSAPI
+ULONG
+NTAPI
+RtlxAnsiStringToUnicodeSize(
+    _In_ PCANSI_STRING AnsiString
+);
+#endif
+
+//
+//  NTSYSAPI
+//  ULONG
+//  NTAPI
+//  RtlAnsiStringToUnicodeSize(
+//      PANSI_STRING AnsiString
+//      );
+//
+
+#define RtlAnsiStringToUnicodeSize(STRING) (                 \
+    RtlxAnsiStringToUnicodeSize(STRING)                      \
+)
 
 _IRQL_requires_max_(PASSIVE_LEVEL)
 _Must_inspect_result_
@@ -4234,7 +4309,7 @@ NTSTATUS
 NTAPI
 RtlGetSystemPreferredUILanguages(
     _In_ ULONG Flags, // MUI_LANGUAGE_NAME
-    _In_ PCWSTR LocaleName,
+    _In_opt_ PCWSTR LocaleName,
     _Out_ PULONG NumberOfLanguages,
     _Out_writes_opt_(*ReturnLength) PZZWSTR Languages,
     _Inout_ PULONG ReturnLength
@@ -4255,7 +4330,7 @@ NTSTATUS
 NTAPI
 RtlGetUserPreferredUILanguages(
     _In_ ULONG Flags, // MUI_LANGUAGE_NAME
-    _In_ PCWSTR LocaleName,
+    _In_opt_ PCWSTR LocaleName,
     _Out_ PULONG NumberOfLanguages,
     _Out_writes_opt_(*ReturnLength) PZZWSTR Languages,
     _Inout_ PULONG ReturnLength
@@ -4536,6 +4611,27 @@ RtlCreateProcessParametersEx(
     _In_ ULONG Flags // pass RTL_USER_PROC_PARAMS_NORMALIZED to keep parameters normalized
 );
 
+#if (NTDDI_VERSION >= NTDDI_WIN10_RS4)
+// private
+NTSYSAPI
+NTSTATUS
+NTAPI
+RtlCreateProcessParametersWithTemplate(
+    _Out_ PRTL_USER_PROCESS_PARAMETERS* pProcessParameters,
+    _In_ PUNICODE_STRING ImagePathName,
+    _In_opt_ PUNICODE_STRING DllPath,
+    _In_opt_ PUNICODE_STRING CurrentDirectory,
+    _In_opt_ PUNICODE_STRING CommandLine,
+    _In_opt_ PVOID Environment,
+    _In_opt_ PUNICODE_STRING WindowTitle,
+    _In_opt_ PUNICODE_STRING DesktopInfo,
+    _In_opt_ PUNICODE_STRING ShellInfo,
+    _In_opt_ PUNICODE_STRING RuntimeData,
+    _In_opt_ PUNICODE_STRING RedirectionDllName,
+    _In_ ULONG Flags // pass RTL_USER_PROC_PARAMS_NORMALIZED to keep parameters normalized
+);
+#endif
+
 NTSYSAPI
 NTSTATUS
 NTAPI
@@ -4635,6 +4731,22 @@ RtlCloneUserProcess(
     _In_opt_ PSECURITY_DESCRIPTOR ThreadSecurityDescriptor,
     _In_opt_ HANDLE DebugPort,
     _Out_ PRTL_USER_PROCESS_INFORMATION ProcessInformation
+);
+
+// rev
+NTSYSAPI
+NTSTATUS
+NTAPI
+RtlPrepareForProcessCloning(
+    VOID
+);
+
+// rev
+NTSYSAPI
+NTSTATUS
+NTAPI
+RtlCompleteProcessCloning(
+    _In_ LOGICAL Completed
 );
 
 // private
@@ -5044,6 +5156,14 @@ RtlRemoteCall(
 
 // _KERNEL_MODE begin
 
+/**
+ * Registers a vectored exception handler.
+ *
+ * @param First If this parameter is TRUE, the handler is the first handler in the list.
+ * @param Handler A pointer to the vectored exception handler to be called.
+ * @return A handle to the vectored exception handler.
+ * @see https://docs.microsoft.com/en-us/windows/win32/api/errhandlingapi/nf-errhandlingapi-addvectoredexceptionhandler
+ */
 NTSYSAPI
 PVOID
 NTAPI
@@ -5052,6 +5172,13 @@ RtlAddVectoredExceptionHandler(
     _In_ PVECTORED_EXCEPTION_HANDLER Handler
 );
 
+/**
+ * Removes a vectored exception handler.
+ *
+ * @param Handle A handle to the vectored exception handler to remove.
+ * @return The function returns 0 if the handler is removed, or -1 if the handler is not found.
+ * @see https://docs.microsoft.com/en-us/windows/win32/api/errhandlingapi/nf-errhandlingapi-removevectoredexceptionhandler
+ */
 NTSYSAPI
 ULONG
 NTAPI
@@ -5059,6 +5186,14 @@ RtlRemoveVectoredExceptionHandler(
     _In_ PVOID Handle
 );
 
+/**
+ * Registers a vectored continue handler.
+ *
+ * @param First If this parameter is TRUE, the handler is the first handler in the list.
+ * @param Handler A pointer to the vectored exception handler to be called.
+ * @return A handle to the vectored continue handler.
+ * @see https://docs.microsoft.com/en-us/windows/win32/api/errhandlingapi/nf-errhandlingapi-addvectoredcontinuehandler
+ */
 NTSYSAPI
 PVOID
 NTAPI
@@ -5067,6 +5202,13 @@ RtlAddVectoredContinueHandler(
     _In_ PVECTORED_EXCEPTION_HANDLER Handler
 );
 
+/**
+ * Removes a vectored continue handler.
+ *
+ * @param Handle A handle to the vectored continue handler to remove.
+ * @return The function returns 0 if the handler is removed, or -1 if the handler is not found.
+ * @see https://docs.microsoft.com/en-us/windows/win32/api/errhandlingapi/nf-errhandlingapi-removevectoredcontinuehandler
+ */
 NTSYSAPI
 ULONG
 NTAPI
@@ -6323,7 +6465,7 @@ typedef enum _RTL_PATH_TYPE
 
 // Data exports (ntdll.lib/ntdllp.lib)
 
-NTSYSAPI PWSTR RtlNtdllName;
+NTSYSAPI PCWSTR RtlNtdllName;
 NTSYSAPI UNICODE_STRING RtlDosPathSeperatorsString;
 NTSYSAPI UNICODE_STRING RtlAlternateDosPathSeperatorString;
 NTSYSAPI UNICODE_STRING RtlNtPathSeperatorString;
@@ -6667,7 +6809,7 @@ NTSYSAPI
 VOID
 NTAPI
 RtlReleasePath(
-    _In_ PWSTR Path
+    _In_ PCWSTR Path
 );
 #endif
 
@@ -7214,8 +7356,8 @@ NTAPI
 RtlCreateTagHeap(
     _In_ PVOID HeapHandle,
     _In_ ULONG Flags,
-    _In_opt_ PWSTR TagPrefix,
-    _In_ PWSTR TagNames
+    _In_opt_ PCWSTR TagPrefix,
+    _In_ PCWSTR TagNames
 );
 
 NTSYSAPI
@@ -7794,7 +7936,8 @@ NTSYSAPI
 HANDLE
 NTAPI
 RtlGetCurrentTransaction(
-    VOID
+    _In_opt_ PCWSTR ExistingFileName,
+    _In_opt_ PCWSTR NewFileName
 );
 
 // private
@@ -7839,11 +7982,8 @@ RtlConvertLongToLuid(
 )
 {
     LUID tempLuid;
-    LARGE_INTEGER tempLi;
-
-    tempLi.QuadPart = Long;
-    tempLuid.LowPart = tempLi.LowPart;
-    tempLuid.HighPart = tempLi.HighPart;
+    tempLuid.LowPart  = Long;
+    tempLuid.HighPart = 0;
 
     return tempLuid;
 }
@@ -7870,12 +8010,12 @@ RtlConvertLuidToLonglong(
     _In_ LUID Luid
 )
 {
-    LONGLONG tempLuid;
+    LARGE_INTEGER tempLi;
 
-    tempLuid  = Luid.LowPart;
-    tempLuid += ((LONGLONG)(Luid.HighPart) << 32);
+    tempLi.LowPart  = Luid.LowPart;
+    tempLi.HighPart = Luid.HighPart;
 
-    return tempLuid;
+    return tempLi.QuadPart;
 }
 
 FORCEINLINE
@@ -8130,6 +8270,14 @@ typedef struct _MESSAGE_RESOURCE_DATA {
 
 #endif // _KERNEL_MODE
 
+// rev
+NTSYSAPI
+NTSTATUS
+NTAPI
+RtlDebugPrintTimes(
+    VOID
+);
+
 NTSYSAPI
 NTSTATUS
 NTAPI
@@ -8154,7 +8302,7 @@ NTSYSAPI
 NTSTATUS
 NTAPI
 RtlFormatMessage(
-    _In_ PWSTR MessageFormat,
+    _In_ PCWSTR MessageFormat,
     _In_ ULONG MaximumWidth,
     _In_ BOOLEAN IgnoreInserts,
     _In_ BOOLEAN ArgumentsAreAnsi,
@@ -8184,7 +8332,7 @@ NTSYSAPI
 NTSTATUS
 NTAPI
 RtlFormatMessageEx(
-    _In_ PWSTR MessageFormat,
+    _In_ PCWSTR MessageFormat,
     _In_ ULONG MaximumWidth,
     _In_ BOOLEAN IgnoreInserts,
     _In_ BOOLEAN ArgumentsAreAnsi,
@@ -8204,7 +8352,7 @@ NTAPI
 RtlGetFileMUIPath(
     _In_ ULONG Flags,
     _In_ PCWSTR FilePath,
-    _Inout_opt_ PWSTR Language,
+    _Inout_opt_ PCWSTR Language,
     _Inout_ PULONG LanguageLength,
     _Out_opt_ PWSTR FileMUIPath,
     _Inout_ PULONG FileMUIPathLength,
@@ -9366,7 +9514,7 @@ NTSTATUS
 NTAPI
 RtlAddAtomToAtomTable(
     _In_ PVOID AtomTableHandle,
-    _In_ PWSTR AtomName,
+    _In_ PCWSTR AtomName,
     _Inout_opt_ PRTL_ATOM Atom
 );
 
@@ -9375,7 +9523,7 @@ NTSTATUS
 NTAPI
 RtlLookupAtomInAtomTable(
     _In_ PVOID AtomTableHandle,
-    _In_ PWSTR AtomName,
+    _In_ PCWSTR AtomName,
     _Out_opt_ PRTL_ATOM Atom
 );
 
@@ -10962,7 +11110,7 @@ _IRQL_requires_same_
 NTSTATUS
 NTAPI
 RTL_QUERY_REGISTRY_ROUTINE(
-    _In_z_ PWSTR ValueName,
+    _In_z_ PCWSTR ValueName,
     _In_ ULONG ValueType,
     _In_reads_bytes_opt_(ValueLength) PVOID ValueData,
     _In_ ULONG ValueLength,
@@ -11392,6 +11540,11 @@ RtlLocateSupervisorFeature(
 );
 #endif
 
+#define ELEVATION_FLAG_TOKEN_CHECKS 0x00000001
+#define ELEVATION_FLAG_VIRTUALIZATION 0x00000002
+#define ELEVATION_FLAG_SHORTCUT_REDIR 0x00000004
+#define ELEVATION_FLAG_NO_SIGNATURE_CHECK 0x00000008
+
 // private
 typedef union _RTL_ELEVATION_FLAGS
 {
@@ -11401,7 +11554,8 @@ typedef union _RTL_ELEVATION_FLAGS
         ULONG ElevationEnabled : 1;
         ULONG VirtualizationEnabled : 1;
         ULONG InstallerDetectEnabled : 1;
-        ULONG ReservedBits : 29;
+        ULONG AdminApprovalModeType : 2;
+        ULONG ReservedBits : 27;
     };
 } RTL_ELEVATION_FLAGS, * PRTL_ELEVATION_FLAGS;
 
@@ -11498,7 +11652,7 @@ RtlGetUnloadEventTrace(
 );
 
 NTSYSAPI
-VOID
+PRTL_UNLOAD_EVENT_TRACE
 NTAPI
 RtlGetUnloadEventTraceEx(
     _Out_ PULONG * ElementSize,
@@ -11720,7 +11874,7 @@ NTSYSAPI
 NTSTATUS
 NTAPI
 RtlQueryImageMitigationPolicy(
-    _In_opt_ PWSTR ImagePath, // NULL for system-wide defaults
+    _In_opt_ PCWSTR ImagePath, // NULL for system-wide defaults
     _In_ IMAGE_MITIGATION_POLICY Policy,
     _In_ ULONG Flags,
     _Inout_ PVOID Buffer,
@@ -11732,7 +11886,7 @@ NTSYSAPI
 NTSTATUS
 NTAPI
 RtlSetImageMitigationPolicy(
-    _In_opt_ PWSTR ImagePath, // NULL for system-wide defaults
+    _In_opt_ PCWSTR ImagePath, // NULL for system-wide defaults
     _In_ IMAGE_MITIGATION_POLICY Policy,
     _In_ ULONG Flags,
     _Inout_ PVOID Buffer,
@@ -11837,13 +11991,192 @@ RtlIsMultiUsersInSessionSku(
 //
 
 #ifndef _KERNEL_MODE
+
+// private
+typedef enum _SMAPINUMBER
+{
+    SmNotImplementedApi = 0,
+    SmSessionCompleteApi = 1,
+    SmNotImplemented2Api = 2,
+    SmExecPgmApi = 3,
+    SmLoadDeferedSubsystemApi = 4,
+    SmStartCsrApi = 5,
+    SmStopCsrApi = 6,
+    SmStartServerSiloApi = 7,
+    SmMaxApiNumber = 8,
+} SMAPINUMBER, * PSMAPINUMBER;
+
+// private
+typedef struct _SMSESSIONCOMPLETE
+{
+    _In_ ULONG SessionId;
+    _In_ NTSTATUS CompletionStatus;
+} SMSESSIONCOMPLETE, * PSMSESSIONCOMPLETE;
+
+// private
+typedef struct _SMEXECPGM
+{
+    _In_ RTL_USER_PROCESS_INFORMATION ProcessInformation;
+    _In_ BOOLEAN DebugFlag;
+} SMEXECPGM, * PSMEXECPGM;
+
+// private
+typedef struct _SMLOADDEFERED
+{
+    _In_ ULONG SubsystemNameLength;
+    _In_ _Field_size_bytes_(SubsystemNameLength) WCHAR SubsystemName[32];
+} SMLOADDEFERED, * PSMLOADDEFERED;
+
+// private
+typedef struct _SMSTARTCSR
+{
+    _Inout_ ULONG MuSessionId;
+    _In_ ULONG InitialCommandLength;
+    _In_ _Field_size_bytes_(InitialCommandLength) WCHAR InitialCommand[128];
+    _Out_ HANDLE InitialCommandProcessId;
+    _Out_ HANDLE WindowsSubSysProcessId;
+} SMSTARTCSR, * PSMSTARTCSR;
+
+// private
+typedef struct _SMSTOPCSR
+{
+    _In_ ULONG MuSessionId;
+} SMSTOPCSR, * PSMSTOPCSR;
+
+// private
+typedef struct _SMSTARTSERVERSILO
+{
+    _In_ HANDLE JobHandle;
+    _In_ BOOLEAN CreateSuspended;
+} SMSTARTSERVERSILO, * PSMSTARTSERVERSILO;
+
+// private
+typedef struct _SMAPIMSG
+{
+    PORT_MESSAGE h;
+    SMAPINUMBER ApiNumber;
+    NTSTATUS ReturnedStatus;
+    union
+    {
+        union
+        {
+            SMSESSIONCOMPLETE SessionComplete;
+            SMEXECPGM ExecPgm;
+            SMLOADDEFERED LoadDefered;
+            SMSTARTCSR StartCsr;
+            SMSTOPCSR StopCsr;
+            SMSTARTSERVERSILO StartServerSilo;
+        };
+    } u;
+} SMAPIMSG, * PSMAPIMSG;
+
+// SbApiPort
+
+// private
+typedef enum _SBAPINUMBER
+{
+    SbCreateSessionApi = 0,
+    SbTerminateSessionApi = 1,
+    SbForeignSessionCompleteApi = 2,
+    SbCreateProcessApi = 3,
+    SbMaxApiNumber = 4,
+} SBAPINUMBER, * PSBAPINUMBER;
+
+// private
+typedef struct _SBCONNECTINFO
+{
+    _In_ ULONG SubsystemImageType;
+    _In_ WCHAR EmulationSubSystemPortName[120];
+} SBCONNECTINFO, * PSBCONNECTINFO;
+
+// private
+typedef struct _SBCREATESESSION
+{
+    _In_ ULONG SessionId;
+    _In_ RTL_USER_PROCESS_INFORMATION ProcessInformation;
+    _In_opt_ PVOID UserProfile;
+    _In_ ULONG DebugSession;
+    _In_ CLIENT_ID DebugUiClientId;
+} SBCREATESESSION, * PSBCREATESESSION;
+
+// private
+typedef struct _SBTERMINATESESSION
+{
+    _In_ ULONG SessionId;
+    _In_ NTSTATUS TerminationStatus;
+} SBTERMINATESESSION, * PSBTERMINATESESSION;
+
+// private
+typedef struct _SBFOREIGNSESSIONCOMPLETE
+{
+    _In_ ULONG SessionId;
+    _In_ NTSTATUS TerminationStatus;
+} SBFOREIGNSESSIONCOMPLETE, * PSBFOREIGNSESSIONCOMPLETE;
+
+// dbg/rev
+#define SMP_DEBUG_FLAG 0x00000001
+#define SMP_ASYNC_FLAG 0x00000002
+#define SMP_DONT_START 0x00000004
+
+// private
+typedef struct _SBCREATEPROCESSIN
+{
+    _In_ PUNICODE_STRING ImageFileName;
+    _In_ PUNICODE_STRING CurrentDirectory;
+    _In_ PUNICODE_STRING CommandLine;
+    _In_opt_ PUNICODE_STRING DefaultLibPath;
+    _In_ ULONG Flags; // SMP_*
+    _In_ ULONG DefaultDebugFlags;
+} SBCREATEPROCESSIN, * PSBCREATEPROCESSIN;
+
+// private
+typedef struct _SBCREATEPROCESSOUT
+{
+    _Out_ HANDLE Process;
+    _Out_ HANDLE Thread;
+    _Out_ ULONG SubSystemType;
+    _Out_ CLIENT_ID ClientId;
+} SBCREATEPROCESSOUT, * PSBCREATEPROCESSOUT;
+
+// private
+typedef struct _SBCREATEPROCESS
+{
+    union
+    {
+        SBCREATEPROCESSIN i;
+        SBCREATEPROCESSOUT o;
+    };
+} SBCREATEPROCESS, * PSBCREATEPROCESS;
+
+// private
+typedef struct _SBAPIMSG
+{
+    PORT_MESSAGE h;
+    union
+    {
+        SBCONNECTINFO ConnectionRequest;
+        struct
+        {
+            SBAPINUMBER ApiNumber;
+            NTSTATUS ReturnedStatus;
+            union
+            {
+                SBCREATESESSION CreateSession;
+                SBTERMINATESESSION TerminateSession;
+                SBFOREIGNSESSIONCOMPLETE ForeignSessionComplete;
+                SBCREATEPROCESS CreateProcessA;
+            };
+        };
+    } u;
+} SBAPIMSG, * PSBAPIMSG;
+
 NTSYSAPI
 NTSTATUS
 NTAPI
 RtlConnectToSm(
-    _In_ PCUNICODE_STRING ApiPortName,
-    _In_ HANDLE ApiPortHandle,
-    _In_ DWORD ProcessImageType,
+    _In_opt_ PCUNICODE_STRING ApiPortName,
+    _In_opt_ HANDLE ApiPortHandle,
+    _In_ ULONG ProcessImageType,
     _Out_ PHANDLE SmssConnection
 );
 
@@ -11852,7 +12185,7 @@ NTSTATUS
 NTAPI
 RtlSendMsgToSm(
     _In_ HANDLE ApiPortHandle,
-    _In_ PPORT_MESSAGE MessageData
+    _Inout_updates_(MessageData->u1.s1.TotalLength) PPORT_MESSAGE MessageData
 );
 #endif
 
@@ -12215,15 +12548,16 @@ RtlAppxIsFileOwnedByTrustedInstaller(
 #endif // (NTDDI_VERSION >= NTDDI_WIN8)
 
 // Windows Internals book
-#define PSM_ACTIVATION_TOKEN_PACKAGED_APPLICATION   0x00000001
-#define PSM_ACTIVATION_TOKEN_SHARED_ENTITY          0x00000002
-#define PSM_ACTIVATION_TOKEN_FULL_TRUST             0x00000004
-#define PSM_ACTIVATION_TOKEN_NATIVE_SERVICE         0x00000008
-#define PSM_ACTIVATION_TOKEN_DEVELOPMENT_APP        0x00000010
-#define PSM_ACTIVATION_TOKEN_BREAKAWAY_INHIBITED    0x00000020
-#define PSM_ACTIVATION_TOKEN_RUNTIME_BROKER         0x00000040 // rev
-#define PSM_ACTIVATION_TOKEN_UNIVERSAL_CONSOLE      0x00000200 // rev
-#define PSM_ACTIVATION_TOKEN_WIN32ALACARTE_PROCESS  0x00010000 // rev
+#define PSM_ACTIVATION_TOKEN_PACKAGED_APPLICATION       0x00000001UL // AppX package format
+#define PSM_ACTIVATION_TOKEN_SHARED_ENTITY              0x00000002UL // Shared token, multiple binaries in the same package
+#define PSM_ACTIVATION_TOKEN_FULL_TRUST                 0x00000004UL // Trusted (Centennial), converted Win32 application
+#define PSM_ACTIVATION_TOKEN_NATIVE_SERVICE             0x00000008UL // Packaged service created by SCM
+//#define PSM_ACTIVATION_TOKEN_DEVELOPMENT_APP          0x00000010UL
+#define PSM_ACTIVATION_TOKEN_MULTIPLE_INSTANCES_ALLOWED 0x00000010UL
+#define PSM_ACTIVATION_TOKEN_BREAKAWAY_INHIBITED        0x00000020UL // Cannot create non-packaged child processes
+#define PSM_ACTIVATION_TOKEN_RUNTIME_BROKER             0x00000040UL // rev
+#define PSM_ACTIVATION_TOKEN_UNIVERSAL_CONSOLE          0x00000200UL // rev
+#define PSM_ACTIVATION_TOKEN_WIN32ALACARTE_PROCESS      0x00010000UL // rev
 
 #if defined(_KERNEL_MODE) && !defined(_WINDOWS_)
 // PackageOrigin appmodel.h

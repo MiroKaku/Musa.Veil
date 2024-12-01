@@ -83,7 +83,7 @@ USERMGRAPI
 HRESULT
 WINAPI
 UMgrQueryUserContextFromSid(
-    _In_ PWSTR SidString,
+    _In_ PCWSTR SidString,
     _Out_ PULONGLONG ContextToken
 );
 
@@ -92,7 +92,7 @@ USERMGRAPI
 HRESULT
 WINAPI
 UMgrQueryUserContextFromName(
-    _In_ PWSTR UserName,
+    _In_ PCWSTR UserName,
     _Out_ PULONGLONG ContextToken
 );
 
@@ -133,7 +133,7 @@ USERMGRAPI
 HRESULT
 WINAPI
 UMgrQueryUserTokenFromSid(
-    _In_ PWSTR SidString,
+    _In_ PCWSTR SidString,
     _Out_ PHANDLE TokenHandle
 );
 
@@ -142,7 +142,7 @@ USERMGRAPI
 HRESULT
 WINAPI
 UMgrQueryUserTokenFromName(
-    _In_ PWSTR UserName,
+    _In_ PCWSTR UserName,
     _Out_ PHANDLE TokenHandle
 );
 

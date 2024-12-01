@@ -447,11 +447,11 @@ typedef struct _FILE_INTERNAL_INFORMATION
 {
     union
     {
-        LARGE_INTEGER IndexNumber;
+        ULARGE_INTEGER IndexNumber;
         struct
         {
-            LONGLONG MftRecordIndex : 48; // rev
-            LONGLONG SequenceNumber : 16; // rev
+            ULONGLONG MftRecordIndex : 48; // rev
+            ULONGLONG SequenceNumber : 16; // rev
         };
     };
 } FILE_INTERNAL_INFORMATION, * PFILE_INTERNAL_INFORMATION;
@@ -1698,7 +1698,7 @@ NTSTATUS
 NTAPI
 NtCreateNamedPipeFile(
     _Out_ PHANDLE FileHandle,
-    _In_ ULONG DesiredAccess,
+    _In_ ACCESS_MASK DesiredAccess,
     _In_ POBJECT_ATTRIBUTES ObjectAttributes,
     _Out_ PIO_STATUS_BLOCK IoStatusBlock,
     _In_ ULONG ShareAccess,
@@ -1718,7 +1718,7 @@ NTSTATUS
 NTAPI
 ZwCreateNamedPipeFile(
     _Out_ PHANDLE FileHandle,
-    _In_ ULONG DesiredAccess,
+    _In_ ACCESS_MASK DesiredAccess,
     _In_ POBJECT_ATTRIBUTES ObjectAttributes,
     _Out_ PIO_STATUS_BLOCK IoStatusBlock,
     _In_ ULONG ShareAccess,
@@ -1738,7 +1738,7 @@ NTSTATUS
 NTAPI
 NtCreateMailslotFile(
     _Out_ PHANDLE FileHandle,
-    _In_ ULONG DesiredAccess,
+    _In_ ACCESS_MASK DesiredAccess,
     _In_ POBJECT_ATTRIBUTES ObjectAttributes,
     _Out_ PIO_STATUS_BLOCK IoStatusBlock,
     _In_ ULONG CreateOptions,
@@ -1752,7 +1752,7 @@ NTSTATUS
 NTAPI
 ZwCreateMailslotFile(
     _Out_ PHANDLE FileHandle,
-    _In_ ULONG DesiredAccess,
+    _In_ ACCESS_MASK DesiredAccess,
     _In_ POBJECT_ATTRIBUTES ObjectAttributes,
     _Out_ PIO_STATUS_BLOCK IoStatusBlock,
     _In_ ULONG CreateOptions,
@@ -2770,6 +2770,21 @@ ZwNotifyChangeDirectoryFileEx(
 );
 #endif // NTDDI_VERSION >= NTDDI_WIN10_RS3
 
+/**
+ * @brief Loads a driver.
+ *
+ * This function loads a driver specified by the DriverServiceName parameter.
+ *
+ * @param DriverServiceName A pointer to a UNICODE_STRING structure that specifies the name of the driver service to load.
+ *
+ * @return NTSTATUS The status code returned by the function. Possible values include, but are not limited to:
+ * - STATUS_SUCCESS: The driver was successfully loaded.
+ * - STATUS_INVALID_PARAMETER: The DriverServiceName parameter is invalid.
+ * - STATUS_INSUFFICIENT_RESOURCES: There are insufficient resources to load the driver.
+ * - STATUS_OBJECT_NAME_NOT_FOUND: The specified driver service name was not found.
+ * - STATUS_OBJECT_PATH_NOT_FOUND: The path to the driver service was not found.
+ * - STATUS_OBJECT_NAME_COLLISION: A driver with the same name already exists.
+ */
 __kernel_entry NTSYSCALLAPI
 NTSTATUS
 NTAPI
@@ -2785,6 +2800,20 @@ ZwLoadDriver(
     _In_ PUNICODE_STRING DriverServiceName
 );
 
+/**
+ * @brief Unloads a driver.
+ *
+ * This function unloads a driver specified by the DriverServiceName parameter.
+ *
+ * @param DriverServiceName A pointer to a UNICODE_STRING structure that specifies the name of the driver service to unload.
+ *
+ * @return NTSTATUS The status code returned by the function. Possible values include, but are not limited to:
+ * - STATUS_SUCCESS: The driver was successfully unloaded.
+ * - STATUS_INVALID_PARAMETER: The DriverServiceName parameter is invalid.
+ * - STATUS_OBJECT_NAME_NOT_FOUND: The specified driver service name was not found.
+ * - STATUS_OBJECT_PATH_NOT_FOUND: The path to the driver service was not found.
+ * - STATUS_OBJECT_NAME_COLLISION: A driver with the same name already exists.
+ */
 __kernel_entry NTSYSCALLAPI
 NTSTATUS
 NTAPI
@@ -3868,7 +3897,7 @@ typedef struct _FLT_PORT_FULL_EA
 #define FLT_CTL_UNLOAD              CTL_CODE(FILE_DEVICE_DISK_FILE_SYSTEM, 2, METHOD_BUFFERED, FILE_WRITE_ACCESS) // in: FLT_LOAD_PARAMETERS // requires SeLoadDriverPrivilege
 #define FLT_CTL_LINK_HANDLE         CTL_CODE(FILE_DEVICE_DISK_FILE_SYSTEM, 3, METHOD_BUFFERED, FILE_READ_ACCESS)  // in: FLT_LINK // specializes the handle
 #define FLT_CTL_ATTACH              CTL_CODE(FILE_DEVICE_DISK_FILE_SYSTEM, 4, METHOD_BUFFERED, FILE_WRITE_ACCESS) // in: FLT_ATTACH
-#define FLT_CTL_DETATCH             CTL_CODE(FILE_DEVICE_DISK_FILE_SYSTEM, 5, METHOD_BUFFERED, FILE_WRITE_ACCESS) // in: FLT_INSTANCE_PARAMETERS
+#define FLT_CTL_DETACH              CTL_CODE(FILE_DEVICE_DISK_FILE_SYSTEM, 5, METHOD_BUFFERED, FILE_WRITE_ACCESS) // in: FLT_INSTANCE_PARAMETERS
 
 // IOCTLs for port-specific FltMgrMsg handles (opened using the extended attribute)
 #define FLT_CTL_SEND_MESSAGE        CTL_CODE(FILE_DEVICE_DISK_FILE_SYSTEM, 6, METHOD_NEITHER, FILE_WRITE_ACCESS)  // in, out: filter-specific
@@ -3962,6 +3991,124 @@ typedef struct _FLT_ATTACH
     USHORT AltitudeSize;
     USHORT AltitudeOffset; // to WCHAR[] from this struct
 } FLT_ATTACH, * PFLT_ATTACH;
+
+//
+// Multiple UNC Provider
+//
+
+// rev // FSCTLs for \Device\Mup
+#define FSCTL_MUP_GET_UNC_CACHE_INFO                CTL_CODE(FILE_DEVICE_MULTI_UNC_PROVIDER, 11, METHOD_BUFFERED, FILE_ANY_ACCESS) // out: MUP_FSCTL_UNC_CACHE_INFORMATION
+#define FSCTL_MUP_GET_UNC_PROVIDER_LIST             CTL_CODE(FILE_DEVICE_MULTI_UNC_PROVIDER, 12, METHOD_BUFFERED, FILE_ANY_ACCESS) // out: MUP_FSCTL_UNC_PROVIDER_INFORMATION
+#define FSCTL_MUP_GET_SURROGATE_PROVIDER_LIST       CTL_CODE(FILE_DEVICE_MULTI_UNC_PROVIDER, 13, METHOD_BUFFERED, FILE_ANY_ACCESS) // out: MUP_FSCTL_SURROGATE_PROVIDER_INFORMATION
+#define FSCTL_MUP_GET_UNC_HARDENING_CONFIGURATION   CTL_CODE(FILE_DEVICE_MULTI_UNC_PROVIDER, 14, METHOD_BUFFERED, FILE_ANY_ACCESS) // out: MUP_FSCTL_UNC_HARDENING_PREFIX_TABLE_ENTRY[]
+#define FSCTL_MUP_GET_UNC_HARDENING_CONFIGURATION_FOR_PATH  CTL_CODE(FILE_DEVICE_MULTI_UNC_PROVIDER, 15, METHOD_BUFFERED, FILE_ANY_ACCESS) // in: MUP_FSCTL_QUERY_UNC_HARDENING_CONFIGURATION_IN; out: MUP_FSCTL_QUERY_UNC_HARDENING_CONFIGURATION_OUT
+
+// private
+typedef struct _MUP_FSCTL_UNC_CACHE_ENTRY
+{
+    ULONG TotalLength;
+    ULONG UncNameOffset; // to WCHAR[] from this struct
+    USHORT UncNameLength; // in bytes
+    ULONG ProviderNameOffset; // to WCHAR[] from this struct
+    USHORT ProviderNameLength; // in bytes
+    ULONG SurrogateNameOffset; // to WCHAR[] from this struct
+    USHORT SurrogateNameLength; // in bytes
+    ULONG ProviderPriority;
+    ULONG EntryTtl;
+    WCHAR Strings[ANYSIZE_ARRAY];
+} MUP_FSCTL_UNC_CACHE_ENTRY, * PMUP_FSCTL_UNC_CACHE_ENTRY;
+
+// private
+typedef struct _MUP_FSCTL_UNC_CACHE_INFORMATION
+{
+    ULONG MaxCacheSize;
+    ULONG CurrentCacheSize;
+    ULONG EntryTimeout;
+    ULONG TotalEntries;
+    MUP_FSCTL_UNC_CACHE_ENTRY CacheEntry[ANYSIZE_ARRAY];
+} MUP_FSCTL_UNC_CACHE_INFORMATION, * PMUP_FSCTL_UNC_CACHE_INFORMATION;
+
+// private
+typedef struct _MUP_FSCTL_UNC_PROVIDER_ENTRY
+{
+    ULONG TotalLength;
+    LONG ReferenceCount;
+    ULONG ProviderPriority;
+    ULONG ProviderState;
+    ULONG ProviderId;
+    USHORT ProviderNameLength; // in bytes
+    WCHAR ProviderName[ANYSIZE_ARRAY];
+} MUP_FSCTL_UNC_PROVIDER_ENTRY, * PMUP_FSCTL_UNC_PROVIDER_ENTRY;
+
+// private
+typedef struct _MUP_FSCTL_UNC_PROVIDER_INFORMATION
+{
+    ULONG TotalEntries;
+    MUP_FSCTL_UNC_PROVIDER_ENTRY ProviderEntry[ANYSIZE_ARRAY];
+} MUP_FSCTL_UNC_PROVIDER_INFORMATION, * PMUP_FSCTL_UNC_PROVIDER_INFORMATION;
+
+// private
+typedef struct _MUP_FSCTL_SURROGATE_PROVIDER_ENTRY
+{
+    ULONG TotalLength;
+    LONG ReferenceCount;
+    ULONG SurrogateType;
+    ULONG SurrogateState;
+    ULONG SurrogatePriority;
+    USHORT SurrogateNameLength; // in bytes
+    WCHAR SurrogateName[ANYSIZE_ARRAY];
+} MUP_FSCTL_SURROGATE_PROVIDER_ENTRY, * PMUP_FSCTL_SURROGATE_PROVIDER_ENTRY;
+
+// private
+typedef struct _MUP_FSCTL_SURROGATE_PROVIDER_INFORMATION
+{
+    ULONG TotalEntries;
+    MUP_FSCTL_SURROGATE_PROVIDER_ENTRY SurrogateEntry[ANYSIZE_ARRAY];
+} MUP_FSCTL_SURROGATE_PROVIDER_INFORMATION, * PMUP_FSCTL_SURROGATE_PROVIDER_INFORMATION;
+
+// private
+typedef struct _MUP_FSCTL_UNC_HARDENING_PREFIX_TABLE_ENTRY
+{
+    ULONG NextOffset; // from this struct
+    ULONG PrefixNameOffset; // to WCHAR[] from this struct
+    USHORT PrefixNameCbLength; // in bytes
+    union
+    {
+        ULONG RequiredHardeningCapabilities;
+        struct
+        {
+            ULONG RequiresMutualAuth : 1;
+            ULONG RequiresIntegrity : 1;
+            ULONG RequiresPrivacy : 1;
+        };
+    };
+    ULONGLONG OpenCount;
+} MUP_FSCTL_UNC_HARDENING_PREFIX_TABLE_ENTRY, * PMUP_FSCTL_UNC_HARDENING_PREFIX_TABLE_ENTRY;
+
+// private
+typedef struct _MUP_FSCTL_QUERY_UNC_HARDENING_CONFIGURATION_IN
+{
+    ULONG Size;
+    ULONG UncPathOffset; // to WCHAR[] from this struct
+    USHORT UncPathCbLength; // in bytes
+} MUP_FSCTL_QUERY_UNC_HARDENING_CONFIGURATION_IN, * PMUP_FSCTL_QUERY_UNC_HARDENING_CONFIGURATION_IN;
+
+// private
+typedef struct _MUP_FSCTL_QUERY_UNC_HARDENING_CONFIGURATION_OUT
+{
+    ULONG Size;
+    union
+    {
+        ULONG RequiredHardeningCapabilities;
+        struct
+        {
+            ULONG RequiresMutualAuth : 1;
+            ULONG RequiresIntegrity : 1;
+            ULONG RequiresPrivacy : 1;
+        };
+    };
+} MUP_FSCTL_QUERY_UNC_HARDENING_CONFIGURATION_OUT, * PMUP_FSCTL_QUERY_UNC_HARDENING_CONFIGURATION_OUT;
+
 
 #ifndef _KERNEL_MODE
 //
