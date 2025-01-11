@@ -1703,6 +1703,51 @@ NtUserWindowFromPoint(
     _In_ POINT Point
 );
 
+__kernel_entry W32KAPI
+LOGICAL
+NTAPI
+NtUserSetChildWindowNoActivate(
+    _In_ HWND WindowHandle
+);
+
+// User32 ordinal 2005
+__kernel_entry W32KAPI
+LOGICAL
+NTAPI
+SetChildWindowNoActivate(
+    _In_ HWND WindowHandle
+);
+
+__kernel_entry W32KAPI
+HWND
+NTAPI
+NtUserGhostWindowFromHungWindow(
+    _In_ HWND WindowHandle
+);
+
+__kernel_entry W32KAPI
+HWND
+NTAPI
+NtUserHungWindowFromGhostWindow(
+    _In_ HWND WindowHandle
+);
+
+__kernel_entry W32KAPI
+HWND
+NTAPI
+GhostWindowFromHungWindow(
+    _In_ HWND WindowHandle
+);
+
+__kernel_entry W32KAPI
+HWND
+NTAPI
+HungWindowFromGhostWindow(
+    _In_ HWND WindowHandle
+);
+
+
+
 // Peb!KernelCallbackTable = user32.dll!apfnDispatch
 typedef struct _KERNEL_CALLBACK_TABLE
 {

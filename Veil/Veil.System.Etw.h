@@ -5971,7 +5971,7 @@ typedef enum _ETWTRACECONTROLCODE
     EtwWdiSemUpdate = 20,
     EtwEnumTraceGuidList = 21, // out GUID[]
     EtwGetTraceGuidInfo = 22, // in GUID, out ETW_TRACE_GUID_INFO
-    EtwEnumerateTraceGuids = 23,
+    EtwEnumerateTraceGuids = 23, // out TRACE_GUID_PROPERTIES[]
     EtwRegisterSecurityProv = 24,
     EtwReferenceTimeCode = 25, // in ULONG LoggerId, out ETW_REF_CLOCK
     EtwTrackBinaryCode = 26, // in HANDLE
@@ -6243,7 +6243,7 @@ WmiExecuteMethodW(
 // Enable or disable a trace logging guid.
 #define NOTIFICATION_TRACE_FLAG 0x00010000
 // Enable or disable a trace direct callback.
-// The callback is invoked immediately via a seperate thread.
+// The callback is invoked immediately via a separate thread.
 #define NOTIFICATION_CALLBACK_DIRECT 0x00000004
 // Set this flag (and only this flag) when you want to only check if the 
 // caller has permission to receive events for the guid
@@ -6300,29 +6300,28 @@ typedef struct _MOFRESOURCEINFOA
 {
     PSTR ImagePath;        // Path to image containing MOF resource
     PSTR ResourceName;     // Name of resource in image
-    ULONG ResourceSize;     // Number of bytes in resource
+    ULONG ResourceSize;    // Number of bytes in resource
     PUCHAR ResourceBuffer;
 } MOFRESOURCEINFOA, * PMOFRESOURCEINFOA;
 
-#ifdef UNICODE
-typedef struct _MOFRESOURCEINFOA MOFRESOURCEINFO, PMOFRESOURCEINFO;
-#else
-typedef struct _MOFRESOURCEINFOA MOFRESOURCEINFO, PMOFRESOURCEINFO;
-#endif
-
-//
-// When set the guid can be opened and accessed
-#define MOFCI_RESERVED0  0x00000001
-#define MOFCI_RESERVED1  0x00000002
-#define MOFCI_RESERVED2  0x00000004
-
-typedef struct
+typedef struct _MOFRESOURCEINFOW
 {
     LPWSTR ImagePath;      // Path to image containing MOF resource
     LPWSTR ResourceName;   // Name of resource in image
     ULONG ResourceSize;    // Number of bytes in resource
     PUCHAR ResourceBuffer; // Reserved
 } MOFRESOURCEINFOW, * PMOFRESOURCEINFOW;
+
+#ifdef UNICODE
+typedef struct _MOFRESOURCEINFOW MOFRESOURCEINFO, PMOFRESOURCEINFO;
+#else
+typedef struct _MOFRESOURCEINFOA MOFRESOURCEINFO, PMOFRESOURCEINFO;
+#endif
+
+// When set the guid can be opened and accessed
+#define MOFCI_RESERVED0  0x00000001
+#define MOFCI_RESERVED1  0x00000002
+#define MOFCI_RESERVED2  0x00000004
 
 NTSYSAPI
 ULONG

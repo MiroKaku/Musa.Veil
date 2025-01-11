@@ -2123,6 +2123,39 @@ RtlRbRemoveNode(
 
 #endif
 
+
+#if (NTDDI_VERSION >= NTDDI_WIN11)
+// rev
+NTSYSAPI
+NTSTATUS
+NTAPI
+RtlCompareExchangePointerMapping(
+    _In_ PRTL_BALANCED_NODE Node1,
+    _In_ PRTL_BALANCED_NODE Node2,
+    _Out_ PRTL_BALANCED_NODE* Node3,
+    _Out_ PRTL_BALANCED_NODE* Node4
+);
+
+// rev
+NTSYSAPI
+NTSTATUS
+NTAPI
+RtlQueryPointerMapping(
+    _In_ PRTL_RB_TREE Tree,
+    _Inout_ PRTL_BALANCED_NODE Children
+);
+
+// rev
+NTSYSAPI
+NTSTATUS
+NTAPI
+RtlRemovePointerMapping(
+    _In_ PRTL_RB_TREE Tree,
+    _Inout_ PRTL_BALANCED_NODE Children
+);
+#endif
+
+
 //
 // Critical sections
 //
@@ -5277,6 +5310,7 @@ typedef struct _IMAGE_RUNTIME_FUNCTION_ENTRY RUNTIME_FUNCTION, * PRUNTIME_FUNCTI
 typedef struct _SCOPE_TABLE_AMD64 SCOPE_TABLE, * PSCOPE_TABLE;
 #endif
 
+_Analysis_noreturn_
 NTSYSAPI
 DECLSPEC_NORETURN
 VOID
@@ -5366,6 +5400,7 @@ RtlRaiseExceptionForReturnAddressHijack(
 );
 
 // rev
+_Analysis_noreturn_
 NTSYSAPI
 DECLSPEC_NORETURN
 VOID

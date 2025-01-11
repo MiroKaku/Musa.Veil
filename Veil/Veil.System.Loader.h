@@ -764,9 +764,6 @@ typedef enum _WOW64_SHARED_INFORMATION
     Wow64SharedPageEntriesCount
 } WOW64_SHARED_INFORMATION;
 
-#define PS_SYSTEM_DLL_INIT_BLOCK_V1 0x0F0
-#define PS_SYSTEM_DLL_INIT_BLOCK_V2 0x128
-
 // private
 typedef struct _PS_SYSTEM_DLL_INIT_BLOCK
 {
@@ -803,6 +800,14 @@ typedef struct _PS_SYSTEM_DLL_INIT_BLOCK
 #if (NTDDI_VERSION >= NTDDI_WINTHRESHOLD)
 NTSYSAPI PS_SYSTEM_DLL_INIT_BLOCK LdrSystemDllInitBlock;
 #endif
+
+#define PS_SYSTEM_DLL_INIT_BLOCK_SIZE_V1 \
+    RTL_SIZEOF_THROUGH_FIELD(PS_SYSTEM_DLL_INIT_BLOCK, MitigationAuditOptionsMap)
+#define PS_SYSTEM_DLL_INIT_BLOCK_SIZE_V2 \
+    RTL_SIZEOF_THROUGH_FIELD(PS_SYSTEM_DLL_INIT_BLOCK, ScpArm64EcCfgCheckESFunction)
+
+//static_assert(PS_SYSTEM_DLL_INIT_BLOCK_SIZE_V1 == 240, "PS_SYSTEM_DLL_INIT_BLOCK_SIZE_V1 must equal 240");
+//static_assert(PS_SYSTEM_DLL_INIT_BLOCK_SIZE_V2 == 296, "PS_SYSTEM_DLL_INIT_BLOCK_SIZE_V2 must equal 296");
 
 // rev see also MEMORY_IMAGE_EXTENSION_INFORMATION
 typedef struct _RTL_SCPCFG_NTDLL_EXPORTS
@@ -1466,6 +1471,7 @@ LdrRemoveDllDirectory(
 #endif // (NTDDI_VERSION >= NTDDI_WIN8)
 
 // rev
+_Analysis_noreturn_
 DECLSPEC_NORETURN
 NTSYSAPI
 VOID
@@ -1475,6 +1481,7 @@ LdrShutdownProcess(
 );
 
 // rev
+_Analysis_noreturn_
 DECLSPEC_NORETURN
 NTSYSAPI
 VOID
@@ -1644,6 +1651,63 @@ BOOLEAN
 NTAPI
 LdrFlushAlternateResourceModules(
     VOID
+);
+
+// rev
+NTSYSAPI
+NTSTATUS
+NTAPI
+LdrDllRedirectionCallback(
+    _In_ ULONG Flags,
+    _In_ PCWSTR DllName,
+    _In_opt_ PCWSTR DllPath,
+    _Inout_opt_ PULONG DllCharacteristics,
+    _In_ PVOID CallbackData,
+    _Out_ PCWSTR* EffectiveDllPath
+);
+
+// rev
+NTSYSAPI
+VOID
+NTAPI
+LdrSetDllManifestProber(
+    _In_ PVOID Routine
+);
+
+#if (PHNT_VERSION >= PHNT_THRESHOLD)
+NTSYSAPI BOOLEAN LdrpChildNtdll; // DATA export
+#endif
+
+// rev
+NTSYSAPI
+VOID
+NTAPI
+LdrpResGetMappingSize(
+    _In_ PVOID BaseAddress,
+    _Out_ PSIZE_T Size,
+    _In_ ULONG Flags,
+    _In_ BOOLEAN GetFileSizeFromLoadAsDataTable
+);
+
+//
+// ApiSet
+//
+
+NTSYSAPI
+BOOL
+NTAPI
+ApiSetQueryApiSetPresence(
+    _In_ PCUNICODE_STRING Namespace,
+    _Out_ PBOOLEAN Present
+);
+
+NTSYSAPI
+BOOL
+NTAPI
+ApiSetQueryApiSetPresenceEx(
+    _In_ PCUNICODE_STRING Namespace,
+    _Out_ PBOOLEAN IsInSchema,
+    _Out_ PBOOLEAN Present
 );
 
 #endif // !_KERNEL_MODE

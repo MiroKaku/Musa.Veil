@@ -310,7 +310,6 @@ struct IUnknown;
 
 #endif // if defined(_KERNEL_MODE)
 
-
 #include "Veil/Veil.System.Define.h"
 #include "Veil/Veil.System.KernelCore.h"
 #include "Veil/Veil.System.MemoryManager.h"
@@ -335,6 +334,7 @@ struct IUnknown;
 #include "Veil/Veil.System.TransactionManager.h"
 #include "Veil/Veil.System.VDM.h"
 #include "Veil/Veil.System.Prefetcher.h"
+#include "Veil/Veil.System.SMBios.h"
 #include "Veil/Veil.System.WindowStation.h"
 #include "Veil/Veil.System.UserManagerService.h"
 
