@@ -1,6 +1,7 @@
-#include "Universal.h"
+﻿#include "Universal.h"
 
 #ifdef  _KERNEL_MODE
+EXTERN_C DRIVER_INITIALIZE DriverEntry;
 EXTERN_C NTSTATUS DriverEntry(PDRIVER_OBJECT DriverObject, PUNICODE_STRING RegistryPath)
 {
     DriverObject;

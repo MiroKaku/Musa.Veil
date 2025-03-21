@@ -1,0 +1,10 @@
+<!-- 
+This file allow for customizing your build process.
+See: https://learn.microsoft.com/visualstudio/msbuild/customize-your-build
+-->
+<Project>
+  <!-- 
+  Uncomment if you need to enable inclusion of another Directory.Build.targets file from a parent directory
+  <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.targets', '$(MSBuildThisFileDirectory)../'))" />
+  -->
+</Project>

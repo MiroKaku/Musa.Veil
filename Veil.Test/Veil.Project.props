@@ -1,29 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <!-- Global -->
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>universal.h</PrecompiledHeaderFile>
+      <ForcedIncludeFiles>%(PrecompiledHeaderFile);%(ForcedIncludeFiles)</ForcedIncludeFiles>
+    </ClCompile>
+  </ItemDefinitionGroup>
 
-    <!-- General -->
-    <PropertyGroup>
-        <OutDir>$(SolutionDir)Output\Binaries\$(Configuration)\$(PlatformShortName)\</OutDir>
-        <IntDir>$(SolutionDir)Output\Objects\$(MSBuildProjectName)\$(Configuration)\$(PlatformShortName)\</IntDir>
-    </PropertyGroup>
+  <PropertyGroup Label="Configuration">
+    <OutDir>$(MileProjectBinariesPath)$(Configuration)\$(Platform)\</OutDir>
+    <IntDir>$(MileProjectObjectsPath)$(Configuration)\$(MSBuildProjectName)\$(Platform)\</IntDir>
+    <GeneratedFilesDir>$(IntDir)Generated Files\</GeneratedFilesDir>
+  </PropertyGroup>
 
-    <!-- Global -->
-    <ItemDefinitionGroup>
-        <ClCompile>
-            <ConformanceMode>true</ConformanceMode>
-            <LanguageStandard>stdcpp17</LanguageStandard>
-            <WarningLevel>Level4</WarningLevel>
-            <TreatWarningAsError>true</TreatWarningAsError>
-            <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
-            <ObjectFileName>$(IntDir)anyname\%(RelativeDir)%(FileName).obj</ObjectFileName>
-            <PrecompiledHeader>Use</PrecompiledHeader>
-            <PrecompiledHeaderFile>universal.h</PrecompiledHeaderFile>
-            <ForcedIncludeFiles>%(PrecompiledHeaderFile);%(ForcedIncludeFiles)</ForcedIncludeFiles>
-        </ClCompile>
-    </ItemDefinitionGroup>
-
-    <PropertyGroup Label="Configuration">
-        <SpectreMitigation>false</SpectreMitigation>
-        <Driver_SpectreMitigation>false</Driver_SpectreMitigation>
-    </PropertyGroup>
+  <PropertyGroup Label="Configuration">
+    <SpectreMitigation>false</SpectreMitigation>
+    <Driver_SpectreMitigation>false</Driver_SpectreMitigation>
+  </PropertyGroup>
 </Project>

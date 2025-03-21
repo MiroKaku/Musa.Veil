@@ -19,4 +19,4 @@ for /f "usebackq tokens=*" %%i in (`vswhere -latest -products * -requires Micros
 )
 popd
 
-call "%VisualStudioInstallDir%\VC\Auxiliary\Build\vcvarsall.bat" x86
+call "%VisualStudioInstallDir%\VC\Auxiliary\Build\vcvarsall.bat" x64

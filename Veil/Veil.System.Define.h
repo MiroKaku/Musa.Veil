@@ -136,20 +136,22 @@ VEIL_BEGIN()
 #define FIELD_SIZE(type, field) (sizeof(((type *)0)->field))
 #endif
 
-#undef  STATIC_ASSERT
-#define STATIC_ASSERT(expr, ...) static_assert((expr), __VA_ARGS__)
+#undef STATIC_ASSERT
 
 #if __cplusplus
 #if _MSVC_LANG < 201402L
-#undef  STATIC_ASSERT
 #define STATIC_ASSERT(expr, ...) typedef char __static_assert_t[ (expr) ]
+#else
+#define STATIC_ASSERT(expr, ...) static_assert((expr), __VA_ARGS__)
 #endif
 #else
 #if __STDC_VERSION__ < 201112L
-#undef  STATIC_ASSERT
 #define STATIC_ASSERT(expr, ...) typedef char __static_assert_t[ (expr) ]
+#else
+#define STATIC_ASSERT(expr, ...) _Static_assert((expr), #expr)
 #endif
-#endif
+#endif // __cplusplus
+
 
 STATIC_ASSERT(__alignof(LARGE_INTEGER) == 8,
     "Windows headers require the default packing option. Changing the packing can lead to memory corruption.");
