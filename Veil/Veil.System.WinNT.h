@@ -790,57 +790,59 @@ typedef struct _TP_IO TP_IO, * PTP_IO;
 
 typedef enum _JOBOBJECTINFOCLASS
 {
-    JobObjectBasicAccountingInformation, // JOBOBJECT_BASIC_ACCOUNTING_INFORMATION
-    JobObjectBasicLimitInformation, // JOBOBJECT_BASIC_LIMIT_INFORMATION
-    JobObjectBasicProcessIdList, // JOBOBJECT_BASIC_PROCESS_ID_LIST
-    JobObjectBasicUIRestrictions, // JOBOBJECT_BASIC_UI_RESTRICTIONS
-    JobObjectSecurityLimitInformation, // JOBOBJECT_SECURITY_LIMIT_INFORMATION
-    JobObjectEndOfJobTimeInformation = 6, // JOBOBJECT_END_OF_JOB_TIME_INFORMATION
-    JobObjectAssociateCompletionPortInformation, // JOBOBJECT_ASSOCIATE_COMPLETION_PORT
-    JobObjectBasicAndIoAccountingInformation, // JOBOBJECT_BASIC_AND_IO_ACCOUNTING_INFORMATION
-    JobObjectExtendedLimitInformation, // JOBOBJECT_EXTENDED_LIMIT_INFORMATION
-    JobObjectJobSetInformation, // JOBOBJECT_JOBSET_INFORMATION
-    JobObjectGroupInformation = 11, // USHORT
-    JobObjectNotificationLimitInformation, // JOBOBJECT_NOTIFICATION_LIMIT_INFORMATION
-    JobObjectLimitViolationInformation, // JOBOBJECT_LIMIT_VIOLATION_INFORMATION
-    JobObjectGroupInformationEx, // GROUP_AFFINITY (ARRAY)
-    JobObjectCpuRateControlInformation, // JOBOBJECT_CPU_RATE_CONTROL_INFORMATION
-    JobObjectCompletionFilter = 16,
+    JobObjectBasicAccountingInformation = 1,
+    JobObjectBasicLimitInformation,
+    JobObjectBasicProcessIdList,
+    JobObjectBasicUIRestrictions,
+    JobObjectSecurityLimitInformation,
+    JobObjectEndOfJobTimeInformation,
+    JobObjectAssociateCompletionPortInformation,
+    JobObjectBasicAndIoAccountingInformation,
+    JobObjectExtendedLimitInformation,
+    JobObjectJobSetInformation,
+    JobObjectGroupInformation,
+    JobObjectNotificationLimitInformation,
+    JobObjectLimitViolationInformation,
+    JobObjectGroupInformationEx,
+    JobObjectCpuRateControlInformation,
+    JobObjectCompletionFilter,
     JobObjectCompletionCounter,
-    JobObjectFreezeInformation, // JOBOBJECT_FREEZE_INFORMATION
-    JobObjectExtendedAccountingInformation, // JOBOBJECT_EXTENDED_ACCOUNTING_INFORMATION
-    JobObjectWakeInformation, // JOBOBJECT_WAKE_INFORMATION
-    JobObjectBackgroundInformation = 21,
+    JobObjectFreezeInformation,
+    JobObjectExtendedAccountingInformation,
+    JobObjectWakeInformation,
+    JobObjectBackgroundInformation,
     JobObjectSchedulingRankBiasInformation,
     JobObjectTimerVirtualizationInformation,
     JobObjectCycleTimeNotification,
     JobObjectClearEvent,
-    JobObjectInterferenceInformation = 26, // JOBOBJECT_INTERFERENCE_INFORMATION
+    JobObjectInterferenceInformation,
     JobObjectClearPeakJobMemoryUsed,
-    JobObjectMemoryUsageInformation, // JOBOBJECT_MEMORY_USAGE_INFORMATION // JOBOBJECT_MEMORY_USAGE_INFORMATION_V2
+    JobObjectMemoryUsageInformation,
     JobObjectSharedCommit,
     JobObjectContainerId,
-    JobObjectIoRateControlInformation = 31,
-    JobObjectNetRateControlInformation, // JOBOBJECT_NET_RATE_CONTROL_INFORMATION
-    JobObjectNotificationLimitInformation2, // JOBOBJECT_NOTIFICATION_LIMIT_INFORMATION_2
-    JobObjectLimitViolationInformation2, // JOBOBJECT_LIMIT_VIOLATION_INFORMATION_2
+    JobObjectIoRateControlInformation,
+    JobObjectNetRateControlInformation,
+    JobObjectNotificationLimitInformation2,
+    JobObjectLimitViolationInformation2,
     JobObjectCreateSilo,
-    JobObjectSiloBasicInformation = 36, // SILOOBJECT_BASIC_INFORMATION
-    JobObjectSiloRootDirectory, // SILOOBJECT_ROOT_DIRECTORY
-    JobObjectServerSiloBasicInformation, // SERVERSILO_BASIC_INFORMATION
-    JobObjectServerSiloUserSharedData, // SILO_USER_SHARED_DATA
+    JobObjectSiloBasicInformation,
+    JobObjectSiloRootDirectory,
+    JobObjectServerSiloBasicInformation,
+    JobObjectServerSiloUserSharedData,
     JobObjectServerSiloInitialize,
-    JobObjectServerSiloRunningState = 41,
+    JobObjectServerSiloRunningState,
     JobObjectIoAttribution,
     JobObjectMemoryPartitionInformation,
     JobObjectContainerTelemetryId,
     JobObjectSiloSystemRoot,
-    JobObjectEnergyTrackingState = 46, // JOBOBJECT_ENERGY_TRACKING_STATE
+    JobObjectEnergyTrackingState,
     JobObjectThreadImpersonationInformation,
     JobObjectIoPriorityLimit,
     JobObjectPagePriorityLimit,
-    MaxJobObjectInfoClass
-}JOBOBJECTINFOCLASS;
+    JobObjectServerSiloDiagnosticInformation,
+    JobObjectNetworkAccountingInformation,
+    MaxJobObjectInfoClass,
+} JOBOBJECTINFOCLASS;
 
 typedef struct _JOB_SET_ARRAY
 {

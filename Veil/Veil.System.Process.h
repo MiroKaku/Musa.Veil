@@ -340,7 +340,7 @@ typedef struct _RTL_BITMAP* PRTL_BITMAP;
 /**
  * Process Environment Block (PEB) structure.
  *
- * \remarks https://learn.microsoft.com/en-us/windows/win32/api/winternl/ns-winternl-peb
+ * @remarks https://learn.microsoft.com/en-us/windows/win32/api/winternl/ns-winternl-peb
  */
 typedef struct _PEB
 {
@@ -516,7 +516,45 @@ typedef struct _PEB
     //
     // Global flags for the system.
     //
-    ULONG NtGlobalFlag;
+    union
+    {
+        ULONG NtGlobalFlag;
+        struct
+        {
+            ULONG StopOnException : 1;          // FLG_STOP_ON_EXCEPTION
+            ULONG ShowLoaderSnaps : 1;          // FLG_SHOW_LDR_SNAPS
+            ULONG DebugInitialCommand : 1;      // FLG_DEBUG_INITIAL_COMMAND
+            ULONG StopOnHungGUI : 1;            // FLG_STOP_ON_HUNG_GUI
+            ULONG HeapEnableTailCheck : 1;      // FLG_HEAP_ENABLE_TAIL_CHECK
+            ULONG HeapEnableFreeCheck : 1;      // FLG_HEAP_ENABLE_FREE_CHECK
+            ULONG HeapValidateParameters : 1;   // FLG_HEAP_VALIDATE_PARAMETERS
+            ULONG HeapValidateAll : 1;          // FLG_HEAP_VALIDATE_ALL
+            ULONG ApplicationVerifier : 1;      // FLG_APPLICATION_VERIFIER
+            ULONG MonitorSilentProcessExit : 1; // FLG_MONITOR_SILENT_PROCESS_EXIT
+            ULONG PoolEnableTagging : 1;        // FLG_POOL_ENABLE_TAGGING
+            ULONG HeapEnableTagging : 1;        // FLG_HEAP_ENABLE_TAGGING
+            ULONG UserStackTraceDb : 1;         // FLG_USER_STACK_TRACE_DB
+            ULONG KernelStackTraceDb : 1;       // FLG_KERNEL_STACK_TRACE_DB
+            ULONG MaintainObjectTypeList : 1;   // FLG_MAINTAIN_OBJECT_TYPELIST
+            ULONG HeapEnableTagByDll : 1;       // FLG_HEAP_ENABLE_TAG_BY_DLL
+            ULONG DisableStackExtension : 1;    // FLG_DISABLE_STACK_EXTENSION
+            ULONG EnableCsrDebug : 1;           // FLG_ENABLE_CSRDEBUG
+            ULONG EnableKDebugSymbolLoad : 1;   // FLG_ENABLE_KDEBUG_SYMBOL_LOAD
+            ULONG DisablePageKernelStacks : 1;  // FLG_DISABLE_PAGE_KERNEL_STACKS
+            ULONG EnableSystemCritBreaks : 1;   // FLG_ENABLE_SYSTEM_CRIT_BREAKS
+            ULONG HeapDisableCoalescing : 1;    // FLG_HEAP_DISABLE_COALESCING
+            ULONG EnableCloseExceptions : 1;    // FLG_ENABLE_CLOSE_EXCEPTIONS
+            ULONG EnableExceptionLogging : 1;   // FLG_ENABLE_EXCEPTION_LOGGING
+            ULONG EnableHandleTypeTagging : 1;  // FLG_ENABLE_HANDLE_TYPE_TAGGING
+            ULONG HeapPageAllocs : 1;           // FLG_HEAP_PAGE_ALLOCS
+            ULONG DebugInitialCommandEx : 1;    // FLG_DEBUG_INITIAL_COMMAND_EX
+            ULONG DisableDbgPrint : 1;          // FLG_DISABLE_DBGPRINT
+            ULONG CritSecEventCreation : 1;     // FLG_CRITSEC_EVENT_CREATION
+            ULONG LdrTopDown : 1;               // FLG_LDR_TOP_DOWN
+            ULONG EnableHandleExceptions : 1;   // FLG_ENABLE_HANDLE_EXCEPTIONS
+            ULONG DisableProtDlls : 1;          // FLG_DISABLE_PROTDLLS
+        } NtGlobalFlags;
+    };
 
 
     //
@@ -720,7 +758,15 @@ typedef struct _PEB
     //
     // Packaged process feature state.
     // 
-    ULONG AppModelFeatureState;
+    union
+    {
+        ULONG AppModelFeatureState;
+        struct
+        {
+            ULONG ForegroundBoostProcesses : 1;
+            ULONG AppModelFeatureStateReserved : 31;
+        };
+    };
 
     //
     // SpareUlongs
@@ -862,17 +908,17 @@ typedef struct _PEB
 } PEB, * PPEB;
 
 #ifdef _WIN64
-STATIC_ASSERT(FIELD_OFFSET(PEB, SessionId) == 0x2C0);
-//STATIC_ASSERT(sizeof(PEB) == 0x7B0); // REDSTONE3
-//STATIC_ASSERT(sizeof(PEB) == 0x7B8); // REDSTONE4
-//STATIC_ASSERT(sizeof(PEB) == 0x7C8); // REDSTONE5 // 19H1
-STATIC_ASSERT(sizeof(PEB) == 0x7d0); // WIN11
+STATIC_ASSERT(FIELD_OFFSET(PEB, SessionId) == 0x2C0, "FIELD_OFFSET(PEB, SessionId) is incorrect");
+//STATIC_ASSERT(sizeof(PEB) == 0x7B0, "Size of PEB is incorrect"); // REDSTONE3
+//STATIC_ASSERT(sizeof(PEB) == 0x7B8, "Size of PEB is incorrect"); // REDSTONE4
+//STATIC_ASSERT(sizeof(PEB) == 0x7C8, "Size of PEB is incorrect"); // REDSTONE5 // 19H1
+STATIC_ASSERT(sizeof(PEB) == 0x7d0, "Size of PEB is incorrect"); // WIN11
 #else
-STATIC_ASSERT(FIELD_OFFSET(PEB, SessionId) == 0x1D4);
-//STATIC_ASSERT(sizeof(PEB) == 0x468); // REDSTONE3
-//STATIC_ASSERT(sizeof(PEB) == 0x470); // REDSTONE4
-//STATIC_ASSERT(sizeof(PEB) == 0x480); // REDSTONE5 // 19H1
-STATIC_ASSERT(sizeof(PEB) == 0x488); // WIN11
+STATIC_ASSERT(FIELD_OFFSET(PEB, SessionId) == 0x1D4, "FIELD_OFFSET(PEB, SessionId) is incorrect");
+//STATIC_ASSERT(sizeof(PEB) == 0x468, "Size of PEB is incorrect"); // REDSTONE3
+//STATIC_ASSERT(sizeof(PEB) == 0x470, "Size of PEB is incorrect"); // REDSTONE4
+//STATIC_ASSERT(sizeof(PEB) == 0x480, "Size of PEB is incorrect"); // REDSTONE5 // 19H1
+STATIC_ASSERT(sizeof(PEB) == 0x488, "Size of PEB is incorrect"); // WIN11
 #endif
 
 typedef struct _PEB32
@@ -1051,7 +1097,7 @@ typedef struct _PEB32
 
 } PEB32, * POINTER_32 PPEB32;
 
-STATIC_ASSERT(sizeof(PEB32) == 0x488); // WIN11
+STATIC_ASSERT(sizeof(PEB32) == 0x488, "sizeof(PEB32) is incorrect"); // WIN11
 
 #define GDI_BATCH_BUFFER_SIZE 310
 
@@ -1072,7 +1118,7 @@ typedef struct _GDI_TEB_BATCH32
     ULONG Buffer[GDI_BATCH_BUFFER_SIZE];
 } GDI_TEB_BATCH32, * POINTER_32 PGDI_TEB_BATCH32;
 
-STATIC_ASSERT(sizeof(GDI_TEB_BATCH32) == 1248);
+STATIC_ASSERT(sizeof(GDI_TEB_BATCH32) == 1248, "sizeof(GDI_TEB_BATCH32) is incorrect");
 
 /**
  * The TEB_ACTIVE_FRAME_CONTEXT structure is used to store information about an active frame context.
@@ -1156,7 +1202,7 @@ typedef struct _FLS_DATA32
 /**
  * Thread Environment Block (TEB) structure.
  *
- * \remarks https://learn.microsoft.com/en-us/windows/win32/api/winternl/ns-winternl-teb
+ * @remarks https://learn.microsoft.com/en-us/windows/win32/api/winternl/ns-winternl-teb
  */
 typedef struct _TEB
 {
@@ -1354,14 +1400,24 @@ typedef struct _TEB
     ULONG TxFsContext;
 #endif
 
+    //
+    // Reserved for GDI.
+    //
     GDI_TEB_BATCH GdiTebBatch;
     CLIENT_ID RealClientId;
     HANDLE GdiCachedProcessHandle;
     ULONG GdiClientPID;
     ULONG GdiClientTID;
     PVOID GdiThreadLocalInfo;
+
+    //
+    // Reserved for User32.
+    //
     ULONG_PTR Win32ClientInfo[WIN32_CLIENT_INFO_LENGTH];
 
+    //
+    // Reserved for opengl32.dll
+    //
     PVOID glDispatchTable[233];
     ULONG_PTR glReserved1[29];
     PVOID glReserved2;
@@ -1507,6 +1563,10 @@ typedef struct _TEB
     ULONG HeapData;
     HANDLE CurrentTransactionHandle;
     PTEB_ACTIVE_FRAME ActiveFrame;
+
+    //
+    // Reserved for FLS (RtlProcessFlsData).
+    //
     PVOID FlsData;  // PFLS_DATA
 
     PVOID PreferredLanguages;
@@ -1561,8 +1621,13 @@ typedef struct _TEB
     ULONG Rcu[2];
 } TEB, * PTEB;
 
-//STATIC_ASSERT(sizeof(TEB) == (sizeof(void*) == sizeof(__int32) ? 0x1018 : 0x1850)); // WIN11
-STATIC_ASSERT(sizeof(TEB) == (sizeof(void*) == sizeof(__int32) ? 0x1038 : 0x1878)); // 24H2
+#ifdef _WIN64
+//STATIC_ASSERT(sizeof(TEB) == 0x1850, "Size of TEB is incorrect"); // WIN11
+STATIC_ASSERT(sizeof(TEB) == 0x1878, "Size of TEB is incorrect"); // 24H2
+#else
+//STATIC_ASSERT(sizeof(TEB) == 0x1018, "Size of TEB is incorrect"); // WIN11
+STATIC_ASSERT(sizeof(TEB) == 0x1038, "Size of TEB is incorrect"); // 24H2
+#endif
 
 typedef struct _TEB32
 {
@@ -1720,7 +1785,7 @@ typedef struct _TEB32
     ULONGLONG ExtendedFeatureDisableMask;
 } TEB32, * POINTER_32 PTEB32;
 
-STATIC_ASSERT(sizeof(TEB32) == 4120);
+STATIC_ASSERT(sizeof(TEB32) == 4120, "sizeof(TEB32) is incorrect");
 
 typedef struct _WOW64_PROCESS
 {
@@ -1741,7 +1806,7 @@ typedef struct _WOW64_PROCESS
 // Convert the number of native pages to sub x86-pages
 //
 #define Wow64GetNumberOfX86Pages(NativePages) \
-    (NativePages * (PAGE_SIZE_X86NT >> PAGE_SHIFT_X86NT))
+    ((NativePages) * (PAGE_SIZE_X86NT >> PAGE_SHIFT_X86NT))
 
 //
 // Macro to round to the nearest page size
@@ -1761,6 +1826,9 @@ typedef struct _WOW64_PROCESS
 #define WOW64_GET_TEB32(teb64) ((PTEB32)(PVOID)Add2Ptr((teb64), WOW64_ROUND_TO_PAGES(sizeof(TEB))))
 #define WOW64_TEB32_POINTER_ADDRESS(teb64) (PVOID)&((teb64)->NtTib.ExceptionList)
 
+//
+// Get the 32-bit execute options.
+//
 typedef union _WOW64_EXECUTE_OPTIONS
 {
     ULONG Flags;
@@ -1821,8 +1889,7 @@ Wow64CurrentGuestTeb(
 
     if (Teb->WowTebOffset < 0) {
         //
-        // Was called while running under WoW. The current teb is the guest
-        // teb.
+        // Was called while running under WoW. The current teb is the guest teb.
         //
 
         Teb32 = (PTEB32)(ULONG)(ULONG_PTR)Teb;
@@ -2138,122 +2205,124 @@ typedef struct _WOW64_DESCRIPTOR_TABLE_ENTRY
 //
 typedef enum _PROCESSINFOCLASS
 {
-    ProcessBasicInformation, // q: PROCESS_BASIC_INFORMATION, PROCESS_EXTENDED_BASIC_INFORMATION
-    ProcessQuotaLimits, // qs: QUOTA_LIMITS, QUOTA_LIMITS_EX
-    ProcessIoCounters, // q: IO_COUNTERS
-    ProcessVmCounters, // q: VM_COUNTERS, VM_COUNTERS_EX, VM_COUNTERS_EX2
-    ProcessTimes, // q: KERNEL_USER_TIMES
-    ProcessBasePriority, // s: KPRIORITY
-    ProcessRaisePriority, // s: ULONG
-    ProcessDebugPort, // q: HANDLE
-    ProcessExceptionPort, // s: PROCESS_EXCEPTION_PORT (requires SeTcbPrivilege)
-    ProcessAccessToken, // s: PROCESS_ACCESS_TOKEN
-    ProcessLdtInformation, // qs: PROCESS_LDT_INFORMATION // 10
-    ProcessLdtSize, // s: PROCESS_LDT_SIZE
-    ProcessDefaultHardErrorMode, // qs: ULONG
-    ProcessIoPortHandlers, // (kernel-mode only) // s: PROCESS_IO_PORT_HANDLER_INFORMATION
-    ProcessPooledUsageAndLimits, // q: POOLED_USAGE_AND_LIMITS
-    ProcessWorkingSetWatch, // q: PROCESS_WS_WATCH_INFORMATION[]; s: void
-    ProcessUserModeIOPL, // qs: ULONG (requires SeTcbPrivilege)
-    ProcessEnableAlignmentFaultFixup, // s: BOOLEAN
-    ProcessPriorityClass, // qs: PROCESS_PRIORITY_CLASS
-    ProcessWx86Information, // qs: ULONG (requires SeTcbPrivilege) (VdmAllowed)
-    ProcessHandleCount, // q: ULONG, PROCESS_HANDLE_INFORMATION // 20
-    ProcessAffinityMask, // (q >WIN7)s: KAFFINITY, qs: GROUP_AFFINITY
-    ProcessPriorityBoost, // qs: ULONG
-    ProcessDeviceMap, // qs: PROCESS_DEVICEMAP_INFORMATION, PROCESS_DEVICEMAP_INFORMATION_EX
-    ProcessSessionInformation, // q: PROCESS_SESSION_INFORMATION
-    ProcessForegroundInformation, // s: PROCESS_FOREGROUND_BACKGROUND
-    ProcessWow64Information, // q: ULONG_PTR
-    ProcessImageFileName, // q: UNICODE_STRING
-    ProcessLUIDDeviceMapsEnabled, // q: ULONG
-    ProcessBreakOnTermination, // qs: ULONG
-    ProcessDebugObjectHandle, // q: HANDLE // 30
-    ProcessDebugFlags, // qs: ULONG
-    ProcessHandleTracing, // q: PROCESS_HANDLE_TRACING_QUERY; s: PROCESS_HANDLE_TRACING_ENABLE[_EX] or void to disable
-    ProcessIoPriority, // qs: IO_PRIORITY_HINT
-    ProcessExecuteFlags, // qs: ULONG (MEM_EXECUTE_OPTION_*)
-    ProcessTlsInformation, // PROCESS_TLS_INFORMATION // ProcessResourceManagement 
-    ProcessCookie, // q: ULONG
-    ProcessImageInformation, // q: SECTION_IMAGE_INFORMATION
-    ProcessCycleTime, // q: PROCESS_CYCLE_TIME_INFORMATION // since VISTA
-    ProcessPagePriority, // qs: PAGE_PRIORITY_INFORMATION
-    ProcessInstrumentationCallback, // s: PVOID or PROCESS_INSTRUMENTATION_CALLBACK_INFORMATION // 40
-    ProcessThreadStackAllocation, // s: PROCESS_STACK_ALLOCATION_INFORMATION, PROCESS_STACK_ALLOCATION_INFORMATION_EX
-    ProcessWorkingSetWatchEx, // q: PROCESS_WS_WATCH_INFORMATION_EX[]; s: void
-    ProcessImageFileNameWin32, // q: UNICODE_STRING
-    ProcessImageFileMapping, // q: HANDLE (input)
-    ProcessAffinityUpdateMode, // qs: PROCESS_AFFINITY_UPDATE_MODE
-    ProcessMemoryAllocationMode, // qs: PROCESS_MEMORY_ALLOCATION_MODE
-    ProcessGroupInformation, // q: USHORT[]
-    ProcessTokenVirtualizationEnabled, // s: ULONG
-    ProcessConsoleHostProcess, // qs: ULONG_PTR // ProcessOwnerInformation
-    ProcessWindowInformation, // q: PROCESS_WINDOW_INFORMATION // 50
-    ProcessHandleInformation, // q: PROCESS_HANDLE_SNAPSHOT_INFORMATION // since WIN8
-    ProcessMitigationPolicy, // s: PROCESS_MITIGATION_POLICY_INFORMATION
+    ProcessBasicInformation,                // q: PROCESS_BASIC_INFORMATION, PROCESS_EXTENDED_BASIC_INFORMATION
+    ProcessQuotaLimits,                     // qs: QUOTA_LIMITS, QUOTA_LIMITS_EX
+    ProcessIoCounters,                      // q: IO_COUNTERS
+    ProcessVmCounters,                      // q: VM_COUNTERS, VM_COUNTERS_EX, VM_COUNTERS_EX2
+    ProcessTimes,                           // q: KERNEL_USER_TIMES
+    ProcessBasePriority,                    // s: KPRIORITY
+    ProcessRaisePriority,                   // s: ULONG
+    ProcessDebugPort,                       // q: HANDLE
+    ProcessExceptionPort,                   // s: PROCESS_EXCEPTION_PORT (requires SeTcbPrivilege)
+    ProcessAccessToken,                     // s: PROCESS_ACCESS_TOKEN
+    ProcessLdtInformation,                  // qs: PROCESS_LDT_INFORMATION // 10
+    ProcessLdtSize,                         // s: PROCESS_LDT_SIZE
+    ProcessDefaultHardErrorMode,            // qs: ULONG
+    ProcessIoPortHandlers,                  // (kernel-mode only) // s: PROCESS_IO_PORT_HANDLER_INFORMATION
+    ProcessPooledUsageAndLimits,            // q: POOLED_USAGE_AND_LIMITS
+    ProcessWorkingSetWatch,                 // q: PROCESS_WS_WATCH_INFORMATION[]; s: void
+    ProcessUserModeIOPL,                    // qs: ULONG (requires SeTcbPrivilege)
+    ProcessEnableAlignmentFaultFixup,       // s: BOOLEAN
+    ProcessPriorityClass,                   // qs: PROCESS_PRIORITY_CLASS
+    ProcessWx86Information,                 // qs: ULONG (requires SeTcbPrivilege) (VdmAllowed)
+    ProcessHandleCount,                     // q: ULONG, PROCESS_HANDLE_INFORMATION // 20
+    ProcessAffinityMask,                    // (q >WIN7)s: KAFFINITY, qs: GROUP_AFFINITY
+    ProcessPriorityBoost,                   // qs: ULONG
+    ProcessDeviceMap,                       // qs: PROCESS_DEVICEMAP_INFORMATION, PROCESS_DEVICEMAP_INFORMATION_EX
+    ProcessSessionInformation,              // q: PROCESS_SESSION_INFORMATION
+    ProcessForegroundInformation,           // s: PROCESS_FOREGROUND_BACKGROUND
+    ProcessWow64Information,                // q: ULONG_PTR
+    ProcessImageFileName,                   // q: UNICODE_STRING
+    ProcessLUIDDeviceMapsEnabled,           // q: ULONG
+    ProcessBreakOnTermination,              // qs: ULONG
+    ProcessDebugObjectHandle,               // q: HANDLE // 30
+    ProcessDebugFlags,                      // qs: ULONG
+    ProcessHandleTracing,                   // q: PROCESS_HANDLE_TRACING_QUERY; s: PROCESS_HANDLE_TRACING_ENABLE[_EX] or void to disable
+    ProcessIoPriority,                      // qs: IO_PRIORITY_HINT
+    ProcessExecuteFlags,                    // qs: ULONG (MEM_EXECUTE_OPTION_*)
+    ProcessTlsInformation,                  // PROCESS_TLS_INFORMATION // ProcessResourceManagement 
+    ProcessCookie,                          // q: ULONG
+    ProcessImageInformation,                // q: SECTION_IMAGE_INFORMATION
+    ProcessCycleTime,                       // q: PROCESS_CYCLE_TIME_INFORMATION // since VISTA
+    ProcessPagePriority,                    // qs: PAGE_PRIORITY_INFORMATION
+    ProcessInstrumentationCallback,         // s: PVOID or PROCESS_INSTRUMENTATION_CALLBACK_INFORMATION // 40
+    ProcessThreadStackAllocation,           // s: PROCESS_STACK_ALLOCATION_INFORMATION, PROCESS_STACK_ALLOCATION_INFORMATION_EX
+    ProcessWorkingSetWatchEx,               // q: PROCESS_WS_WATCH_INFORMATION_EX[]; s: void
+    ProcessImageFileNameWin32,              // q: UNICODE_STRING
+    ProcessImageFileMapping,                // q: HANDLE (input)
+    ProcessAffinityUpdateMode,              // qs: PROCESS_AFFINITY_UPDATE_MODE
+    ProcessMemoryAllocationMode,            // qs: PROCESS_MEMORY_ALLOCATION_MODE
+    ProcessGroupInformation,                // q: USHORT[]
+    ProcessTokenVirtualizationEnabled,      // s: ULONG
+    ProcessConsoleHostProcess,              // qs: ULONG_PTR // ProcessOwnerInformation
+    ProcessWindowInformation,               // q: PROCESS_WINDOW_INFORMATION // 50
+    ProcessHandleInformation,               // q: PROCESS_HANDLE_SNAPSHOT_INFORMATION // since WIN8
+    ProcessMitigationPolicy,                // s: PROCESS_MITIGATION_POLICY_INFORMATION
     ProcessDynamicFunctionTableInformation, // s: PROCESS_DYNAMIC_FUNCTION_TABLE_INFORMATION
-    ProcessHandleCheckingMode, // qs: ULONG; s: 0 disables, otherwise enables
-    ProcessKeepAliveCount, // q: PROCESS_KEEPALIVE_COUNT_INFORMATION
-    ProcessRevokeFileHandles, // s: PROCESS_REVOKE_FILE_HANDLES_INFORMATION
-    ProcessWorkingSetControl, // s: PROCESS_WORKING_SET_CONTROL (requires SeDebugPrivilege)
-    ProcessHandleTable, // q: ULONG[] // since WINBLUE
-    ProcessCheckStackExtentsMode, // qs: ULONG // KPROCESS->CheckStackExtents (CFG)
-    ProcessCommandLineInformation, // q: UNICODE_STRING // 60
-    ProcessProtectionInformation, // q: PS_PROTECTION
-    ProcessMemoryExhaustion, // s: PROCESS_MEMORY_EXHAUSTION_INFO // since THRESHOLD
-    ProcessFaultInformation, // s: PROCESS_FAULT_INFORMATION
-    ProcessTelemetryIdInformation, // q: PROCESS_TELEMETRY_ID_INFORMATION
-    ProcessCommitReleaseInformation, // qs: PROCESS_COMMIT_RELEASE_INFORMATION
-    ProcessDefaultCpuSetsInformation, // qs: SYSTEM_CPU_SET_INFORMATION[5]
-    ProcessAllowedCpuSetsInformation, // qs: SYSTEM_CPU_SET_INFORMATION[5]
+    ProcessHandleCheckingMode,              // qs: ULONG; s: 0 disables, otherwise enables
+    ProcessKeepAliveCount,                  // q: PROCESS_KEEPALIVE_COUNT_INFORMATION
+    ProcessRevokeFileHandles,               // s: PROCESS_REVOKE_FILE_HANDLES_INFORMATION
+    ProcessWorkingSetControl,               // s: PROCESS_WORKING_SET_CONTROL
+    ProcessHandleTable,                     // q: ULONG[] // since WINBLUE
+    ProcessCheckStackExtentsMode,           // qs: ULONG // KPROCESS->CheckStackExtents (CFG)
+    ProcessCommandLineInformation,          // q: UNICODE_STRING // 60
+    ProcessProtectionInformation,           // q: PS_PROTECTION
+    ProcessMemoryExhaustion,                // s: PROCESS_MEMORY_EXHAUSTION_INFO // since THRESHOLD
+    ProcessFaultInformation,                // s: PROCESS_FAULT_INFORMATION
+    ProcessTelemetryIdInformation,          // q: PROCESS_TELEMETRY_ID_INFORMATION
+    ProcessCommitReleaseInformation,        // qs: PROCESS_COMMIT_RELEASE_INFORMATION
+    ProcessDefaultCpuSetsInformation,       // qs: SYSTEM_CPU_SET_INFORMATION[5]
+    ProcessAllowedCpuSetsInformation,       // qs: SYSTEM_CPU_SET_INFORMATION[5]
     ProcessSubsystemProcess,
-    ProcessJobMemoryInformation, // q: PROCESS_JOB_MEMORY_INFO
-    ProcessInPrivate, // q: BOOLEAN; s: void // ETW // since THRESHOLD2 // 70
+    ProcessJobMemoryInformation,            // q: PROCESS_JOB_MEMORY_INFO
+    ProcessInPrivate,                       // q: BOOLEAN; s: void // ETW // since THRESHOLD2 // 70
     ProcessRaiseUMExceptionOnInvalidHandleClose, // qs: ULONG; s: 0 disables, otherwise enables
     ProcessIumChallengeResponse,
-    ProcessChildProcessInformation, // q: PROCESS_CHILD_PROCESS_INFORMATION
+    ProcessChildProcessInformation,         // q: PROCESS_CHILD_PROCESS_INFORMATION
     ProcessHighGraphicsPriorityInformation, // qs: BOOLEAN (requires SeTcbPrivilege)
-    ProcessSubsystemInformation, // q: SUBSYSTEM_INFORMATION_TYPE // since REDSTONE2
-    ProcessEnergyValues, // q: PROCESS_ENERGY_VALUES, PROCESS_EXTENDED_ENERGY_VALUES
-    ProcessPowerThrottlingState, // qs: POWER_THROTTLING_PROCESS_STATE
-    ProcessReserved3Information, // ProcessActivityThrottlePolicy // PROCESS_ACTIVITY_THROTTLE_POLICY
-    ProcessWin32kSyscallFilterInformation, // q: WIN32K_SYSCALL_FILTER
-    ProcessDisableSystemAllowedCpuSets, // s: BOOLEAN // 80
-    ProcessWakeInformation, // q: PROCESS_WAKE_INFORMATION
-    ProcessEnergyTrackingState, // qs: PROCESS_ENERGY_TRACKING_STATE
-    ProcessManageWritesToExecutableMemory, // MANAGE_WRITES_TO_EXECUTABLE_MEMORY // since REDSTONE3
+    ProcessSubsystemInformation,            // q: SUBSYSTEM_INFORMATION_TYPE // since REDSTONE2
+    ProcessEnergyValues,                    // q: PROCESS_ENERGY_VALUES, PROCESS_EXTENDED_ENERGY_VALUES
+    ProcessPowerThrottlingState,            // qs: POWER_THROTTLING_PROCESS_STATE
+    ProcessReserved3Information,            // ProcessActivityThrottlePolicy // PROCESS_ACTIVITY_THROTTLE_POLICY
+    ProcessWin32kSyscallFilterInformation,  // q: WIN32K_SYSCALL_FILTER
+    ProcessDisableSystemAllowedCpuSets,     // s: BOOLEAN // 80
+    ProcessWakeInformation,                 // q: PROCESS_WAKE_INFORMATION
+    ProcessEnergyTrackingState,             // qs: PROCESS_ENERGY_TRACKING_STATE
+    ProcessManageWritesToExecutableMemory,  // MANAGE_WRITES_TO_EXECUTABLE_MEMORY // since REDSTONE3
     ProcessCaptureTrustletLiveDump,
-    ProcessTelemetryCoverage, // q: TELEMETRY_COVERAGE_HEADER; s: TELEMETRY_COVERAGE_POINT
+    ProcessTelemetryCoverage,               // q: TELEMETRY_COVERAGE_HEADER; s: TELEMETRY_COVERAGE_POINT
     ProcessEnclaveInformation,
-    ProcessEnableReadWriteVmLogging, // qs: PROCESS_READWRITEVM_LOGGING_INFORMATION
-    ProcessUptimeInformation, // q: PROCESS_UPTIME_INFORMATION
-    ProcessImageSection, // q: HANDLE
-    ProcessDebugAuthInformation, // since REDSTONE4 // 90
-    ProcessSystemResourceManagement, // s: PROCESS_SYSTEM_RESOURCE_MANAGEMENT
-    ProcessSequenceNumber, // q: ULONGLONG
-    ProcessLoaderDetour, // since REDSTONE5
-    ProcessSecurityDomainInformation, // q: PROCESS_SECURITY_DOMAIN_INFORMATION
+    ProcessEnableReadWriteVmLogging,        // qs: PROCESS_READWRITEVM_LOGGING_INFORMATION
+    ProcessUptimeInformation,               // q: PROCESS_UPTIME_INFORMATION
+    ProcessImageSection,                    // q: HANDLE
+    ProcessDebugAuthInformation,            // since REDSTONE4 // 90
+    ProcessSystemResourceManagement,        // s: PROCESS_SYSTEM_RESOURCE_MANAGEMENT
+    ProcessSequenceNumber,                  // q: ULONGLONG
+    ProcessLoaderDetour,                    // since REDSTONE5
+    ProcessSecurityDomainInformation,       // q: PROCESS_SECURITY_DOMAIN_INFORMATION
     ProcessCombineSecurityDomainsInformation, // s: PROCESS_COMBINE_SECURITY_DOMAINS_INFORMATION
-    ProcessEnableLogging, // qs: PROCESS_LOGGING_INFORMATION
-    ProcessLeapSecondInformation, // qs: PROCESS_LEAP_SECOND_INFORMATION
-    ProcessFiberShadowStackAllocation, // s: PROCESS_FIBER_SHADOW_STACK_ALLOCATION_INFORMATION // since 19H1
-    ProcessFreeFiberShadowStackAllocation, // s: PROCESS_FREE_FIBER_SHADOW_STACK_ALLOCATION_INFORMATION
-    ProcessAltSystemCallInformation, // s: PROCESS_SYSCALL_PROVIDER_INFORMATION // since 20H1 // 100
-    ProcessDynamicEHContinuationTargets, // s: PROCESS_DYNAMIC_EH_CONTINUATION_TARGETS_INFORMATION
+    ProcessEnableLogging,                   // qs: PROCESS_LOGGING_INFORMATION
+    ProcessLeapSecondInformation,           // qs: PROCESS_LEAP_SECOND_INFORMATION
+    ProcessFiberShadowStackAllocation,      // s: PROCESS_FIBER_SHADOW_STACK_ALLOCATION_INFORMATION // since 19H1
+    ProcessFreeFiberShadowStackAllocation,  // s: PROCESS_FREE_FIBER_SHADOW_STACK_ALLOCATION_INFORMATION
+    ProcessAltSystemCallInformation,        // s: PROCESS_SYSCALL_PROVIDER_INFORMATION // since 20H1 // 100
+    ProcessDynamicEHContinuationTargets,    // s: PROCESS_DYNAMIC_EH_CONTINUATION_TARGETS_INFORMATION
     ProcessDynamicEnforcedCetCompatibleRanges, // s: PROCESS_DYNAMIC_ENFORCED_ADDRESS_RANGE_INFORMATION // since 20H2
-    ProcessCreateStateChange, // since WIN11
+    ProcessCreateStateChange,               // since WIN11
     ProcessApplyStateChange,
-    ProcessEnableOptionalXStateFeatures, // s: ULONG64 // optional XState feature bitmask
-    ProcessAltPrefetchParam, // qs: OVERRIDE_PREFETCH_PARAMETER // App Launch Prefetch (ALPF) // since 22H1
-    ProcessAssignCpuPartitions, // HANDLE
-    ProcessPriorityClassEx, // s: PROCESS_PRIORITY_CLASS_EX
-    ProcessMembershipInformation, // q: PROCESS_MEMBERSHIP_INFORMATION
-    ProcessEffectiveIoPriority, // q: IO_PRIORITY_HINT // 110
-    ProcessEffectivePagePriority, // q: ULONG
-    ProcessSchedulerSharedData, // SCHEDULER_SHARED_DATA_SLOT_INFORMATION // since 24H2
+    ProcessEnableOptionalXStateFeatures,    // s: ULONG64 // optional XState feature bitmask
+    ProcessAltPrefetchParam,                // qs: OVERRIDE_PREFETCH_PARAMETER // App Launch Prefetch (ALPF) // since 22H1
+    ProcessAssignCpuPartitions,             // HANDLE
+    ProcessPriorityClassEx,                 // s: PROCESS_PRIORITY_CLASS_EX
+    ProcessMembershipInformation,           // q: PROCESS_MEMBERSHIP_INFORMATION
+    ProcessEffectiveIoPriority,             // q: IO_PRIORITY_HINT // 110
+    ProcessEffectivePagePriority,           // q: ULONG
+    ProcessSchedulerSharedData,             // SCHEDULER_SHARED_DATA_SLOT_INFORMATION // since 24H2
     ProcessSlistRollbackInformation,
-    ProcessNetworkIoCounters, // q: PROCESS_NETWORK_COUNTERS
-    ProcessFindFirstThreadByTebValue, // PROCESS_TEB_VALUE_INFORMATION
+    ProcessNetworkIoCounters,               // q: PROCESS_NETWORK_COUNTERS
+    ProcessFindFirstThreadByTebValue,       // PROCESS_TEB_VALUE_INFORMATION
+    ProcessEnclaveAddressSpaceRestriction,  // since 25H2
+    ProcessAvailableCpus,
     MaxProcessInfoClass
 } PROCESSINFOCLASS;
 #else
@@ -2307,6 +2376,8 @@ typedef enum _PROCESSINFOCLASS
 #define ProcessSlistRollbackInformation             ((PROCESSINFOCLASS)113)
 #define ProcessNetworkIoCounters                    ((PROCESSINFOCLASS)114)
 #define ProcessFindFirstThreadByTebValue            ((PROCESSINFOCLASS)115)
+#define ProcessEnclaveAddressSpaceRestriction       ((PROCESSINFOCLASS)116)
+#define ProcessAvailableCpus                        ((PROCESSINFOCLASS)117)
 #endif // !_KERNEL_MODE
 
 //
@@ -2316,66 +2387,66 @@ typedef enum _PROCESSINFOCLASS
 #ifndef _KERNEL_MODE
 typedef enum _THREADINFOCLASS
 {
-    ThreadBasicInformation, // q: THREAD_BASIC_INFORMATION
-    ThreadTimes, // q: KERNEL_USER_TIMES
-    ThreadPriority, // s: KPRIORITY (requires SeIncreaseBasePriorityPrivilege)
-    ThreadBasePriority, // s: KPRIORITY
-    ThreadAffinityMask, // s: KAFFINITY
-    ThreadImpersonationToken, // s: HANDLE
-    ThreadDescriptorTableEntry, // q: DESCRIPTOR_TABLE_ENTRY (or WOW64_DESCRIPTOR_TABLE_ENTRY)
-    ThreadEnableAlignmentFaultFixup, // s: BOOLEAN
-    ThreadEventPair, // Obsolete
-    ThreadQuerySetWin32StartAddress, // q: ULONG_PTR
-    ThreadZeroTlsCell, // s: ULONG // TlsIndex // 10
-    ThreadPerformanceCount, // q: LARGE_INTEGER
-    ThreadAmILastThread, // q: ULONG
-    ThreadIdealProcessor, // s: ULONG
-    ThreadPriorityBoost, // qs: ULONG
-    ThreadSetTlsArrayAddress, // s: ULONG_PTR // Obsolete
-    ThreadIsIoPending, // q: ULONG
-    ThreadHideFromDebugger, // q: BOOLEAN; s: void
-    ThreadBreakOnTermination, // qs: ULONG
-    ThreadSwitchLegacyState, // s: void // NtCurrentThread // NPX/FPU
-    ThreadIsTerminated, // q: ULONG // 20
-    ThreadLastSystemCall, // q: THREAD_LAST_SYSCALL_INFORMATION
-    ThreadIoPriority, // qs: IO_PRIORITY_HINT (requires SeIncreaseBasePriorityPrivilege)
-    ThreadCycleTime, // q: THREAD_CYCLE_TIME_INFORMATION (requires THREAD_QUERY_LIMITED_INFORMATION)
-    ThreadPagePriority, // qs: PAGE_PRIORITY_INFORMATION
-    ThreadActualBasePriority, // s: LONG (requires SeIncreaseBasePriorityPrivilege)
-    ThreadTebInformation, // q: THREAD_TEB_INFORMATION (requires THREAD_GET_CONTEXT + THREAD_SET_CONTEXT)
-    ThreadCSwitchMon, // Obsolete
-    ThreadCSwitchPmu, // Obsolete
-    ThreadWow64Context, // qs: WOW64_CONTEXT, ARM_NT_CONTEXT since 20H1
-    ThreadGroupInformation, // qs: GROUP_AFFINITY // 30
-    ThreadUmsInformation, // q: THREAD_UMS_INFORMATION // Obsolete
-    ThreadCounterProfiling, // q: BOOLEAN; s: THREAD_PROFILING_INFORMATION?
-    ThreadIdealProcessorEx, // qs: PROCESSOR_NUMBER; s: previous PROCESSOR_NUMBER on return
-    ThreadCpuAccountingInformation, // q: BOOLEAN; s: HANDLE (NtOpenSession) // NtCurrentThread // since WIN8
-    ThreadSuspendCount, // q: ULONG // since WINBLUE
-    ThreadHeterogeneousCpuPolicy, // q: KHETERO_CPU_POLICY // since THRESHOLD
-    ThreadContainerId, // q: GUID
-    ThreadNameInformation, // qs: THREAD_NAME_INFORMATION (requires THREAD_SET_LIMITED_INFORMATION)
-    ThreadSelectedCpuSets,
-    ThreadSystemThreadInformation, // q: SYSTEM_THREAD_INFORMATION // 40
-    ThreadActualGroupAffinity, // q: GROUP_AFFINITY // since THRESHOLD2
-    ThreadDynamicCodePolicyInfo, // q: ULONG; s: ULONG (NtCurrentThread)
-    ThreadExplicitCaseSensitivity, // qs: ULONG; s: 0 disables, otherwise enables
-    ThreadWorkOnBehalfTicket, // RTL_WORK_ON_BEHALF_TICKET_EX
-    ThreadSubsystemInformation, // q: SUBSYSTEM_INFORMATION_TYPE // since REDSTONE2
-    ThreadDbgkWerReportActive, // s: ULONG; s: 0 disables, otherwise enables
-    ThreadAttachContainer, // s: HANDLE (job object) // NtCurrentThread
+    ThreadBasicInformation,             // q: THREAD_BASIC_INFORMATION
+    ThreadTimes,                        // q: KERNEL_USER_TIMES
+    ThreadPriority,                     // s: KPRIORITY (requires SeIncreaseBasePriorityPrivilege)
+    ThreadBasePriority,                 // s: KPRIORITY
+    ThreadAffinityMask,                 // s: KAFFINITY
+    ThreadImpersonationToken,           // s: HANDLE
+    ThreadDescriptorTableEntry,         // q: DESCRIPTOR_TABLE_ENTRY (or WOW64_DESCRIPTOR_TABLE_ENTRY)
+    ThreadEnableAlignmentFaultFixup,    // s: BOOLEAN
+    ThreadEventPair,                    // Obsolete
+    ThreadQuerySetWin32StartAddress,    // q: ULONG_PTR
+    ThreadZeroTlsCell,                  // s: ULONG // TlsIndex // 10
+    ThreadPerformanceCount,             // q: LARGE_INTEGER
+    ThreadAmILastThread,                // q: ULONG
+    ThreadIdealProcessor,               // s: ULONG
+    ThreadPriorityBoost,                // qs: ULONG
+    ThreadSetTlsArrayAddress,           // s: ULONG_PTR // Obsolete
+    ThreadIsIoPending,                  // q: ULONG
+    ThreadHideFromDebugger,             // q: BOOLEAN; s: void
+    ThreadBreakOnTermination,           // qs: ULONG
+    ThreadSwitchLegacyState,            // s: void // NtCurrentThread // NPX/FPU
+    ThreadIsTerminated,                 // q: ULONG // 20
+    ThreadLastSystemCall,               // q: THREAD_LAST_SYSCALL_INFORMATION
+    ThreadIoPriority,                   // qs: IO_PRIORITY_HINT (requires SeIncreaseBasePriorityPrivilege)
+    ThreadCycleTime,                    // q: THREAD_CYCLE_TIME_INFORMATION (requires THREAD_QUERY_LIMITED_INFORMATION)
+    ThreadPagePriority,                 // qs: PAGE_PRIORITY_INFORMATION
+    ThreadActualBasePriority,           // s: LONG (requires SeIncreaseBasePriorityPrivilege)
+    ThreadTebInformation,               // q: THREAD_TEB_INFORMATION (requires THREAD_GET_CONTEXT + THREAD_SET_CONTEXT)
+    ThreadCSwitchMon,                   // Obsolete
+    ThreadCSwitchPmu,                   // Obsolete
+    ThreadWow64Context,                 // qs: WOW64_CONTEXT, ARM_NT_CONTEXT since 20H1
+    ThreadGroupInformation,             // qs: GROUP_AFFINITY // 30
+    ThreadUmsInformation,               // q: THREAD_UMS_INFORMATION // Obsolete
+    ThreadCounterProfiling,             // q: BOOLEAN; s: THREAD_PROFILING_INFORMATION?
+    ThreadIdealProcessorEx,             // qs: PROCESSOR_NUMBER; s: previous PROCESSOR_NUMBER on return
+    ThreadCpuAccountingInformation,     // q: BOOLEAN; s: HANDLE (NtOpenSession) // NtCurrentThread // since WIN8
+    ThreadSuspendCount,                 // q: ULONG // since WINBLUE
+    ThreadHeterogeneousCpuPolicy,       // q: KHETERO_CPU_POLICY // since THRESHOLD
+    ThreadContainerId,                  // q: GUID
+    ThreadNameInformation,              // qs: THREAD_NAME_INFORMATION (requires THREAD_SET_LIMITED_INFORMATION)
+    ThreadSelectedCpuSets,              // q: ULONG[]
+    ThreadSystemThreadInformation,      // q: SYSTEM_THREAD_INFORMATION // 40
+    ThreadActualGroupAffinity,          // q: GROUP_AFFINITY // since THRESHOLD2
+    ThreadDynamicCodePolicyInfo,        // q: ULONG; s: ULONG (NtCurrentThread)
+    ThreadExplicitCaseSensitivity,      // qs: ULONG; s: 0 disables, otherwise enables // (requires SeDebugPrivilege and PsProtectedSignerAntimalware)
+    ThreadWorkOnBehalfTicket,           // RTL_WORK_ON_BEHALF_TICKET_EX
+    ThreadSubsystemInformation,         // q: SUBSYSTEM_INFORMATION_TYPE // since REDSTONE2
+    ThreadDbgkWerReportActive,          // s: ULONG; s: 0 disables, otherwise enables
+    ThreadAttachContainer,              // s: HANDLE (job object) // NtCurrentThread
     ThreadManageWritesToExecutableMemory, // MANAGE_WRITES_TO_EXECUTABLE_MEMORY // since REDSTONE3
-    ThreadPowerThrottlingState, // POWER_THROTTLING_THREAD_STATE // since REDSTONE3 (set), WIN11 22H2 (query)
-    ThreadWorkloadClass, // THREAD_WORKLOAD_CLASS // since REDSTONE5 // 50
-    ThreadCreateStateChange, // since WIN11
+    ThreadPowerThrottlingState,         // qs: POWER_THROTTLING_THREAD_STATE // since REDSTONE3 (set), WIN11 22H2 (query)
+    ThreadWorkloadClass,                // THREAD_WORKLOAD_CLASS // since REDSTONE5 // 50
+    ThreadCreateStateChange,            // since WIN11
     ThreadApplyStateChange,
-    ThreadStrongerBadHandleChecks, // since 22H1
-    ThreadEffectiveIoPriority, // q: IO_PRIORITY_HINT
-    ThreadEffectivePagePriority, // q: ULONG
-    ThreadUpdateLockOwnership, // THREAD_LOCK_OWNERSHIP // since 24H2
-    ThreadSchedulerSharedDataSlot, // SCHEDULER_SHARED_DATA_SLOT_INFORMATION
-    ThreadTebInformationAtomic, // THREAD_TEB_INFORMATION
-    ThreadIndexInformation, // THREAD_INDEX_INFORMATION
+    ThreadStrongerBadHandleChecks,      // s: ULONG // NtCurrentThread // since 22H1
+    ThreadEffectiveIoPriority,          // q: IO_PRIORITY_HINT
+    ThreadEffectivePagePriority,        // q: ULONG
+    ThreadUpdateLockOwnership,          // THREAD_LOCK_OWNERSHIP // since 24H2
+    ThreadSchedulerSharedDataSlot,      // SCHEDULER_SHARED_DATA_SLOT_INFORMATION
+    ThreadTebInformationAtomic,         // q: THREAD_TEB_INFORMATION (requires THREAD_GET_CONTEXT + THREAD_QUERY_INFORMATION)
+    ThreadIndexInformation,             // THREAD_INDEX_INFORMATION
     MaxThreadInfoClass
 } THREADINFOCLASS;
 #else
@@ -2419,7 +2490,7 @@ typedef struct _PAGE_PRIORITY_INFORMATION
 /**
  * The PROCESS_BASIC_INFORMATION structure contains basic information about a process.
  *
- * \remarks https://learn.microsoft.com/en-us/windows/win32/api/winternl/nf-winternl-ntqueryinformationprocess#process_basic_information
+ * @remarks https://learn.microsoft.com/en-us/windows/win32/api/winternl/nf-winternl-ntqueryinformationprocess#process_basic_information
  */
 typedef struct _PROCESS_BASIC_INFORMATION
 {
@@ -2473,7 +2544,7 @@ typedef struct _PROCESS_EXTENDED_BASIC_INFORMATION
 /**
  * The VM_COUNTERS structure contains various memory usage statistics for a process.
  *
- * \remarks https://learn.microsoft.com/en-us/windows/win32/api/psapi/ns-psapi-process_memory_counters
+ * @remarks https://learn.microsoft.com/en-us/windows/win32/api/psapi/ns-psapi-process_memory_counters
  */
 typedef struct _VM_COUNTERS
 {
@@ -2493,7 +2564,7 @@ typedef struct _VM_COUNTERS
 /**
  * The VM_COUNTERS_EX structure extends VM_COUNTERS to include private memory usage.
  *
- * \remarks https://learn.microsoft.com/en-us/windows/win32/api/psapi/ns-psapi-process_memory_counters_ex2
+ * @remarks https://learn.microsoft.com/en-us/windows/win32/api/psapi/ns-psapi-process_memory_counters_ex2
  */
 typedef struct _VM_COUNTERS_EX
 {
@@ -2514,7 +2585,7 @@ typedef struct _VM_COUNTERS_EX
 /**
  * The VM_COUNTERS_EX2 structure extends VM_COUNTERS_EX to include private working set size and shared commit usage.
  *
- * \remarks https://learn.microsoft.com/en-us/windows/win32/api/psapi/ns-psapi-process_memory_counters_ex2
+ * @remarks https://learn.microsoft.com/en-us/windows/win32/api/psapi/ns-psapi-process_memory_counters_ex2
  */
 typedef struct _VM_COUNTERS_EX2
 {
@@ -2544,7 +2615,7 @@ typedef struct _VM_COUNTERS_EX2
 /**
  * The KERNEL_USER_TIMES structure contains timing information for a process or thread.
  *
- * \remarks https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-getthreadtimes
+ * @remarks https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-getthreadtimes
  */
 typedef struct _KERNEL_USER_TIMES
 {
@@ -2636,7 +2707,7 @@ typedef struct _PROCESS_LDT_SIZE
 /**
  * The PROCESS_WS_WATCH_INFORMATION structure is used to store information about working set watch events for a process.
  *
- * \remarks https://learn.microsoft.com/en-us/windows/win32/api/psapi/ns-psapi-psapi_ws_watch_information
+ * @remarks https://learn.microsoft.com/en-us/windows/win32/api/psapi/ns-psapi-psapi_ws_watch_information
  */
 typedef struct _PROCESS_WS_WATCH_INFORMATION
 {
@@ -2648,7 +2719,7 @@ typedef struct _PROCESS_WS_WATCH_INFORMATION
 /**
  * The PROCESS_WS_WATCH_INFORMATION_EX structure contains extended information about a page added to a process working set.
  *
- * \remarks https://learn.microsoft.com/en-us/windows/win32/api/psapi/ns-psapi-psapi_ws_watch_information_ex
+ * @remarks https://learn.microsoft.com/en-us/windows/win32/api/psapi/ns-psapi-psapi_ws_watch_information_ex
  */
 typedef struct _PROCESS_WS_WATCH_INFORMATION_EX
 {
@@ -3034,10 +3105,33 @@ typedef struct _PROCESS_REVOKE_FILE_HANDLES_INFORMATION
  */
 typedef enum _PROCESS_WORKING_SET_OPERATION
 {
-    ProcessWorkingSetSwap,
-    ProcessWorkingSetEmpty,
+    ProcessWorkingSetSwap,              // Swap the working set of a process to disk. // (requires SeDebugPrivilege)
+    ProcessWorkingSetEmpty,             // Remove all pages from the working set of a process.
+    ProcessWorkingSetEmptyPrivatePages, // Remove private pages from the working set of a process.
     ProcessWorkingSetOperationMax
 } PROCESS_WORKING_SET_OPERATION;
+
+/**
+ * The PROCESS_WORKING_SET_FLAG_EMPTY_PRIVATE_PAGES flag indicates that the operation should target private pages in the working set.
+ * Private pages are those that are not shared with other processes.
+ */
+#define PROCESS_WORKING_SET_FLAG_EMPTY_PRIVATE_PAGES 0x01
+ /**
+  * The PROCESS_WORKING_SET_FLAG_EMPTY_SHARED_PAGES flag indicates that the operation should target shared pages in the working set.
+  * Shared pages are those that are shared between multiple processes.
+  */
+#define PROCESS_WORKING_SET_FLAG_EMPTY_SHARED_PAGES  0x02
+  /**
+   * The PROCESS_WORKING_SET_FLAG_COMPRESS flag indicates that the operation should compress the pages before they are removed from the working set.
+   * Compression is typically used in conjunction with other flags to specify that the pages should be compressed as part of the operation.
+   */
+#define PROCESS_WORKING_SET_FLAG_COMPRESS            0x08
+   /**
+    * The PROCESS_WORKING_SET_FLAG_STORE flag indicates that the operation should store the compressed pages.
+    * This is useful when the compressed data might be needed later, allowing for efficient retrieval and decompression when required.
+    * This flag is typically used in conjunction with the PROCESS_WORKING_SET_FLAG_COMPRESS flag to specify that the compressed pages should be stored.
+    */
+#define PROCESS_WORKING_SET_FLAG_STORE               0x10
 
 /**
  * The PROCESS_WORKING_SET_CONTROL structure is used to control the working set of a process.
@@ -3165,7 +3259,7 @@ typedef struct _PROCESS_COMMIT_RELEASE_INFORMATION
 /**
  * The PROCESS_JOB_MEMORY_INFO structure contains Represents app memory usage at a single point in time.
  *
- * \remarks https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/ns-processthreadsapi-app_memory_information
+ * @remarks https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/ns-processthreadsapi-app_memory_information
  */
 typedef struct _PROCESS_JOB_MEMORY_INFO
 {
@@ -3194,8 +3288,8 @@ typedef struct _PROCESS_CHILD_PROCESS_INFORMATION
 
 #define POWER_THROTTLING_PROCESS_CURRENT_VERSION 1
 
-#define POWER_THROTTLING_PROCESS_EXECUTION_SPEED 0x1
-#define POWER_THROTTLING_PROCESS_DELAYTIMERS 0x2
+#define POWER_THROTTLING_PROCESS_EXECUTION_SPEED         0x1
+#define POWER_THROTTLING_PROCESS_DELAYTIMERS             0x2
 #define POWER_THROTTLING_PROCESS_IGNORE_TIMER_RESOLUTION 0x4
 
 #define POWER_THROTTLING_PROCESS_VALID_FLAGS ((POWER_THROTTLING_PROCESS_EXECUTION_SPEED | \
@@ -3401,8 +3495,13 @@ typedef struct _PROCESS_TEB_VALUE_INFORMATION
 
 // end_private
 
+/**
+ * The NtQueryPortInformationProcess function retrieves the status of the current process exception port.
+ *
+ * @return LOGICAL If TRUE, the process exception port is valid.
+ */
 __kernel_entry NTSYSCALLAPI
-NTSTATUS
+LOGICAL
 NTAPI
 NtQueryPortInformationProcess(
     VOID
@@ -3410,7 +3509,7 @@ NtQueryPortInformationProcess(
 
 _IRQL_requires_max_(PASSIVE_LEVEL)
 NTSYSAPI
-NTSTATUS
+LOGICAL
 NTAPI
 ZwQueryPortInformationProcess(
     VOID
@@ -3501,7 +3600,7 @@ typedef struct _THREAD_TEB_INFORMATION
 /**
  * The COUNTER_READING structure is used to store individual counter data from a hardware counter.
  *
- * \sa https://learn.microsoft.com/en-us/windows/win32/api/winnt/ns-winnt-hardware_counter_data
+ * @sa https://learn.microsoft.com/en-us/windows/win32/api/winnt/ns-winnt-hardware_counter_data
  */
 typedef struct _COUNTER_READING
 {
@@ -3518,7 +3617,7 @@ typedef struct _COUNTER_READING
 /**
  * The THREAD_PERFORMANCE_DATA structure aggregates various performance metrics for a thread.
  *
- * \remarks https://learn.microsoft.com/en-us/windows/win32/api/winnt/ns-winnt-performance_data
+ * @remarks https://learn.microsoft.com/en-us/windows/win32/api/winnt/ns-winnt-performance_data
  */
 typedef struct _THREAD_PERFORMANCE_DATA
 {
@@ -3545,7 +3644,7 @@ typedef struct _THREAD_PERFORMANCE_DATA
 /**
  * The THREAD_PROFILING_INFORMATION structure contains profiling information and references to performance data.
  *
- * \sa https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-readthreadprofilingdata
+ * @sa https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-readthreadprofilingdata
  */
 typedef struct _THREAD_PROFILING_INFORMATION
 {
@@ -3622,12 +3721,11 @@ typedef struct _THREAD_UMS_INFORMATION
 /**
  * The THREAD_NAME_INFORMATION structure assigns a description to a thread.
  *
- * \remarks The handle must have THREAD_SET_LIMITED_INFORMATION access.
- * \remarks https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-setthreaddescription
+ * @remarks The handle must have THREAD_SET_LIMITED_INFORMATION access.
+ * @remarks https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-setthreaddescription
  */
 typedef struct _THREAD_NAME_INFORMATION
 {
-    // A Unicode string that specifies the description of the thread.
     UNICODE_STRING ThreadName;
 } THREAD_NAME_INFORMATION, * PTHREAD_NAME_INFORMATION;
 
@@ -5905,57 +6003,59 @@ ZwCreateThreadEx(
 #if defined(_KERNEL_MODE) && !defined(_WINDOWS_)
 typedef enum _JOBOBJECTINFOCLASS
 {
-    JobObjectBasicAccountingInformation, // JOBOBJECT_BASIC_ACCOUNTING_INFORMATION
-    JobObjectBasicLimitInformation, // JOBOBJECT_BASIC_LIMIT_INFORMATION
-    JobObjectBasicProcessIdList, // JOBOBJECT_BASIC_PROCESS_ID_LIST
-    JobObjectBasicUIRestrictions, // JOBOBJECT_BASIC_UI_RESTRICTIONS
-    JobObjectSecurityLimitInformation, // JOBOBJECT_SECURITY_LIMIT_INFORMATION
-    JobObjectEndOfJobTimeInformation = 6, // JOBOBJECT_END_OF_JOB_TIME_INFORMATION
-    JobObjectAssociateCompletionPortInformation, // JOBOBJECT_ASSOCIATE_COMPLETION_PORT
-    JobObjectBasicAndIoAccountingInformation, // JOBOBJECT_BASIC_AND_IO_ACCOUNTING_INFORMATION
-    JobObjectExtendedLimitInformation, // JOBOBJECT_EXTENDED_LIMIT_INFORMATION
-    JobObjectJobSetInformation, // JOBOBJECT_JOBSET_INFORMATION
-    JobObjectGroupInformation = 11, // USHORT
-    JobObjectNotificationLimitInformation, // JOBOBJECT_NOTIFICATION_LIMIT_INFORMATION
-    JobObjectLimitViolationInformation, // JOBOBJECT_LIMIT_VIOLATION_INFORMATION
-    JobObjectGroupInformationEx, // GROUP_AFFINITY (ARRAY)
-    JobObjectCpuRateControlInformation, // JOBOBJECT_CPU_RATE_CONTROL_INFORMATION
-    JobObjectCompletionFilter = 16,
+    JobObjectBasicAccountingInformation = 1,
+    JobObjectBasicLimitInformation,
+    JobObjectBasicProcessIdList,
+    JobObjectBasicUIRestrictions,
+    JobObjectSecurityLimitInformation,
+    JobObjectEndOfJobTimeInformation,
+    JobObjectAssociateCompletionPortInformation,
+    JobObjectBasicAndIoAccountingInformation,
+    JobObjectExtendedLimitInformation,
+    JobObjectJobSetInformation,
+    JobObjectGroupInformation,
+    JobObjectNotificationLimitInformation,
+    JobObjectLimitViolationInformation,
+    JobObjectGroupInformationEx,
+    JobObjectCpuRateControlInformation,
+    JobObjectCompletionFilter,
     JobObjectCompletionCounter,
-    JobObjectFreezeInformation, // JOBOBJECT_FREEZE_INFORMATION
-    JobObjectExtendedAccountingInformation, // JOBOBJECT_EXTENDED_ACCOUNTING_INFORMATION
-    JobObjectWakeInformation, // JOBOBJECT_WAKE_INFORMATION
-    JobObjectBackgroundInformation = 21,
+    JobObjectFreezeInformation,
+    JobObjectExtendedAccountingInformation,
+    JobObjectWakeInformation,
+    JobObjectBackgroundInformation,
     JobObjectSchedulingRankBiasInformation,
     JobObjectTimerVirtualizationInformation,
     JobObjectCycleTimeNotification,
     JobObjectClearEvent,
-    JobObjectInterferenceInformation = 26, // JOBOBJECT_INTERFERENCE_INFORMATION
+    JobObjectInterferenceInformation,
     JobObjectClearPeakJobMemoryUsed,
-    JobObjectMemoryUsageInformation, // JOBOBJECT_MEMORY_USAGE_INFORMATION // JOBOBJECT_MEMORY_USAGE_INFORMATION_V2
+    JobObjectMemoryUsageInformation,
     JobObjectSharedCommit,
     JobObjectContainerId,
-    JobObjectIoRateControlInformation = 31,
-    JobObjectNetRateControlInformation, // JOBOBJECT_NET_RATE_CONTROL_INFORMATION
-    JobObjectNotificationLimitInformation2, // JOBOBJECT_NOTIFICATION_LIMIT_INFORMATION_2
-    JobObjectLimitViolationInformation2, // JOBOBJECT_LIMIT_VIOLATION_INFORMATION_2
+    JobObjectIoRateControlInformation,
+    JobObjectNetRateControlInformation,
+    JobObjectNotificationLimitInformation2,
+    JobObjectLimitViolationInformation2,
     JobObjectCreateSilo,
-    JobObjectSiloBasicInformation = 36, // SILOOBJECT_BASIC_INFORMATION
-    JobObjectSiloRootDirectory, // SILOOBJECT_ROOT_DIRECTORY
-    JobObjectServerSiloBasicInformation, // SERVERSILO_BASIC_INFORMATION
-    JobObjectServerSiloUserSharedData, // SILO_USER_SHARED_DATA
+    JobObjectSiloBasicInformation,
+    JobObjectSiloRootDirectory,
+    JobObjectServerSiloBasicInformation,
+    JobObjectServerSiloUserSharedData,
     JobObjectServerSiloInitialize,
-    JobObjectServerSiloRunningState = 41,
+    JobObjectServerSiloRunningState,
     JobObjectIoAttribution,
     JobObjectMemoryPartitionInformation,
     JobObjectContainerTelemetryId,
     JobObjectSiloSystemRoot,
-    JobObjectEnergyTrackingState = 46, // JOBOBJECT_ENERGY_TRACKING_STATE
+    JobObjectEnergyTrackingState,
     JobObjectThreadImpersonationInformation,
     JobObjectIoPriorityLimit,
     JobObjectPagePriorityLimit,
-    MaxJobObjectInfoClass
-}JOBOBJECTINFOCLASS;
+    JobObjectServerSiloDiagnosticInformation,
+    JobObjectNetworkAccountingInformation,
+    MaxJobObjectInfoClass,
+} JOBOBJECTINFOCLASS;
 #else
 // Note: We don't use an enum since it conflicts with the Windows SDK.
 #define JobObjectBasicAccountingInformation         ((_JOBOBJECTINFOCLASS)1 ) // q:     JOBOBJECT_BASIC_ACCOUNTING_INFORMATION
@@ -6001,7 +6101,7 @@ typedef enum _JOBOBJECTINFOCLASS
 #define JobObjectServerSiloRunningState             ((_JOBOBJECTINFOCLASS)41)
 #define JobObjectIoAttribution                      ((_JOBOBJECTINFOCLASS)42) // JOBOBJECT_IO_ATTRIBUTION_INFORMATION
 #define JobObjectMemoryPartitionInformation         ((_JOBOBJECTINFOCLASS)43)
-#define JobObjectContainerTelemetryId               ((_JOBOBJECTINFOCLASS)44)
+#define JobObjectContainerTelemetryId               ((_JOBOBJECTINFOCLASS)44) // GUID // NtSetInformationJobObject(_In_ PGUID, 44, _In_ PGUID, sizeof(GUID)); // daxexec
 #define JobObjectSiloSystemRoot                     ((_JOBOBJECTINFOCLASS)45)
 #define JobObjectEnergyTrackingState                ((_JOBOBJECTINFOCLASS)46) // JOBOBJECT_ENERGY_TRACKING_STATE
 #define JobObjectThreadImpersonationInformation     ((_JOBOBJECTINFOCLASS)47)

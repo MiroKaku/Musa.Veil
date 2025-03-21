@@ -33,7 +33,9 @@
 
 VEIL_BEGIN()
 
+//
 // Types
+//
 
 #ifndef W32KAPI
 #define W32KAPI  DECLSPEC_ADDRSAFE
@@ -108,7 +110,9 @@ typedef CHAR*               KPTR_MODIFIER   KPSTR;
 
 #endif // _X86_
 
+//
 // Strings
+//
 
 //
 // Strings are counted 16-bit character strings. If they are
@@ -141,7 +145,9 @@ typedef struct _LARGE_UNICODE_STRING
 } LARGE_UNICODE_STRING, * PLARGE_UNICODE_STRING;
 typedef const LARGE_UNICODE_STRING* PCLARGE_UNICODE_STRING;
 
-// Win32k
+//
+// Window Class
+//
 
 #if defined(_KERNEL_MODE) && !defined(_WINDOWS_)
 
@@ -228,6 +234,51 @@ NtUserUnregisterClass(
     _In_ HINSTANCE Instance,
     _Out_ PCLSMENUNAME ClassMenuName
 );
+
+__kernel_entry W32KAPI
+BOOL
+NTAPI
+NtUserGetClassInfoEx(
+    _In_opt_ HINSTANCE Instance,
+    _In_ PUNICODE_STRING ClassName,
+    _Inout_ LPWNDCLASSEXW WndClass,
+    _Out_ LPWSTR* MenuName,
+    _In_ BOOL Ansi
+);
+
+__kernel_entry W32KAPI
+INT
+NTAPI
+NtUserGetClassName(
+    _In_ HWND Window,
+    _In_ BOOL Real,
+    _Inout_ PUNICODE_STRING ClassName
+);
+
+__kernel_entry W32KAPI
+WORD
+NTAPI
+NtUserSetClassWord(
+    _In_ HWND WindowHandle,
+    _In_ LONG nIndex,
+    _In_ WORD wNewWord
+);
+
+//
+// Atom
+//
+
+__kernel_entry W32KAPI
+UINT
+NTAPI
+NtUserGetAtomName(
+    _In_ ATOM Atom,
+    _Inout_ PUNICODE_STRING AtomName
+);
+
+//
+// Window
+//
 
 /*
  * Extended Window Styles
@@ -354,26 +405,6 @@ NtUserDestroyWindow(
 );
 
 __kernel_entry W32KAPI
-BOOL
-NTAPI
-NtUserGetClassInfoEx(
-    _In_opt_ HINSTANCE Instance,
-    _In_ PUNICODE_STRING ClassName,
-    _Inout_ LPWNDCLASSEXW WndClass,
-    _Out_ LPWSTR* MenuName,
-    _In_ BOOL Ansi
-);
-
-__kernel_entry W32KAPI
-INT
-NTAPI
-NtUserGetClassName(
-    _In_ HWND Window,
-    _In_ BOOL Real,
-    _Inout_ PUNICODE_STRING ClassName
-);
-
-__kernel_entry W32KAPI
 HWND
 NTAPI
 NtUserFindWindowEx(
@@ -385,84 +416,216 @@ NtUserFindWindowEx(
 );
 
 __kernel_entry W32KAPI
-UINT
+ULONG
 NTAPI
-NtUserGetAtomName(
-    _In_ ATOM Atom,
-    _Inout_ PUNICODE_STRING AtomName
+NtUserInternalGetWindowText(
+    _In_ HWND WindowHandle,
+    _Out_writes_to_(cchMaxCount, return +1) LPWSTR pString,
+    _In_ ULONG cchMaxCount
 );
 
-#if defined(_KERNEL_MODE) && !defined(_WINDOWS_)
-typedef struct tagPAINTSTRUCT {
-    HDC         hdc;
-    BOOL        fErase;
-    RECT        rcPaint;
-    BOOL        fRestore;
-    BOOL        fIncUpdate;
-    BYTE        rgbReserved[32];
-} PAINTSTRUCT, * PPAINTSTRUCT, * NPPAINTSTRUCT, * LPPAINTSTRUCT;
-#endif
-
 __kernel_entry W32KAPI
-HDC
+HICON
 NTAPI
-NtUserBeginPaint(
-    _In_  HWND Window,
-    _Out_ PAINTSTRUCT* Paint
+NtUserInternalGetWindowIcon(
+    _In_ HWND WindowHandle,
+    _In_ ULONG IconType
 );
 
 __kernel_entry W32KAPI
 BOOL
 NTAPI
-NtUserEndPaint(
-    _In_  HWND Window,
-    _In_  const PAINTSTRUCT* Paint
+NtUserShowWindow(
+    _In_ HWND WindowHandle,
+    _In_ LONG nCmdShow
 );
 
-#if defined(_KERNEL_MODE) && !defined(_WINDOWS_)
-typedef struct tagRAWINPUTDEVICELIST
-{
-    HANDLE hDevice;
-    DWORD  dwType;
-} RAWINPUTDEVICELIST, * PRAWINPUTDEVICELIST;
+__kernel_entry W32KAPI
+BOOL
+NTAPI
+NtUserShowWindowAsync(
+    _In_ HWND WindowHandle,
+    _In_ LONG nCmdShow
+);
+
+__kernel_entry W32KAPI
+NTSTATUS
+NTAPI
+NtUserSetForegroundWindowForApplication(
+    _In_ HWND WindowHandle
+);
+
+__kernel_entry W32KAPI
+HWND
+NTAPI
+NtUserGetForegroundWindow(
+    VOID
+);
+
+__kernel_entry W32KAPI
+HWND
+NTAPI
+NtUserSetActiveWindow(
+    _In_ HWND WindowHandle
+);
+
+__kernel_entry W32KAPI
+HWND
+NTAPI
+NtUserSetFocus(
+    _In_ HWND WindowHandle
+);
+
+__kernel_entry W32KAPI
+BOOL
+NTAPI
+NtUserSetWindowPlacement(
+    _In_  HWND WindowHandle,
+    _Inout_ const WINDOWPLACEMENT* lpwndpl
+);
+
+__kernel_entry W32KAPI
+BOOL
+NTAPI
+NtUserGetWindowPlacement(
+    _In_ HWND WindowHandle,
+    _Inout_ PWINDOWPLACEMENT WindowPlacement
+);
+
+__kernel_entry W32KAPI
+HWND
+NTAPI
+NtUserWindowFromPoint(
+    _In_ POINT Point
+);
+
+__kernel_entry W32KAPI
+HWND
+NTAPI
+NtUserWindowFromPhysicalPoint(
+    _In_ POINT Point
+);
+
+__kernel_entry W32KAPI
+BOOL
+NTAPI
+NtUserMoveWindow(
+    _In_ HWND WindowHandle,
+    _In_ LONG X,
+    _In_ LONG Y,
+    _In_ LONG Width,
+    _In_ LONG Height,
+    _In_ BOOL Repaint
+);
+
+__kernel_entry W32KAPI
+BOOL
+NTAPI
+NtUserSetWindowPos(
+    _In_ HWND WindowHandle,
+    _In_ HWND WindowHandleInsertAfter,
+    _In_ LONG X,
+    _In_ LONG Y,
+    _In_ LONG cx,
+    _In_ LONG cy,
+    _In_ ULONG uFlags
+);
+
+__kernel_entry W32KAPI
+WORD
+NTAPI
+NtUserSetWindowWord(
+    _In_ HWND WindowHandle,
+    _In_ LONG nIndex,
+    _In_ WORD wNewWord
+);
+
+__kernel_entry W32KAPI
+HWND
+NTAPI
+NtUserGetAncestor(
+    _In_ HWND WindowHandle,
+    _In_ ULONG gaFlags
+);
+
+__kernel_entry W32KAPI
+BOOL
+NTAPI
+NtUserFlashWindowEx(
+    _In_ PFLASHWINFO pfwi
+);
+
+#ifndef _KERNEL_MODE
+// User32 ordinal 2005
+__kernel_entry W32KAPI
+LOGICAL
+NTAPI
+SetChildWindowNoActivate(
+    _In_ HWND WindowHandle
+);
 #endif
 
 __kernel_entry W32KAPI
-UINT NTAPI NtUserGetRawInputDeviceList(
-    _Out_writes_opt_(*NumDevices) PRAWINPUTDEVICELIST RawInputDeviceList,
-    _Inout_ PUINT NumDevices,
-    _In_ UINT Size
+LOGICAL
+NTAPI
+NtUserSetChildWindowNoActivate(
+    _In_ HWND WindowHandle
 );
 
 __kernel_entry W32KAPI
-UINT NTAPI NtUserGetRawInputDeviceInfo(
-    _In_opt_ HANDLE Handle,
-    _In_ UINT Command,
-    _Inout_updates_bytes_to_opt_(*Size, *Size) LPVOID Data,
-    _Inout_ PUINT Size
+HWND
+NTAPI
+NtUserChildWindowFromPointEx(
+    _In_ HWND WindowHandle,
+    _In_ POINT pt,
+    _In_ ULONG flags
 );
 
-#if defined(_KERNEL_MODE) && !defined(_WINDOWS_)
-typedef struct tagRAWINPUTDEVICE
-{
-    USHORT usUsagePage; // Toplevel collection UsagePage
-    USHORT usUsage;     // Toplevel collection Usage
-    DWORD  dwFlags;
-    HWND   hwndTarget;  // Target hwnd. NULL = follows keyboard focus
-} RAWINPUTDEVICE, * PRAWINPUTDEVICE, * LPRAWINPUTDEVICE;
-
-typedef CONST RAWINPUTDEVICE* PCRAWINPUTDEVICE;
-#endif
+__kernel_entry W32KAPI
+HWND
+NTAPI
+NtUserRealChildWindowFromPoint(
+    _In_ HWND WindowHandleParent,
+    _In_ POINT ptParentClientCoords
+);
 
 __kernel_entry W32KAPI
-BOOL NTAPI NtUserRegisterRawInputDevices(
-    _In_reads_(NumDevices) PCRAWINPUTDEVICE RawInputDevices,
-    _In_ UINT NumDevices,
-    _In_ UINT Size
+BOOL
+NTAPI
+NtUserCalculatePopupWindowPosition(
+    _In_ const POINT* anchorPoint,
+    _In_ const SIZE* windowSize,
+    _In_ ULONG flags,
+    _Inout_ RECT* excludeRect,
+    _Inout_ RECT* popupWindowPosition
 );
 
 //
-// GDI
+// Window Attributes
+//
+
+__kernel_entry W32KAPI
+BOOL
+NTAPI
+NtUserGetLayeredWindowAttributes(
+    _In_ HWND WindowHandle,
+    _In_ COLORREF * pcrKey,
+    _In_ BYTE * pbAlpha,
+    _In_ ULONG pdwFlags
+);
+
+__kernel_entry W32KAPI
+BOOL
+NTAPI
+NtUserSetLayeredWindowAttributes(
+    _In_ HWND WindowHandle,
+    _In_ COLORREF crKey,
+    _In_ BYTE bAlpha,
+    _In_ DWORD dwFlags
+);
+
+//
+// Query
 //
 
 #define GDI_MAX_HANDLE_COUNT 0xFFFF // 0x4000
@@ -582,19 +745,18 @@ typedef struct _GDI_SHARED_MEMORY
     GDI_HANDLE_ENTRY Handles[GDI_MAX_HANDLE_COUNT];
 } GDI_SHARED_MEMORY, * PGDI_SHARED_MEMORY;
 
-
 typedef enum _WINDOWINFOCLASS
 {
-    WindowProcess = 0, // q: ULONG (Process ID)
-    WindowRealProcess = 1, // q: ULONG (Process ID)
-    WindowThread = 2, // q: ULONG (Thread ID)
-    WindowActiveWindow = 3, // q: HWND
-    WindowFocusWindow = 4, // q: HWND
-    WindowIsHung = 5, // q: BOOLEAN
-    WindowClientBase = 6, // q: PVOID
-    WindowIsForegroundThread = 7, // q: BOOLEAN
-    WindowDefaultImeWindow = 8, // q: HWND
-    WindowDefaultInputContext = 9, // q: HIMC
+    WindowProcess = 0,              // q: ULONG (Process ID)
+    WindowRealProcess = 1,          // q: ULONG (Process ID)
+    WindowThread = 2,               // q: ULONG (Thread ID)
+    WindowActiveWindow = 3,         // q: HWND
+    WindowFocusWindow = 4,          // q: HWND
+    WindowIsHung = 5,               // q: BOOLEAN
+    WindowClientBase = 6,           // q: PVOID
+    WindowIsForegroundThread = 7,   // q: BOOLEAN
+    WindowDefaultImeWindow = 8,     // q: HWND
+    WindowDefaultInputContext = 9,  // q: HIMC
 } WINDOWINFOCLASS, * PWINDOWINFOCLASS;
 
 __kernel_entry W32KAPI
@@ -603,6 +765,489 @@ NTAPI
 NtUserQueryWindow(
     _In_ HWND WindowHandle,
     _In_ WINDOWINFOCLASS WindowInfo
+);
+
+//
+// Device Context
+//
+
+__kernel_entry W32KAPI
+HDC
+NTAPI
+NtUserGetDCEx(
+    _In_ HWND WindowHandle,
+    _In_ HRGN hrgnClip,
+    _In_ ULONG flags
+);
+
+__kernel_entry W32KAPI
+HDC
+NTAPI
+NtUserGetWindowDC(
+    _In_ HWND WindowHandle
+);
+
+__kernel_entry W32KAPI
+HWND
+NTAPI
+NtUserWindowFromDC(
+    _In_ HDC hDC
+);
+
+//
+// Paint
+//
+
+#if defined(_KERNEL_MODE) && !defined(_WINDOWS_)
+typedef struct tagPAINTSTRUCT {
+    HDC         hdc;
+    BOOL        fErase;
+    RECT        rcPaint;
+    BOOL        fRestore;
+    BOOL        fIncUpdate;
+    BYTE        rgbReserved[32];
+} PAINTSTRUCT, * PPAINTSTRUCT, * NPPAINTSTRUCT, * LPPAINTSTRUCT;
+#endif
+
+__kernel_entry W32KAPI
+HDC
+NTAPI
+NtUserBeginPaint(
+    _In_  HWND Window,
+    _Out_ PAINTSTRUCT* Paint
+);
+
+__kernel_entry W32KAPI
+BOOL
+NTAPI
+NtUserEndPaint(
+    _In_  HWND Window,
+    _In_  const PAINTSTRUCT* Paint
+);
+
+__kernel_entry W32KAPI
+BOOL
+NTAPI
+NtUserPrintWindow(
+    _In_ HWND WindowHandle,
+    _In_ HDC hdcBlt,
+    _In_ ULONG nFlags
+);
+
+__kernel_entry W32KAPI
+HRGN
+NTAPI
+NtUserExcludeUpdateRgn(
+    _In_ HDC hDC,
+    _In_ HWND WindowHandle
+);
+
+__kernel_entry W32KAPI
+BOOL
+NTAPI
+NtUserDrawAnimatedRects(
+    _In_ HWND WindowHandle,
+    _In_ int idAni,
+    _In_ const RECT* lprcFrom,
+    _In_ const RECT* lprcTo
+);
+
+__kernel_entry W32KAPI
+BOOL
+NTAPI
+NtUserValidateRect(
+    _In_ HWND WindowHandle,
+    _In_ const RECT* Rect
+);
+
+__kernel_entry W32KAPI
+BOOL
+NTAPI
+NtUserInvalidateRect(
+    _In_ HWND WindowHandle,
+    _In_ const RECT* Rect,
+    _In_ BOOL Erase
+);
+
+__kernel_entry W32KAPI
+BOOL
+NTAPI
+NtUserInvalidateRgn(
+    _In_ HWND WindowHandle,
+    _In_ HRGN hRgn,
+    _In_ BOOL Erase
+);
+
+__kernel_entry W32KAPI
+BOOL
+NTAPI
+NtUserRedrawWindow(
+    _In_ HWND WindowHandle,
+    _In_ const PRECT lprcUpdate,
+    _In_ HRGN hrgnUpdate,
+    _In_ ULONG flags
+);
+
+//
+// Menu
+//
+
+__kernel_entry W32KAPI
+BOOL
+NTAPI
+NtUserEndMenu(
+    VOID
+);
+
+__kernel_entry W32KAPI
+BOOL
+NTAPI
+NtUserDeleteMenu(
+    _In_ HMENU MenuHandle,
+    _In_ ULONG uPosition,
+    _In_ ULONG uFlags
+);
+
+__kernel_entry W32KAPI
+BOOL
+NTAPI
+NtUserDestroyMenu(
+    _In_ HMENU MenuHandle
+);
+
+__kernel_entry W32KAPI
+BOOL
+NTAPI
+NtUserRemoveMenu(
+    _In_ HMENU MenuHandle,
+    _In_ ULONG Position,
+    _In_ ULONG Flags
+);
+
+__kernel_entry W32KAPI
+HMENU
+NTAPI
+NtUserGetSystemMenu(
+    _In_ HWND WindowHandle,
+    _In_ BOOL bRevert
+);
+
+__kernel_entry W32KAPI
+BOOL
+NTAPI
+NtUserGetMenuItemRect(
+    _In_ HWND WindowHandle,
+    _In_ HMENU MenuHandle,
+    _In_ ULONG MenuIndex,
+    _In_ LPRECT MenuRect
+);
+
+__kernel_entry W32KAPI
+BOOL
+NTAPI
+NtUserHiliteMenuItem(
+    _In_ HWND WindowHandle,
+    _In_ HMENU MenuHandle,
+    _In_ ULONG IDHiliteItem,
+    _In_ ULONG Hilite
+);
+
+__kernel_entry W32KAPI
+LONG
+NTAPI
+NtUserMenuItemFromPoint(
+    _In_ HWND WindowHandle,
+    _In_ HMENU MenuHandle,
+    _In_ POINT ptScreen
+);
+
+__kernel_entry W32KAPI
+BOOL
+NTAPI
+NtUserTrackPopupMenuEx(
+    _In_ HMENU MenuHandle,
+    _In_ ULONG uFlags,
+    _In_ LONG x,
+    _In_ LONG y,
+    _In_ HWND WindowHandle,
+    _In_ LPTPMPARAMS lptpm
+);
+
+//
+// Controls
+//
+
+__kernel_entry W32KAPI
+BOOL
+NTAPI
+NtUserGetComboBoxInfo(
+    _In_ HWND WindowHandleCombo,
+    _Inout_ PCOMBOBOXINFO pcbi
+);
+
+__kernel_entry W32KAPI
+ULONG
+NTAPI
+NtUserGetListBoxInfo(
+    _In_ HWND WindowHandle
+);
+
+__kernel_entry W32KAPI
+BOOL
+NTAPI
+NtUserGetMenuBarInfo(
+    _In_ HWND WindowHandle,
+    _In_ LONG idObject,
+    _In_ LONG idItem,
+    _In_ PMENUBARINFO pmbi
+);
+
+__kernel_entry W32KAPI
+BOOL
+NTAPI
+NtUserGetTitleBarInfo(
+    _In_ HWND WindowHandle,
+    _In_ PTITLEBARINFO pti
+);
+
+//
+// Drag Drop
+//
+
+__kernel_entry W32KAPI
+BOOL
+NTAPI
+NtUserDragDetect(
+    _In_ HWND WindowHandle,
+    _In_ POINT pt
+);
+
+__kernel_entry W32KAPI
+ULONG
+NTAPI
+NtUserDragObject(
+    _In_ HWND WindowHandleParent,
+    _In_ HWND WindowHandleFrom,
+    _In_ ULONG fmt,
+    _In_ ULONG_PTR data,
+    _In_ HCURSOR hcur
+);
+
+//
+// Input
+//
+
+__kernel_entry W32KAPI
+BOOL
+NTAPI
+NtUserAttachThreadInput(
+    _In_ ULONG IdAttach,
+    _In_ ULONG IdAttachTo,
+    _In_ BOOL Attach
+);
+
+__kernel_entry W32KAPI
+BOOL
+NTAPI
+NtUserBlockInput(
+    _In_ BOOL BlockInput
+);
+
+
+//
+// Raw Input
+//
+
+#if defined(_KERNEL_MODE) && !defined(_WINDOWS_)
+typedef struct tagRAWINPUTDEVICELIST
+{
+    HANDLE hDevice;
+    DWORD  dwType;
+} RAWINPUTDEVICELIST, * PRAWINPUTDEVICELIST;
+#endif
+
+__kernel_entry W32KAPI
+UINT NTAPI NtUserGetRawInputDeviceList(
+    _Out_writes_opt_(*RawInputDeviceCount) PRAWINPUTDEVICELIST RawInputDeviceList,
+    _Inout_ PUINT RawInputDeviceCount,
+    _In_ UINT RawInputDeviceSize
+);
+
+__kernel_entry W32KAPI
+UINT NTAPI NtUserGetRawInputDeviceInfo(
+    _In_opt_ HANDLE Handle,
+    _In_ UINT Command,
+    _Inout_updates_bytes_to_opt_(*Size, *Size) LPVOID Data,
+    _Inout_ PUINT Size
+);
+
+#if defined(_KERNEL_MODE) && !defined(_WINDOWS_)
+typedef struct tagRAWINPUTDEVICE
+{
+    USHORT usUsagePage; // Toplevel collection UsagePage
+    USHORT usUsage;     // Toplevel collection Usage
+    DWORD  dwFlags;
+    HWND   hwndTarget;  // Target hwnd. NULL = follows keyboard focus
+} RAWINPUTDEVICE, * PRAWINPUTDEVICE, * LPRAWINPUTDEVICE;
+
+typedef CONST RAWINPUTDEVICE* PCRAWINPUTDEVICE;
+#endif
+
+__kernel_entry W32KAPI
+BOOL NTAPI NtUserRegisterRawInputDevices(
+    _In_reads_(NumDevices) PCRAWINPUTDEVICE RawInputDevices,
+    _In_ UINT NumDevices,
+    _In_ UINT Size
+);
+
+__kernel_entry W32KAPI
+ULONG
+NTAPI
+NtUserGetRegisteredRawInputDevices(
+    _Out_opt_ PRAWINPUTDEVICE RawInputDevices,
+    _Inout_ PULONG RawInputDeviceCount,
+    _In_ ULONG RawInputDeviceSize
+);
+
+__kernel_entry W32KAPI
+ULONG
+NTAPI
+NtUserGetRawInputData(
+    _In_ HRAWINPUT RawInputData,
+    _In_ ULONG RawInputCommand,
+    _Out_opt_ PVOID RawInputBuffer,
+    _Inout_ PULONG RawInputBufferSize,
+    _In_ ULONG RawInputHeaderSize
+);
+
+__kernel_entry W32KAPI
+ULONG
+NTAPI
+NtUserSendInput(
+    _In_ ULONG cInputs,
+    _In_ LPINPUT pInputs,
+    _In_ LONG cbSize
+);
+
+//
+// Mouse
+//
+
+__kernel_entry W32KAPI
+HWND
+NTAPI
+NtUserSetCapture(
+    _In_ HWND WindowHandle
+);
+
+__kernel_entry W32KAPI
+LONG
+NTAPI
+NtUserGetMouseMovePointsEx(
+    _In_ ULONG MouseMovePointsSize,
+    _In_ LPMOUSEMOVEPOINT InputBuffer,
+    _In_ LPMOUSEMOVEPOINT OutputBuffer,
+    _In_ LONG OutputBufferCount,
+    _In_ ULONG Resolution
+);
+
+__kernel_entry W32KAPI
+BOOL
+NTAPI
+NtUserTrackMouseEvent(
+    _In_ LPTRACKMOUSEEVENT lpEventTrack
+);
+
+__kernel_entry W32KAPI
+BOOL
+NTAPI
+NtUserIsTouchWindow(
+    _In_ HWND WindowHandle,
+    _In_ PULONG Flags
+);
+
+__kernel_entry W32KAPI
+ULONG
+NTAPI
+NtUserGetDoubleClickTime();
+
+__kernel_entry W32KAPI
+BOOL
+NTAPI
+NtUserSetCursorPos(
+    _In_ LONG X,
+    _In_ LONG Y
+);
+
+__kernel_entry W32KAPI
+LONG
+NTAPI
+NtUserShowCursor(
+    _In_ BOOL bShow
+);
+
+//
+// Message
+//
+
+__kernel_entry W32KAPI
+BOOL
+NTAPI
+NtUserChangeWindowMessageFilterEx(
+    _In_ HWND WindowHandle,
+    _In_ ULONG message,
+    _In_ ULONG action,
+    _Inout_ PCHANGEFILTERSTRUCT pChangeFilterStruct
+);
+
+__kernel_entry W32KAPI
+BOOL
+NTAPI
+NtUserQuerySendMessage(
+    _Inout_ MSG* pMsg
+);
+
+#ifndef _KERNEL_MODE
+NTSYSAPI
+HWND
+NTAPI
+GetSendMessageReceiver(
+    _In_ HANDLE ThreadId
+);
+#endif
+
+__kernel_entry W32KAPI
+HWND
+NTAPI
+NtUserGetSendMessageReceiver(
+    _In_ HANDLE ThreadId
+);
+
+__kernel_entry W32KAPI
+BOOL
+NTAPI
+NtUserGetCurrentInputMessageSource(
+    _Inout_ INPUT_MESSAGE_SOURCE* InputMessageSource
+);
+
+__kernel_entry W32KAPI
+BOOL
+NTAPI
+NtUserUnhookWinEvent(
+    _In_ HWINEVENTHOOK hWinEventHook
+);
+
+//
+// Security
+//
+
+__kernel_entry W32KAPI
+BOOL
+NTAPI
+NtUserUserHandleGrantAccess(
+    _In_ HANDLE UserHandle,
+    _In_ HANDLE Job,
+    _In_ BOOL Grant
 );
 
 __kernel_entry W32KAPI
@@ -629,22 +1274,9 @@ NtUserCheckProcessForClipboardAccess(
     _Out_ PULONG GrantedAccess
 );
 
-__kernel_entry W32KAPI
-ULONG
-NTAPI
-NtUserInternalGetWindowText(
-    _In_ HWND WindowHandle,
-    _Out_writes_to_(cchMaxCount, return +1) LPWSTR pString,
-    _In_ ULONG cchMaxCount
-);
-
-__kernel_entry W32KAPI
-HICON
-NTAPI
-NtUserInternalGetWindowIcon(
-    _In_ HWND WindowHandle,
-    _In_ ULONG IconType
-);
+//
+// Console
+//
 
 typedef enum _CONSOLECONTROL
 {
@@ -735,6 +1367,23 @@ ConsoleControl(
 );
 #endif
 
+__kernel_entry W32KAPI
+BOOL
+NTAPI
+NtUserGetCaretPos(
+    _In_ LPPOINT lpPoint
+);
+
+__kernel_entry W32KAPI
+ULONG
+NTAPI
+NtUserGetCaretBlinkTime(
+    VOID
+);
+
+//
+// Window Station
+//
 
 /**
  * Opens the specified window station.
@@ -755,48 +1404,14 @@ __kernel_entry W32KAPI
 HWINSTA
 NTAPI
 NtUserCreateWindowStation(
-    _In_ OBJECT_ATTRIBUTES ObjectAttributes,
+    _In_ POBJECT_ATTRIBUTES ObjectAttributes,
     _In_ ACCESS_MASK DesiredAccess,
     _In_opt_ HANDLE KeyboardLayoutHandle,
     _In_opt_ PVOID KeyboardLayoutOffset,
     _In_opt_ PVOID NlsTableOffset,
     _In_opt_ PVOID KeyboardDescriptor,
-    _In_opt_ UNICODE_STRING LanguageIdString,
+    _In_opt_ PCUNICODE_STRING LanguageIdString,
     _In_opt_ ULONG KeyboardLocale
-);
-
-__kernel_entry W32KAPI
-NTSTATUS
-NTAPI
-NtUserBuildHwndList(
-    _In_opt_ HANDLE DesktopHandle,
-    _In_opt_ HWND StartWindowHandle,
-    _In_opt_ LOGICAL IncludeChildren,
-    _In_opt_ LOGICAL ExcludeImmersive,
-    _In_opt_ ULONG ThreadId,
-    _In_ ULONG HwndListInformationLength,
-    _Out_writes_bytes_(HwndListInformationLength) PVOID HwndListInformation,
-    _Out_ PULONG ReturnLength
-);
-
-__kernel_entry W32KAPI
-NTSTATUS
-NTAPI
-NtUserBuildNameList(
-    _In_ HWINSTA WindowStationHandle, // GetProcessWindowStation
-    _In_ ULONG NameListInformationLength,
-    _Out_writes_bytes_(NameListInformationLength) PVOID NameListInformation,
-    _Out_opt_ PULONG ReturnLength
-);
-
-__kernel_entry W32KAPI
-NTSTATUS
-NTAPI
-NtUserBuildPropList(
-    _In_ HWINSTA WindowStationHandle,
-    _In_ ULONG PropListInformationLength,
-    _Out_writes_bytes_(PropListInformationLength) PVOID PropListInformation,
-    _Out_opt_ PULONG ReturnLength
 );
 
 __kernel_entry W32KAPI
@@ -841,6 +1456,51 @@ NtUserSetWindowStationUser(
 );
 
 __kernel_entry W32KAPI
+NTSTATUS
+NTAPI
+NtUserBuildNameList(
+    _In_ HWINSTA WindowStationHandle, // GetProcessWindowStation
+    _In_ ULONG NameListInformationLength,
+    _Out_writes_bytes_(NameListInformationLength) PVOID NameListInformation,
+    _Out_opt_ PULONG ReturnLength
+);
+
+__kernel_entry W32KAPI
+NTSTATUS
+NTAPI
+NtUserBuildPropList(
+    _In_ HWINSTA WindowStationHandle,
+    _In_ ULONG PropListInformationLength,
+    _Out_writes_bytes_(PropListInformationLength) PVOID PropListInformation,
+    _Out_opt_ PULONG ReturnLength
+);
+
+//
+// Accelerator Table
+//
+
+__kernel_entry W32KAPI
+LONG
+NTAPI
+NtUserCopyAcceleratorTable(
+    _In_ HACCEL hAccelSrc,
+    _In_ LPACCEL lpAccelDst,
+    _In_ LONG cAccelEntries
+);
+
+__kernel_entry W32KAPI
+HACCEL
+NTAPI
+NtUserCreateAcceleratorTable(
+    _In_ LPACCEL paccel,
+    _In_ LONG cAccel
+);
+
+//
+// Desktop
+//
+
+__kernel_entry W32KAPI
 HANDLE
 NTAPI
 NtUserOpenDesktop(
@@ -850,9 +1510,9 @@ NtUserOpenDesktop(
 );
 
 __kernel_entry W32KAPI
-LOGICAL
+BOOL
 NTAPI
-NtUserSetThreadDesktop(
+NtUserCloseDesktop(
     _In_ HDESK DesktopHandle
 );
 
@@ -863,6 +1523,101 @@ NtUserSwitchDesktop(
     _In_ HDESK DesktopHandle,
     _In_opt_ ULONG Flags,
     _In_opt_ ULONG FadeTime
+);
+
+__kernel_entry W32KAPI
+HDESK
+NTAPI
+NtUserOpenInputDesktop(
+    _In_ ULONG Flags,
+    _In_ BOOL Inherit,
+    _In_ ACCESS_MASK DesiredAccess
+);
+
+__kernel_entry W32KAPI
+HDESK
+NTAPI
+NtUserGetThreadDesktop(
+    _In_ ULONG ThreadId
+);
+
+__kernel_entry W32KAPI
+LOGICAL
+NTAPI
+NtUserSetThreadDesktop(
+    _In_ HDESK DesktopHandle
+);
+
+__kernel_entry W32KAPI
+NTSTATUS
+NTAPI
+NtUserBuildHwndList(
+    _In_opt_ HANDLE DesktopHandle,
+    _In_opt_ HWND StartWindowHandle,
+    _In_opt_ LOGICAL IncludeChildren,
+    _In_opt_ LOGICAL ExcludeImmersive,
+    _In_opt_ ULONG ThreadId,
+    _In_ ULONG HwndListInformationLength,
+    _Out_writes_bytes_(HwndListInformationLength) PVOID HwndListInformation,
+    _Out_ PULONG ReturnLength
+);
+
+//
+// Monitors
+//
+
+__kernel_entry W32KAPI
+BOOL
+NTAPI
+NtUserEnumDisplayMonitors(
+    _In_ HDC hdc,
+    _In_ LPCRECT lprcClip,
+    _In_ MONITORENUMPROC lpfnEnum,
+    _In_ LPARAM dwData
+);
+
+__kernel_entry W32KAPI
+BOOL
+NTAPI
+NtUserGetDisplayAutoRotationPreferences(
+    _In_ ORIENTATION_PREFERENCE* pOrientation
+);
+
+__kernel_entry W32KAPI
+BOOL
+NTAPI
+NtUserLockWorkStation(
+    VOID
+);
+
+//
+// Cursor & ICON
+//
+
+__kernel_entry W32KAPI
+HCURSOR
+NTAPI
+NtUserGetCursor();
+
+__kernel_entry W32KAPI
+BOOL
+NTAPI
+NtUserGetClipCursor(
+    _In_ LPRECT lpRect
+);
+
+__kernel_entry W32KAPI
+BOOL
+NTAPI
+NtUserClipCursor(
+    _In_ const RECT* lpRect
+);
+
+__kernel_entry W32KAPI
+BOOL
+NTAPI
+NtUserGetCursorInfo(
+    _In_ PCURSORINFO pci
 );
 
 __kernel_entry W32KAPI
@@ -887,279 +1642,42 @@ NtUserGetIconSize(
     _Out_ PULONG YY
 );
 
-__kernel_entry W32KAPI
-HWND
-NTAPI
-NtUserGetForegroundWindow(
-    VOID
-);
-
-__kernel_entry W32KAPI
-HWND
-NTAPI
-NtUserSetActiveWindow(
-    _In_ HWND WindowHandle
-);
-
-__kernel_entry W32KAPI
-HWND
-NTAPI
-NtUserSetFocus(
-    _In_ HWND WindowHandle
-);
+//
+// Timer
+//
 
 __kernel_entry W32KAPI
 ULONG_PTR
 NTAPI
-NtUserGetThreadState(
-    _In_ ULONG UserThreadState
-);
-
-__kernel_entry W32KAPI
-BOOL
-NTAPI
-NtUserSetWindowPlacement(
-    _In_  HWND WindowHandle,
-    _Inout_ const WINDOWPLACEMENT* lpwndpl
-);
-
-__kernel_entry W32KAPI
-BOOL
-NTAPI
-NtUserAttachThreadInput(
-    _In_ ULONG IdAttach,
-    _In_ ULONG IdAttachTo,
-    _In_ BOOL Attach
-);
-
-__kernel_entry W32KAPI
-BOOL
-NTAPI
-NtUserBlockInput(
-    _In_ BOOL BlockInput
-);
-
-__kernel_entry W32KAPI
-BOOL
-NTAPI
-tUserCalculatePopupWindowPosition(
-    _In_ const POINT* anchorPoint,
-    _In_ const SIZE* windowSize,
-    _In_ ULONG flags,
-    _Inout_ RECT* excludeRect,
-    _Inout_ RECT* popupWindowPosition
-);
-
-__kernel_entry W32KAPI
-BOOL
-NTAPI
-NtUserChangeWindowMessageFilterEx(
+NtUserSetTimer(
     _In_ HWND WindowHandle,
-    _In_ ULONG message,
-    _In_ ULONG action,
-    _Inout_ PCHANGEFILTERSTRUCT pChangeFilterStruct
+    _In_ ULONG_PTR nIDEvent,
+    _In_ ULONG uElapse,
+    _In_ TIMERPROC lpTimerFunc,
+    _In_ ULONG uToleranceDelay
 );
 
 __kernel_entry W32KAPI
-HWND
+BOOL
 NTAPI
-NtUserChildWindowFromPointEx(
+NtUserKillTimer(
     _In_ HWND WindowHandle,
-    _In_ POINT pt,
-    _In_ ULONG flags
+    _In_ ULONG_PTR IDEvent
 );
+
+//
+// GUI Object
+//
 
 __kernel_entry W32KAPI
 BOOL
 NTAPI
-NtUserClipCursor(
-    _In_ const RECT* lpRect
-);
-
-__kernel_entry W32KAPI
-BOOL
-NTAPI
-NtUserCloseDesktop(
-    _In_ HDESK hDesktop
-);
-
-__kernel_entry W32KAPI
-LONG
-NTAPI
-NtUserCopyAcceleratorTable(
-    _In_ HACCEL hAccelSrc,
-    _In_ LPACCEL lpAccelDst,
-    _In_ LONG cAccelEntries
-);
-
-__kernel_entry W32KAPI
-HACCEL
-NTAPI
-NtUserCreateAcceleratorTable(
-    _In_ LPACCEL paccel,
-    _In_ LONG cAccel
-);
-
-__kernel_entry W32KAPI
-BOOL
-NTAPI
-NtUserDeleteMenu(
-    _In_ HMENU hMenu,
-    _In_ ULONG uPosition,
-    _In_ ULONG uFlags
-);
-
-__kernel_entry W32KAPI
-BOOL
-NTAPI
-NtUserDestroyMenu(
-    _In_ HMENU hMenu
-);
-
-__kernel_entry W32KAPI
-BOOL
-NTAPI
-NtUserDragDetect(
-    _In_ HWND WindowHandle,
-    _In_ POINT pt
-);
-
-__kernel_entry W32KAPI
-ULONG
-NTAPI
-NtUserDragObject(
-    _In_ HWND WindowHandleParent,
-    _In_ HWND WindowHandleFrom,
-    _In_ ULONG fmt,
-    _In_ ULONG_PTR data,
-    _In_ HCURSOR hcur
-);
-
-__kernel_entry W32KAPI
-BOOL
-NTAPI
-NtUserDrawAnimatedRects(
-    _In_ HWND WindowHandle,
-    _In_ int idAni,
-    _In_ const RECT* lprcFrom,
-    _In_ const RECT* lprcTo
-);
-
-__kernel_entry W32KAPI
-BOOL
-NTAPI
-NtUserEndMenu(
-    VOID
-);
-
-__kernel_entry W32KAPI
-BOOL
-NTAPI
-NtUserEnumDisplayMonitors(
-    _In_ HDC hdc,
-    _In_ LPCRECT lprcClip,
-    _In_ MONITORENUMPROC lpfnEnum,
-    _In_ LPARAM dwData
-);
-
-__kernel_entry W32KAPI
-HRGN
-NTAPI
-NtUserExcludeUpdateRgn(
-    _In_ HDC hDC,
-    _In_ HWND WindowHandle
-);
-
-__kernel_entry W32KAPI
-BOOL
-NTAPI
-NtUserFlashWindowEx(
-    _In_ PFLASHWINFO pfwi
-);
-
-__kernel_entry W32KAPI
-HWND
-NTAPI
-NtUserGetAncestor(
-    _In_ HWND WindowHandle,
-    _In_ ULONG gaFlags
-);
-
-__kernel_entry W32KAPI
-ULONG
-NTAPI
-NtUserGetCaretBlinkTime(
-    VOID
-);
-
-__kernel_entry W32KAPI
-BOOL
-NTAPI
-NtUserGetCaretPos(
-    _In_ LPPOINT lpPoint
-);
-
-__kernel_entry W32KAPI
-BOOL
-NTAPI
-NtUserGetClipCursor(
-    _In_ LPRECT lpRect
-);
-
-__kernel_entry W32KAPI
-BOOL
-NTAPI
-NtUserGetComboBoxInfo(
-    _In_ HWND WindowHandleCombo,
-    _Inout_ PCOMBOBOXINFO pcbi
-);
-
-__kernel_entry W32KAPI
-BOOL
-NTAPI
-NtUserGetCurrentInputMessageSource(
-    _Inout_ INPUT_MESSAGE_SOURCE* InputMessageSource
-);
-
-__kernel_entry W32KAPI
-HCURSOR
-NTAPI
-NtUserGetCursor();
-
-__kernel_entry W32KAPI
-BOOL
-NTAPI
-NtUserGetCursorInfo(
-    _In_ PCURSORINFO pci
-);
-
-__kernel_entry W32KAPI
-HDC
-NTAPI
-NtUserGetDCEx(
-    _In_ HWND WindowHandle,
-    _In_ HRGN hrgnClip,
-    _In_ ULONG flags
-);
-
-__kernel_entry W32KAPI
-BOOL
-NTAPI
-NtUserGetDisplayAutoRotationPreferences(
-    _In_ ORIENTATION_PREFERENCE* pOrientation
-);
-
-__kernel_entry W32KAPI
-ULONG
-NTAPI
-NtUserGetDoubleClickTime();
-
-__kernel_entry W32KAPI
-BOOL
-NTAPI
-NtUserGetGUIThreadInfo(
-    _In_ ULONG idThread,
-    _In_ PGUITHREADINFO pgui
+NtUserGetObjectInformation(
+    _In_ HANDLE ObjectHandle,
+    _In_ LONG Index,
+    _In_ PVOID Info,
+    _In_ ULONG Length,
+    _In_ PULONG LengthNeeded
 );
 
 #ifndef GR_GDIOBJECTS
@@ -1183,227 +1701,16 @@ NtUserGetGuiResources(
     _In_ ULONG uiFlags
 );
 
-__kernel_entry W32KAPI
-BOOL
-NTAPI
-NtUserGetLayeredWindowAttributes(
-    _In_ HWND WindowHandle,
-    _In_ COLORREF* pcrKey,
-    _In_ BYTE* pbAlpha,
-    _In_ ULONG pdwFlags
-);
-
-__kernel_entry W32KAPI
-ULONG
-NTAPI
-NtUserGetListBoxInfo(
-    _In_ HWND WindowHandle
-);
+//
+// GUI Thread
+//
 
 __kernel_entry W32KAPI
 BOOL
 NTAPI
-NtUserGetMenuBarInfo(
-    _In_ HWND WindowHandle,
-    _In_ LONG idObject,
-    _In_ LONG idItem,
-    _In_ PMENUBARINFO pmbi
-);
-
-__kernel_entry W32KAPI
-BOOL
-NTAPI
-NtUserGetMenuItemRect(
-    _In_ HWND WindowHandle,
-    _In_ HMENU hMenu,
-    _In_ ULONG uItem,
-    _In_ LPRECT lprcItem
-);
-
-__kernel_entry W32KAPI
-LONG
-NTAPI
-NtUserGetMouseMovePointsEx(
-    _In_ ULONG cbSize,
-    _In_ LPMOUSEMOVEPOINT lppt,
-    _In_ LPMOUSEMOVEPOINT lpptBuf,
-    _In_ LONG nBufPoints,
-    _In_ ULONG resolution
-);
-
-__kernel_entry W32KAPI
-ULONG
-NTAPI
-NtUserGetRawInputData(
-    _In_ HRAWINPUT hRawInput,
-    _In_ ULONG uiCommand,
-    _In_ LPVOID pData,
-    _In_ PULONG pcbSize,
-    _In_ ULONG cbSizeHeader
-);
-
-__kernel_entry W32KAPI
-ULONG
-NTAPI
-NtUserGetRegisteredRawInputDevices(
-    _In_ PRAWINPUTDEVICE pRawInputDevices,
-    _In_ PULONG puiNumDevices,
-    _In_ ULONG cbSize
-);
-
-__kernel_entry W32KAPI
-HMENU
-NTAPI
-NtUserGetSystemMenu(
-    _In_ HWND WindowHandle,
-    _In_ BOOL bRevert
-);
-
-__kernel_entry W32KAPI
-HDESK
-NTAPI
-NtUserGetThreadDesktop(
-    _In_ ULONG ThreadId
-);
-
-__kernel_entry W32KAPI
-BOOL
-NTAPI
-NtUserGetTitleBarInfo(
-    _In_ HWND WindowHandle,
-    _In_ PTITLEBARINFO pti
-);
-
-__kernel_entry W32KAPI
-BOOL
-NTAPI
-NtUserGetObjectInformation(
-    _In_ HANDLE hObj,
-    _In_ LONG Index,
-    _In_ PVOID vInfo,
-    _In_ ULONG Length,
-    _In_ PULONG LengthNeeded
-);
-
-__kernel_entry W32KAPI
-HDC
-NTAPI
-NtUserGetWindowDC(
-    _In_ HWND WindowHandle
-);
-
-__kernel_entry W32KAPI
-BOOL
-NTAPI
-NtUserGetWindowPlacement(
-    _In_ HWND WindowHandle,
-    _In_opt_ WINDOWPLACEMENT* lpwndpl
-);
-
-__kernel_entry W32KAPI
-BOOL
-NTAPI
-NtUserHiliteMenuItem(
-    _In_ HWND WindowHandle,
-    _In_ HMENU Menu,
-    _In_ ULONG IDHiliteItem,
-    _In_ ULONG Hilite
-);
-
-__kernel_entry W32KAPI
-BOOL
-NTAPI
-NtUserInvalidateRect(
-    _In_ HWND WindowHandle,
-    _In_ const RECT* Rect,
-    _In_ BOOL Erase
-);
-
-__kernel_entry W32KAPI
-BOOL
-NTAPI
-NtUserInvalidateRgn(
-    _In_ HWND WindowHandle,
-    _In_ HRGN hRgn,
-    _In_ BOOL Erase
-);
-
-__kernel_entry W32KAPI
-BOOL
-NTAPI
-NtUserIsTouchWindow(
-    _In_ HWND WindowHandle,
-    _In_ PULONG Flags
-);
-
-__kernel_entry W32KAPI
-BOOL
-NTAPI
-NtUserKillTimer(
-    _In_ HWND WindowHandle,
-    _In_ ULONG_PTR IDEvent
-);
-
-__kernel_entry W32KAPI
-BOOL
-NTAPI
-NtUserLockWorkStation(
-    VOID
-);
-
-__kernel_entry W32KAPI
-BOOL
-NTAPI
-NtUserLogicalToPhysicalPoint(
-    _In_ HWND WindowHandle,
-    _In_ LPPOINT lpPoint
-);
-
-__kernel_entry W32KAPI
-LONG
-NTAPI
-NtUserMenuItemFromPoint(
-    _In_ HWND WindowHandle,
-    _In_ HMENU hMenu,
-    _In_ POINT ptScreen
-);
-
-__kernel_entry W32KAPI
-BOOL
-NTAPI
-NtUserMoveWindow(
-    _In_ HWND WindowHandle,
-    _In_ LONG X,
-    _In_ LONG Y,
-    _In_ LONG nWidth,
-    _In_ LONG nHeight,
-    _In_ BOOL bRepaint
-);
-
-__kernel_entry W32KAPI
-HDESK
-NTAPI
-NtUserOpenInputDesktop(
-    _In_ ULONG Flags,
-    _In_ BOOL Inherit,
-    _In_ ACCESS_MASK DesiredAccess
-);
-
-__kernel_entry W32KAPI
-BOOL
-NTAPI
-NtUserPhysicalToLogicalPoint(
-    _In_ HWND WindowHandle,
-    _In_ LPPOINT lpPoint
-);
-
-__kernel_entry W32KAPI
-BOOL
-NTAPI
-NtUserPrintWindow(
-    _In_ HWND WindowHandle,
-    _In_ HDC hdcBlt,
-    _In_ ULONG nFlags
+NtUserGetGUIThreadInfo(
+    _In_ ULONG idThread,
+    _In_ PGUITHREADINFO pgui
 );
 
 typedef enum _USERTHREADINFOCLASS USERTHREADINFOCLASS;
@@ -1429,30 +1736,9 @@ NtUserSetInformationThread(
     _In_ ULONG ThreadInformationLength
 );
 
-__kernel_entry W32KAPI
-BOOL
-NTAPI
-QuerySendMessage(
-    _Inout_ MSG* pMsg
-);
-
-__kernel_entry W32KAPI
-BOOL
-NTAPI
-NtUserRedrawWindow(
-    _In_ HWND WindowHandle,
-    _In_ const PRECT lprcUpdate,
-    _In_ HRGN hrgnUpdate,
-    _In_ ULONG flags
-);
-
-__kernel_entry W32KAPI
-HWND
-NTAPI
-NtUserRealChildWindowFromPoint(
-    _In_ HWND WindowHandleParent,
-    _In_ POINT ptParentClientCoords
-);
+//
+// HotKey
+//
 
 __kernel_entry W32KAPI
 BOOL
@@ -1467,79 +1753,14 @@ NtUserRegisterHotKey(
 __kernel_entry W32KAPI
 BOOL
 NTAPI
-NtUserRemoveMenu(
-    _In_ HMENU hMenu,
-    _In_ ULONG uPosition,
-    _In_ ULONG uFlags
-);
-
-__kernel_entry W32KAPI
-ULONG
-NTAPI
-NtUserSendInput(
-    _In_ ULONG cInputs,
-    _In_ LPINPUT pInputs,
-    _In_ LONG cbSize
-);
-
-__kernel_entry W32KAPI
-HWND
-NTAPI
-NtUserSetActiveWindow(
-    _In_ HWND WindowHandle
-);
-
-__kernel_entry W32KAPI
-HWND
-NTAPI
-NtUserSetCapture(
-    _In_ HWND WindowHandle
-);
-
-__kernel_entry W32KAPI
-ULONG_PTR
-NTAPI
-NtUserSetTimer(
+NtUserUnregisterHotKey(
     _In_ HWND WindowHandle,
-    _In_ ULONG_PTR nIDEvent,
-    _In_ ULONG uElapse,
-    _In_ TIMERPROC lpTimerFunc,
-    _In_ ULONG uToleranceDelay
+    _In_ LONG id
 );
 
-__kernel_entry W32KAPI
-WORD
-NTAPI
-NtUserSetClassWord(
-    _In_ HWND WindowHandle,
-    _In_ LONG nIndex,
-    _In_ WORD wNewWord
-);
-
-__kernel_entry W32KAPI
-BOOL
-NTAPI
-NtUserSetCursorPos(
-    _In_ LONG X,
-    _In_ LONG Y
-);
-
-__kernel_entry W32KAPI
-HWND
-NTAPI
-NtUserSetFocus(
-    _In_ HWND WindowHandle
-);
-
-__kernel_entry W32KAPI
-BOOL
-NTAPI
-NtUserSetLayeredWindowAttributes(
-    _In_ HWND WindowHandle,
-    _In_ COLORREF crKey,
-    _In_ BYTE bAlpha,
-    _In_ DWORD dwFlags
-);
+//
+// Debug
+//
 
 __kernel_entry W32KAPI
 BOOL
@@ -1548,27 +1769,9 @@ NtUserSetProcessRestrictionExemption(
     _In_ BOOL EnableExemption
 );
 
-__kernel_entry W32KAPI
-BOOL
-NTAPI
-NtUserSetWindowPos(
-    _In_ HWND WindowHandle,
-    _In_ HWND WindowHandleInsertAfter,
-    _In_ LONG X,
-    _In_ LONG Y,
-    _In_ LONG cx,
-    _In_ LONG cy,
-    _In_ ULONG uFlags
-);
-
-__kernel_entry W32KAPI
-WORD
-NTAPI
-NtUserSetWindowWord(
-    _In_ HWND WindowHandle,
-    _In_ LONG nIndex,
-    _In_ WORD wNewWord
-);
+//
+// Boost
+//
 
 __kernel_entry W32KAPI
 HWND
@@ -1592,37 +1795,9 @@ NtUserSetAdditionalPowerThrottlingProcess(
     _In_ HWND WindowHandle
 );
 
-__kernel_entry W32KAPI
-LONG
-NTAPI
-NtUserShowCursor(
-    _In_ BOOL bShow
-);
-
-__kernel_entry W32KAPI
-BOOL
-NTAPI
-NtUserShowWindow(
-    _In_ HWND WindowHandle,
-    _In_ LONG nCmdShow
-);
-
-__kernel_entry W32KAPI
-BOOL
-NTAPI
-NtUserShowWindowAsync(
-    _In_ HWND WindowHandle,
-    _In_ LONG nCmdShow
-);
-
-__kernel_entry W32KAPI
-BOOL
-NTAPI
-NtUserShutdownBlockReasonQuery(
-    _In_ HWND WindowHandle,
-    _Out_ LPWSTR pwszBuff,
-    _Inout_ PULONG pcchBuff
-);
+//
+// Shutdown
+//
 
 __kernel_entry W32KAPI
 BOOL
@@ -1634,89 +1809,31 @@ NtUserShutdownReasonDestroy(
 __kernel_entry W32KAPI
 BOOL
 NTAPI
-NtUserTrackMouseEvent(
-    _In_ LPTRACKMOUSEEVENT lpEventTrack
-);
-
-__kernel_entry W32KAPI
-BOOL
-NTAPI
-NtUserTrackPopupMenuEx(
-    _In_ HMENU hMenu,
-    _In_ ULONG uFlags,
-    _In_ LONG x,
-    _In_ LONG y,
+NtUserShutdownBlockReasonQuery(
     _In_ HWND WindowHandle,
-    _In_ LPTPMPARAMS lptpm
+    _Out_ LPWSTR pwszBuff,
+    _Inout_ PULONG pcchBuff
 );
 
-__kernel_entry W32KAPI
-BOOL
-NTAPI
-NtUserUnhookWinEvent(
-    _In_ HWINEVENTHOOK hWinEventHook
-);
+//
+// GhostWindow
+//
 
-__kernel_entry W32KAPI
-BOOL
-NTAPI
-NtUserUnregisterHotKey(
-    _In_ HWND WindowHandle,
-    _In_ LONG id
-);
-
-__kernel_entry W32KAPI
-BOOL
-NTAPI
-NtUserUserHandleGrantAccess(
-    _In_ HANDLE UserHandle,
-    _In_ HANDLE Job,
-    _In_ BOOL Grant
-);
-
-__kernel_entry W32KAPI
-BOOL
-NTAPI
-NtUserValidateRect(
-    _In_ HWND WindowHandle,
-    _In_ const RECT* Rect
-);
-
+#ifndef _KERNEL_MODE
 __kernel_entry W32KAPI
 HWND
 NTAPI
-NtUserWindowFromDC(
-    _In_ HDC hDC
-);
-
-__kernel_entry W32KAPI
-HWND
-NTAPI
-NtUserWindowFromPhysicalPoint(
-    _In_ POINT Point
-);
-
-__kernel_entry W32KAPI
-HWND
-NTAPI
-NtUserWindowFromPoint(
-    _In_ POINT Point
-);
-
-__kernel_entry W32KAPI
-LOGICAL
-NTAPI
-NtUserSetChildWindowNoActivate(
+GhostWindowFromHungWindow(
     _In_ HWND WindowHandle
 );
 
-// User32 ordinal 2005
 __kernel_entry W32KAPI
-LOGICAL
+HWND
 NTAPI
-SetChildWindowNoActivate(
+HungWindowFromGhostWindow(
     _In_ HWND WindowHandle
 );
+#endif //!_KERNEL_MODE
 
 __kernel_entry W32KAPI
 HWND
@@ -1732,165 +1849,195 @@ NtUserHungWindowFromGhostWindow(
     _In_ HWND WindowHandle
 );
 
+//
+// Misc
+//
+
 __kernel_entry W32KAPI
-HWND
+BOOL
 NTAPI
-GhostWindowFromHungWindow(
-    _In_ HWND WindowHandle
+NtUserLogicalToPhysicalPoint(
+    _In_ HWND WindowHandle,
+    _In_ LPPOINT lpPoint
 );
 
 __kernel_entry W32KAPI
-HWND
+BOOL
 NTAPI
-HungWindowFromGhostWindow(
-    _In_ HWND WindowHandle
+NtUserPhysicalToLogicalPoint(
+    _In_ HWND WindowHandle,
+    _In_ LPPOINT lpPoint
 );
 
+__kernel_entry W32KAPI
+ULONG_PTR
+NTAPI
+NtUserGetThreadState(
+    _In_ ULONG UserThreadState
+);
 
+__kernel_entry W32KAPI
+LOGICAL
+NTAPI
+NtUserCanCurrentThreadChangeForeground(
+    VOID
+);
+
+__kernel_entry W32KAPI
+NTSTATUS
+NTAPI
+NtUserRaiseLowerShellWindow(
+    _In_ HWND WindowHandle,
+    _In_ BOOLEAN SetWithOptions
+);
+
+//
+// KernelCallbackTable
+//
 
 // Peb!KernelCallbackTable = user32.dll!apfnDispatch
 typedef struct _KERNEL_CALLBACK_TABLE
 {
-    ULONG_PTR __fnCOPYDATA;
-    ULONG_PTR __fnCOPYGLOBALDATA;
-    ULONG_PTR __fnEMPTY1;
-    ULONG_PTR __fnNCDESTROY;
-    ULONG_PTR __fnDWORDOPTINLPMSG;
-    ULONG_PTR __fnINOUTDRAG;
-    ULONG_PTR __fnGETTEXTLENGTHS1;
-    ULONG_PTR __fnINCNTOUTSTRING;
-    ULONG_PTR __fnINCNTOUTSTRINGNULL;
-    ULONG_PTR __fnINLPCOMPAREITEMSTRUCT;
-    ULONG_PTR __fnINLPCREATESTRUCT;
-    ULONG_PTR __fnINLPDELETEITEMSTRUCT;
-    ULONG_PTR __fnINLPDRAWITEMSTRUCT;
-    ULONG_PTR __fnPOPTINLPUINT1;
-    ULONG_PTR __fnPOPTINLPUINT2;
-    ULONG_PTR __fnINLPMDICREATESTRUCT;
-    ULONG_PTR __fnINOUTLPMEASUREITEMSTRUCT;
-    ULONG_PTR __fnINLPWINDOWPOS;
-    ULONG_PTR __fnINOUTLPPOINT51;
-    ULONG_PTR __fnINOUTLPSCROLLINFO;
-    ULONG_PTR __fnINOUTLPRECT;
-    ULONG_PTR __fnINOUTNCCALCSIZE;
-    ULONG_PTR __fnINOUTLPPOINT52;
-    ULONG_PTR __fnINPAINTCLIPBRD;
-    ULONG_PTR __fnINSIZECLIPBRD;
-    ULONG_PTR __fnINDESTROYCLIPBRD;
-    ULONG_PTR __fnINSTRINGNULL1;
-    ULONG_PTR __fnINSTRINGNULL2;
-    ULONG_PTR __fnINDEVICECHANGE;
-    ULONG_PTR __fnPOWERBROADCAST;
-    ULONG_PTR __fnINLPUAHDRAWMENU1;
-    ULONG_PTR __fnOPTOUTLPDWORDOPTOUTLPDWORD1;
-    ULONG_PTR __fnOPTOUTLPDWORDOPTOUTLPDWORD2;
-    ULONG_PTR __fnOUTDWORDINDWORD;
-    ULONG_PTR __fnOUTLPRECT;
-    ULONG_PTR __fnOUTSTRING;
-    ULONG_PTR __fnPOPTINLPUINT3;
-    ULONG_PTR __fnPOUTLPINT;
-    ULONG_PTR __fnSENTDDEMSG;
-    ULONG_PTR __fnINOUTSTYLECHANGE1;
-    ULONG_PTR __fnHkINDWORD;
-    ULONG_PTR __fnHkINLPCBTACTIVATESTRUCT;
-    ULONG_PTR __fnHkINLPCBTCREATESTRUCT;
-    ULONG_PTR __fnHkINLPDEBUGHOOKSTRUCT;
-    ULONG_PTR __fnHkINLPMOUSEHOOKSTRUCTEX1;
-    ULONG_PTR __fnHkINLPKBDLLHOOKSTRUCT;
-    ULONG_PTR __fnHkINLPMSLLHOOKSTRUCT;
-    ULONG_PTR __fnHkINLPMSG;
-    ULONG_PTR __fnHkINLPRECT;
-    ULONG_PTR __fnHkOPTINLPEVENTMSG;
-    ULONG_PTR __xxxClientCallDelegateThread;
-    ULONG_PTR __ClientCallDummyCallback1;
-    ULONG_PTR __ClientCallDummyCallback2;
-    ULONG_PTR __fnSHELLWINDOWMANAGEMENTCALLOUT;
-    ULONG_PTR __fnSHELLWINDOWMANAGEMENTNOTIFY;
-    ULONG_PTR __ClientCallDummyCallback3;
-    ULONG_PTR __xxxClientCallDitThread;
-    ULONG_PTR __xxxClientEnableMMCSS;
-    ULONG_PTR __xxxClientUpdateDpi;
-    ULONG_PTR __xxxClientExpandStringW;
-    ULONG_PTR __ClientCopyDDEIn1;
-    ULONG_PTR __ClientCopyDDEIn2;
-    ULONG_PTR __ClientCopyDDEOut1;
-    ULONG_PTR __ClientCopyDDEOut2;
-    ULONG_PTR __ClientCopyImage;
-    ULONG_PTR __ClientEventCallback;
-    ULONG_PTR __ClientFindMnemChar;
-    ULONG_PTR __ClientFreeDDEHandle;
-    ULONG_PTR __ClientFreeLibrary;
-    ULONG_PTR __ClientGetCharsetInfo;
-    ULONG_PTR __ClientGetDDEFlags;
-    ULONG_PTR __ClientGetDDEHookData;
-    ULONG_PTR __ClientGetListboxString;
-    ULONG_PTR __ClientGetMessageMPH;
-    ULONG_PTR __ClientLoadImage;
-    ULONG_PTR __ClientLoadLibrary;
-    ULONG_PTR __ClientLoadMenu;
-    ULONG_PTR __ClientLoadLocalT1Fonts;
-    ULONG_PTR __ClientPSMTextOut;
-    ULONG_PTR __ClientLpkDrawTextEx;
-    ULONG_PTR __ClientExtTextOutW;
-    ULONG_PTR __ClientGetTextExtentPointW;
-    ULONG_PTR __ClientCharToWchar;
-    ULONG_PTR __ClientAddFontResourceW;
-    ULONG_PTR __ClientThreadSetup;
-    ULONG_PTR __ClientDeliverUserApc;
-    ULONG_PTR __ClientNoMemoryPopup;
-    ULONG_PTR __ClientMonitorEnumProc;
-    ULONG_PTR __ClientCallWinEventProc;
-    ULONG_PTR __ClientWaitMessageExMPH;
-    ULONG_PTR __ClientCallDummyCallback4;
-    ULONG_PTR __ClientCallDummyCallback5;
-    ULONG_PTR __ClientImmLoadLayout;
-    ULONG_PTR __ClientImmProcessKey;
-    ULONG_PTR __fnIMECONTROL;
-    ULONG_PTR __fnINWPARAMDBCSCHAR;
-    ULONG_PTR __fnGETTEXTLENGTHS2;
-    ULONG_PTR __ClientCallDummyCallback6;
-    ULONG_PTR __ClientLoadStringW;
-    ULONG_PTR __ClientLoadOLE;
-    ULONG_PTR __ClientRegisterDragDrop;
-    ULONG_PTR __ClientRevokeDragDrop;
-    ULONG_PTR __fnINOUTMENUGETOBJECT;
-    ULONG_PTR __ClientPrinterThunk;
-    ULONG_PTR __fnOUTLPCOMBOBOXINFO;
-    ULONG_PTR __fnOUTLPSCROLLBARINFO;
-    ULONG_PTR __fnINLPUAHDRAWMENU2;
-    ULONG_PTR __fnINLPUAHDRAWMENUITEM;
-    ULONG_PTR __fnINLPUAHDRAWMENU3;
-    ULONG_PTR __fnINOUTLPUAHMEASUREMENUITEM;
-    ULONG_PTR __fnINLPUAHDRAWMENU4;
-    ULONG_PTR __fnOUTLPTITLEBARINFOEX;
-    ULONG_PTR __fnTOUCH;
-    ULONG_PTR __fnGESTURE;
-    ULONG_PTR __fnPOPTINLPUINT4;
-    ULONG_PTR __fnPOPTINLPUINT5;
-    ULONG_PTR __xxxClientCallDefaultInputHandler;
-    ULONG_PTR __fnEMPTY2;
-    ULONG_PTR __ClientRimDevCallback;
-    ULONG_PTR __xxxClientCallMinTouchHitTestingCallback;
-    ULONG_PTR __ClientCallLocalMouseHooks;
-    ULONG_PTR __xxxClientBroadcastThemeChange;
-    ULONG_PTR __xxxClientCallDevCallbackSimple;
-    ULONG_PTR __xxxClientAllocWindowClassExtraBytes;
-    ULONG_PTR __xxxClientFreeWindowClassExtraBytes;
-    ULONG_PTR __fnGETWINDOWDATA;
-    ULONG_PTR __fnINOUTSTYLECHANGE2;
-    ULONG_PTR __fnHkINLPMOUSEHOOKSTRUCTEX2;
-    ULONG_PTR __xxxClientCallDefWindowProc;
-    ULONG_PTR __fnSHELLSYNCDISPLAYCHANGED;
-    ULONG_PTR __fnHkINLPCHARHOOKSTRUCT;
-    ULONG_PTR __fnINTERCEPTEDWINDOWACTION;
-    ULONG_PTR __xxxTooltipCallback;
-    ULONG_PTR __xxxClientInitPSBInfo;
-    ULONG_PTR __xxxClientDoScrollMenu;
-    ULONG_PTR __xxxClientEndScroll;
-    ULONG_PTR __xxxClientDrawSize;
-    ULONG_PTR __xxxClientDrawScrollBar;
-    ULONG_PTR __xxxClientHitTestScrollBar;
-    ULONG_PTR __xxxClientTrackInit;
+    PVOID __fnCOPYDATA;
+    PVOID __fnCOPYGLOBALDATA;
+    PVOID __fnEMPTY1;
+    PVOID __fnNCDESTROY;
+    PVOID __fnDWORDOPTINLPMSG;
+    PVOID __fnINOUTDRAG;
+    PVOID __fnGETTEXTLENGTHS1;
+    PVOID __fnINCNTOUTSTRING;
+    PVOID __fnINCNTOUTSTRINGNULL;
+    PVOID __fnINLPCOMPAREITEMSTRUCT;
+    PVOID __fnINLPCREATESTRUCT;
+    PVOID __fnINLPDELETEITEMSTRUCT;
+    PVOID __fnINLPDRAWITEMSTRUCT;
+    PVOID __fnPOPTINLPUINT1;
+    PVOID __fnPOPTINLPUINT2;
+    PVOID __fnINLPMDICREATESTRUCT;
+    PVOID __fnINOUTLPMEASUREITEMSTRUCT;
+    PVOID __fnINLPWINDOWPOS;
+    PVOID __fnINOUTLPPOINT51;
+    PVOID __fnINOUTLPSCROLLINFO;
+    PVOID __fnINOUTLPRECT;
+    PVOID __fnINOUTNCCALCSIZE;
+    PVOID __fnINOUTLPPOINT52;
+    PVOID __fnINPAINTCLIPBRD;
+    PVOID __fnINSIZECLIPBRD;
+    PVOID __fnINDESTROYCLIPBRD;
+    PVOID __fnINSTRINGNULL1;
+    PVOID __fnINSTRINGNULL2;
+    PVOID __fnINDEVICECHANGE;
+    PVOID __fnPOWERBROADCAST;
+    PVOID __fnINLPUAHDRAWMENU1;
+    PVOID __fnOPTOUTLPDWORDOPTOUTLPDWORD1;
+    PVOID __fnOPTOUTLPDWORDOPTOUTLPDWORD2;
+    PVOID __fnOUTDWORDINDWORD;
+    PVOID __fnOUTLPRECT;
+    PVOID __fnOUTSTRING;
+    PVOID __fnPOPTINLPUINT3;
+    PVOID __fnPOUTLPINT;
+    PVOID __fnSENTDDEMSG;
+    PVOID __fnINOUTSTYLECHANGE1;
+    PVOID __fnHkINDWORD;
+    PVOID __fnHkINLPCBTACTIVATESTRUCT;
+    PVOID __fnHkINLPCBTCREATESTRUCT;
+    PVOID __fnHkINLPDEBUGHOOKSTRUCT;
+    PVOID __fnHkINLPMOUSEHOOKSTRUCTEX1;
+    PVOID __fnHkINLPKBDLLHOOKSTRUCT;
+    PVOID __fnHkINLPMSLLHOOKSTRUCT;
+    PVOID __fnHkINLPMSG;
+    PVOID __fnHkINLPRECT;
+    PVOID __fnHkOPTINLPEVENTMSG;
+    PVOID __xxxClientCallDelegateThread;
+    PVOID __ClientCallDummyCallback1;
+    PVOID __ClientCallDummyCallback2;
+    PVOID __fnSHELLWINDOWMANAGEMENTCALLOUT;
+    PVOID __fnSHELLWINDOWMANAGEMENTNOTIFY;
+    PVOID __ClientCallDummyCallback3;
+    PVOID __xxxClientCallDitThread;
+    PVOID __xxxClientEnableMMCSS;
+    PVOID __xxxClientUpdateDpi;
+    PVOID __xxxClientExpandStringW;
+    PVOID __ClientCopyDDEIn1;
+    PVOID __ClientCopyDDEIn2;
+    PVOID __ClientCopyDDEOut1;
+    PVOID __ClientCopyDDEOut2;
+    PVOID __ClientCopyImage;
+    PVOID __ClientEventCallback;
+    PVOID __ClientFindMnemChar;
+    PVOID __ClientFreeDDEHandle;
+    PVOID __ClientFreeLibrary;
+    PVOID __ClientGetCharsetInfo;
+    PVOID __ClientGetDDEFlags;
+    PVOID __ClientGetDDEHookData;
+    PVOID __ClientGetListboxString;
+    PVOID __ClientGetMessageMPH;
+    PVOID __ClientLoadImage;
+    PVOID __ClientLoadLibrary;
+    PVOID __ClientLoadMenu;
+    PVOID __ClientLoadLocalT1Fonts;
+    PVOID __ClientPSMTextOut;
+    PVOID __ClientLpkDrawTextEx;
+    PVOID __ClientExtTextOutW;
+    PVOID __ClientGetTextExtentPointW;
+    PVOID __ClientCharToWchar;
+    PVOID __ClientAddFontResourceW;
+    PVOID __ClientThreadSetup;
+    PVOID __ClientDeliverUserApc;
+    PVOID __ClientNoMemoryPopup;
+    PVOID __ClientMonitorEnumProc;
+    PVOID __ClientCallWinEventProc;
+    PVOID __ClientWaitMessageExMPH;
+    PVOID __ClientCallDummyCallback4;
+    PVOID __ClientCallDummyCallback5;
+    PVOID __ClientImmLoadLayout;
+    PVOID __ClientImmProcessKey;
+    PVOID __fnIMECONTROL;
+    PVOID __fnINWPARAMDBCSCHAR;
+    PVOID __fnGETTEXTLENGTHS2;
+    PVOID __ClientCallDummyCallback6;
+    PVOID __ClientLoadStringW;
+    PVOID __ClientLoadOLE;
+    PVOID __ClientRegisterDragDrop;
+    PVOID __ClientRevokeDragDrop;
+    PVOID __fnINOUTMENUGETOBJECT;
+    PVOID __ClientPrinterThunk;
+    PVOID __fnOUTLPCOMBOBOXINFO;
+    PVOID __fnOUTLPSCROLLBARINFO;
+    PVOID __fnINLPUAHDRAWMENU2;
+    PVOID __fnINLPUAHDRAWMENUITEM;
+    PVOID __fnINLPUAHDRAWMENU3;
+    PVOID __fnINOUTLPUAHMEASUREMENUITEM;
+    PVOID __fnINLPUAHDRAWMENU4;
+    PVOID __fnOUTLPTITLEBARINFOEX;
+    PVOID __fnTOUCH;
+    PVOID __fnGESTURE;
+    PVOID __fnPOPTINLPUINT4;
+    PVOID __fnPOPTINLPUINT5;
+    PVOID __xxxClientCallDefaultInputHandler;
+    PVOID __fnEMPTY2;
+    PVOID __ClientRimDevCallback;
+    PVOID __xxxClientCallMinTouchHitTestingCallback;
+    PVOID __ClientCallLocalMouseHooks;
+    PVOID __xxxClientBroadcastThemeChange;
+    PVOID __xxxClientCallDevCallbackSimple;
+    PVOID __xxxClientAllocWindowClassExtraBytes;
+    PVOID __xxxClientFreeWindowClassExtraBytes;
+    PVOID __fnGETWINDOWDATA;
+    PVOID __fnINOUTSTYLECHANGE2;
+    PVOID __fnHkINLPMOUSEHOOKSTRUCTEX2;
+    PVOID __xxxClientCallDefWindowProc;
+    PVOID __fnSHELLSYNCDISPLAYCHANGED;
+    PVOID __fnHkINLPCHARHOOKSTRUCT;
+    PVOID __fnINTERCEPTEDWINDOWACTION;
+    PVOID __xxxTooltipCallback;
+    PVOID __xxxClientInitPSBInfo;
+    PVOID __xxxClientDoScrollMenu;
+    PVOID __xxxClientEndScroll;
+    PVOID __xxxClientDrawSize;
+    PVOID __xxxClientDrawScrollBar;
+    PVOID __xxxClientHitTestScrollBar;
+    PVOID __xxxClientTrackInit;
 } KERNEL_CALLBACK_TABLE, * PKERNEL_CALLBACK_TABLE;
 
 

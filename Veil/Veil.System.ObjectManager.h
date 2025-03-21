@@ -543,6 +543,13 @@ typedef struct _OBJECT_BOUNDARY_ENTRY
 {
     BOUNDARY_ENTRY_TYPE EntryType;
     ULONG EntrySize;
+
+    //union
+    //{
+    //    WCHAR Name[1];
+    //    PSID Sid;
+    //    PSID IntegrityLabel;
+    //} DUMMYUNIONNAME;
 } OBJECT_BOUNDARY_ENTRY, * POBJECT_BOUNDARY_ENTRY;
 
 // rev
@@ -561,8 +568,9 @@ typedef struct _OBJECT_BOUNDARY_DESCRIPTOR
         {
             ULONG AddAppContainerSid : 1;
             ULONG Reserved : 31;
-        };
-    };
+        } DUMMYSTRUCTNAME;
+    } DUMMYUNIONNAME;
+    //OBJECT_BOUNDARY_ENTRY Entries[1];
 } OBJECT_BOUNDARY_DESCRIPTOR, * POBJECT_BOUNDARY_DESCRIPTOR;
 
 __kernel_entry NTSYSCALLAPI

@@ -126,6 +126,47 @@ typedef enum _PLUGPLAY_CONTROL_CLASS
     MaxPlugPlayControl
 } PLUGPLAY_CONTROL_CLASS, * PPLUGPLAY_CONTROL_CLASS;
 
+#ifndef _KERNEL_MODE
+//
+// Define PNP/POWER types required by IRP_MJ_PNP/IRP_MJ_POWER.
+//
+
+typedef enum _DEVICE_RELATION_TYPE {
+    BusRelations,
+    EjectionRelations,
+    PowerRelations,
+    RemovalRelations,
+    TargetDeviceRelation,
+    SingleBusRelations,
+    TransportRelations
+} DEVICE_RELATION_TYPE, * PDEVICE_RELATION_TYPE;
+
+typedef enum _BUS_QUERY_ID_TYPE {
+    BusQueryDeviceID = 0,       // <Enumerator>\<Enumerator-specific device id>
+    BusQueryHardwareIDs = 1,    // Hardware ids
+    BusQueryCompatibleIDs = 2,  // compatible device ids
+    BusQueryInstanceID = 3,     // persistent id for this instance of the device
+    BusQueryDeviceSerialNumber = 4,   // serial number for this device
+    BusQueryContainerID = 5     // unique id of the device's physical container
+} BUS_QUERY_ID_TYPE, * PBUS_QUERY_ID_TYPE;
+
+typedef enum _DEVICE_TEXT_TYPE {
+    DeviceTextDescription = 0,            // DeviceDesc property
+    DeviceTextLocationInformation = 1     // DeviceLocation property
+} DEVICE_TEXT_TYPE, * PDEVICE_TEXT_TYPE;
+
+typedef enum _DEVICE_USAGE_NOTIFICATION_TYPE {
+    DeviceUsageTypeUndefined,
+    DeviceUsageTypePaging,
+    DeviceUsageTypeHibernation,
+    DeviceUsageTypeDumpFile,
+    DeviceUsageTypeBoot,
+    DeviceUsageTypePostDisplay,
+    DeviceUsageTypeGuestAssigned
+} DEVICE_USAGE_NOTIFICATION_TYPE;
+
+#endif // !_KERNEL_MODE
+
 __kernel_entry NTSYSCALLAPI
 NTSTATUS
 NTAPI

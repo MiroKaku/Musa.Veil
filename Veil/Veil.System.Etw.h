@@ -2185,7 +2185,7 @@ typedef struct _ETW_DISKIO_READWRITE_V2
     ULONG DiskNumber;
     ULONG IrpFlags;
     ULONG Size;
-    ULONG Reserved;
+    ULONG ResponseTime;
     ULONGLONG ByteOffset;
     PVOID FileObject;
     PVOID IrpAddress;
@@ -2197,12 +2197,12 @@ typedef struct _ETW_DISKIO_READWRITE_V3
     ULONG DiskNumber;
     ULONG IrpFlags;
     ULONG Size;
-    ULONG Reserved;
+    ULONG ResponseTime;
     ULONGLONG ByteOffset;
     PVOID FileObject;
     PVOID IrpAddress;
     ULONGLONG HighResResponseTime;
-    ULONG IssuingThreadId;
+    ULONG IssuingThreadId; // since WIN8
 } ETW_DISKIO_READWRITE_V3, * PETW_DISKIO_READWRITE_V3;
 
 typedef struct _ETW_DISKIO_FLUSH_BUFFERS_V2
@@ -2301,6 +2301,12 @@ typedef struct _WMI_FILE_IO
     PVOID FileObject;
     WCHAR FileName[1];
 } WMI_FILE_IO, * PWMI_FILE_IO;
+
+typedef struct _WMI_FILE_IO_WOW64
+{
+    ULONGLONG FileObject;
+    WCHAR FileName[1];
+} WMI_FILE_IO_WOW64, * PWMI_FILE_IO_WOW64;
 
 typedef struct _WMI_TCPIP_V4
 {

@@ -30,13 +30,14 @@ VEIL_BEGIN()
 // DLLs
 //
 
-typedef BOOLEAN(NTAPI* PLDR_INIT_ROUTINE)(
+typedef _Function_class_(LDR_INIT_ROUTINE)
+BOOLEAN NTAPI LDR_INIT_ROUTINE(
     _In_ PVOID DllHandle,
     _In_ ULONG Reason,
     _In_opt_ PVOID Context
-    );
+);
+typedef LDR_INIT_ROUTINE* PLDR_INIT_ROUTINE;
 
-// symbols
 typedef struct _LDR_SERVICE_TAG_RECORD
 {
     struct _LDR_SERVICE_TAG_RECORD* Next;
@@ -51,7 +52,6 @@ typedef struct _LDR_SERVICE_TAG_RECORD32
 
 STATIC_ASSERT(sizeof(LDR_SERVICE_TAG_RECORD32) == 8);
 
-// symbols
 typedef struct _LDRP_CSLIST
 {
     PSINGLE_LIST_ENTRY Tail;
@@ -64,7 +64,6 @@ typedef struct _LDRP_CSLIST32
 
 STATIC_ASSERT(sizeof(LDRP_CSLIST32) == 4);
 
-// symbols
 typedef enum _LDR_DDAG_STATE
 {
     LdrModulesMerged = -5,
@@ -84,7 +83,6 @@ typedef enum _LDR_DDAG_STATE
     LdrModulesReadyToRun = 9
 } LDR_DDAG_STATE;
 
-// symbols
 typedef struct _LDR_DDAG_NODE
 {
     LIST_ENTRY Modules;
@@ -132,7 +130,6 @@ typedef struct _LDR_DEPENDENCY_RECORD
     PLDR_DDAG_NODE IncomingDependencyNode;
 } LDR_DEPENDENCY_RECORD, * PLDR_DEPENDENCY_RECORD;
 
-// symbols
 typedef enum _LDR_DLL_LOAD_REASON
 {
     LoadReasonStaticDependency,
@@ -251,7 +248,7 @@ typedef struct _LDR_DATA_TABLE_ENTRY
     PVOID SwitchBackContext;
     RTL_BALANCED_NODE BaseAddressIndexNode;
     RTL_BALANCED_NODE MappingInfoIndexNode;
-    ULONG_PTR OriginalBase;
+    PVOID OriginalBase;
     LARGE_INTEGER LoadTime;
     ULONG BaseNameHashValue;
     LDR_DLL_LOAD_REASON LoadReason; // since WIN8
@@ -596,10 +593,12 @@ LdrVerifyMappedImageMatchesChecksum(
     _In_ ULONG FileLength
 );
 
-typedef VOID(NTAPI* PLDR_IMPORT_MODULE_CALLBACK)(
+typedef _Function_class_(LDR_IMPORT_MODULE_CALLBACK)
+VOID NTAPI LDR_IMPORT_MODULE_CALLBACK(
     _In_ PVOID Parameter,
     _In_ PSTR ModuleName
-    );
+);
+typedef LDR_IMPORT_MODULE_CALLBACK* PLDR_IMPORT_MODULE_CALLBACK;
 
 NTSYSAPI
 NTSTATUS
@@ -686,12 +685,24 @@ typedef union _LDR_DLL_NOTIFICATION_DATA
     LDR_DLL_UNLOADED_NOTIFICATION_DATA Unloaded;
 } LDR_DLL_NOTIFICATION_DATA, * PLDR_DLL_NOTIFICATION_DATA;
 
-typedef VOID(NTAPI* PLDR_DLL_NOTIFICATION_FUNCTION)(
+typedef _Function_class_(LDR_DLL_NOTIFICATION_FUNCTION)
+VOID NTAPI LDR_DLL_NOTIFICATION_FUNCTION(
     _In_ ULONG NotificationReason,
     _In_ PLDR_DLL_NOTIFICATION_DATA NotificationData,
     _In_opt_ PVOID Context
-    );
+);
+typedef LDR_DLL_NOTIFICATION_FUNCTION* PLDR_DLL_NOTIFICATION_FUNCTION;
 
+/**
+ * Registers for notification when a DLL is first loaded. This notification occurs before dynamic linking takes place.
+ *
+ * @param Flags This parameter must be zero.
+ * @param NotificationFunction A pointer to an LdrDllNotification notification callback function to call when the DLL is loaded.
+ * @param Context A pointer to context data for the callback function.
+ * @param Cookie A pointer to a variable to receive an identifier for the callback function. This identifier is used to unregister the notification callback function.
+ * @return NTSTATUS Successful or errant status.
+ * @remarks https://learn.microsoft.com/en-us/windows/win32/devnotes/ldrregisterdllnotification
+ */
 NTSYSAPI
 NTSTATUS
 NTAPI
@@ -702,6 +713,13 @@ LdrRegisterDllNotification(
     _Out_ PVOID* Cookie
 );
 
+/**
+ * Cancels DLL load notification previously registered by calling the LdrRegisterDllNotification function.
+ *
+ * @param Cookie A pointer to the callback identifier received from the LdrRegisterDllNotification call that registered for notification.
+ * @return NTSTATUS Successful or errant status.
+ * @remarks https://learn.microsoft.com/en-us/windows/win32/devnotes/ldrunregisterdllnotification
+ */
 NTSYSAPI
 NTSTATUS
 NTAPI
@@ -950,6 +968,16 @@ typedef struct _VS_FILEINFO_LANG_CODEPAGE
 
 }VS_FILEINFO_LANG_CODEPAGE, *PVS_FILEINFO_LANG_CODEPAGE;
 
+/**
+ * The LdrAccessResource function returns a pointer to the first byte of the specified resource in memory.
+ *
+ * @param DllHandle A handle to the DLL.
+ * @param ResourceDataEntry The resource information block.
+ * @param ResourceBuffer The pointer to the specified resource in memory.
+ * @param ResourceLength The size, in bytes, of the specified resource.
+ * @return NTSTATUS Successful or errant status.
+ * @sa https://learn.microsoft.com/en-us/windows/win32/api/libloaderapi/nf-libloaderapi-loadresource
+ */
 _IRQL_requires_max_(PASSIVE_LEVEL)
 NTSYSAPI
 NTSTATUS
@@ -976,6 +1004,16 @@ typedef struct _LDR_RESOURCE_INFO
 #define LDR_RESOURCE_ID_NAME_MASK   ((~(ULONG_PTR)0) << 16) /* lower 16bits clear */
 #define LDR_RESOURCE_ID_NAME_MINVAL (( (ULONG_PTR)1) << 16) /* 17th bit set */
 
+/**
+ * The LdrFindResource_U function determines the location of a resource in a DLL.
+ *
+ * @param DllHandle A handle to the DLL.
+ * @param ResourceInfo The type and name of the resource.
+ * @param Level The level of resource information.
+ * @param ResourceDataEntry The resource information block.
+ * @return NTSTATUS Successful or errant status.
+ * @sa https://learn.microsoft.com/en-us/windows/win32/api/libloaderapi/nf-libloaderapi-findresourceexw
+ */
 NTSYSAPI
 NTSTATUS
 NTAPI
@@ -1310,11 +1348,13 @@ LdrQueryProcessModuleInformation(
     _Out_ PULONG ReturnedSize
 );
 
-typedef VOID(NTAPI* PLDR_ENUM_CALLBACK)(
+typedef _Function_class_(LDR_ENUM_CALLBACK)
+VOID NTAPI LDR_ENUM_CALLBACK(
     _In_ PLDR_DATA_TABLE_ENTRY ModuleInformation,
     _In_ PVOID Parameter,
     _Out_ BOOLEAN* Stop
-    );
+);
+typedef LDR_ENUM_CALLBACK* PLDR_ENUM_CALLBACK;
 
 NTSYSAPI
 NTSTATUS
@@ -1396,19 +1436,33 @@ typedef struct _DELAYLOAD_INFO
 } DELAYLOAD_INFO, * PDELAYLOAD_INFO;
 
 // private
-typedef PVOID(NTAPI* PDELAYLOAD_FAILURE_DLL_CALLBACK)(
+typedef _Function_class_(DELAYLOAD_FAILURE_DLL_CALLBACK)
+PVOID NTAPI DELAYLOAD_FAILURE_DLL_CALLBACK(
     _In_ ULONG NotificationReason,
     _In_ PDELAYLOAD_INFO DelayloadInfo
-    );
+);
+typedef DELAYLOAD_FAILURE_DLL_CALLBACK* PDELAYLOAD_FAILURE_DLL_CALLBACK;
 
 // rev
-typedef PVOID(NTAPI* PDELAYLOAD_FAILURE_SYSTEM_ROUTINE)(
+typedef _Function_class_(DELAYLOAD_FAILURE_SYSTEM_ROUTINE)
+PVOID NTAPI DELAYLOAD_FAILURE_SYSTEM_ROUTINE(
     _In_ PCSTR DllName,
     _In_ PCSTR ProcedureName
-    );
+);
+typedef DELAYLOAD_FAILURE_SYSTEM_ROUTINE* PDELAYLOAD_FAILURE_SYSTEM_ROUTINE;
 
 #if (NTDDI_VERSION >= NTDDI_WIN10)
 // rev from QueryOptionalDelayLoadedAPI
+/**
+ * Determines whether the specified function in a delay-loaded DLL is available on the system.
+ *
+ * @param ParentModuleBase A handle to the calling module. (NtCurrentImageBase)
+ * @param DllName The file name of the delay-loaded DLL that exports the specified function. This parameter is case-insensitive.
+ * @param ProcedureName The address of a delay-load failure callback function for the specified DLL and process.
+ * @param Flags Reserved; must be 0.
+ * @return NTSTATUS Successful or errant status.
+ * @remarks https://learn.microsoft.com/en-us/windows/win32/api/libloaderapi2/nf-libloaderapi2-queryoptionaldelayloadedapi
+ */
 NTSYSAPI
 NTSTATUS
 NTAPI
@@ -1422,6 +1476,18 @@ LdrQueryOptionalDelayLoadedAPI(
 
 #if (NTDDI_VERSION >= NTDDI_WIN8)
 // rev from ResolveDelayLoadedAPI
+/**
+ * Locates the target function of the specified import and replaces the function pointer in the import thunk with the target of the function implementation.
+ *
+ * @param ParentModuleBase The address of the base of the module importing a delay-loaded function. (NtCurrentImageBase)
+ * @param DelayloadDescriptor The address of the image delay import directory for the module to be loaded.
+ * @param FailureDllHook The address of a delay-load failure callback function for the specified DLL and process.
+ * @param FailureSystemHook The address of a delay-load failure callback function for the specified DLL and process.
+ * @param ThunkAddress The thunk data for the target function. Used to find the specific name table entry of the function.
+ * @param Flags Reserved; must be 0.
+ * @return The address of the import, or the failure stub for it.
+ * @remarks https://learn.microsoft.com/en-us/windows/win32/devnotes/resolvedelayloadedapi
+ */
 NTSYSAPI
 PVOID
 NTAPI
@@ -1435,6 +1501,15 @@ LdrResolveDelayLoadedAPI(
 );
 
 // rev from ResolveDelayLoadsFromDll
+/**
+ * Forwards the work in resolving delay-loaded imports from the parent binary to a target binary.
+ *
+ * @param [in] ParentModuleBase The base address of the module that delay loads another binary.
+ * @param [in] TargetDllName The name of the target DLL.
+ * @param [in] Flags Reserved; must be 0.
+ * @return NTSTATUS Successful or errant status.
+ * @remarks https://learn.microsoft.com/en-us/windows/win32/devnotes/resolvedelayloadsfromdll
+ */
 NTSYSAPI
 NTSTATUS
 NTAPI
@@ -1445,6 +1520,13 @@ LdrResolveDelayLoadsFromDll(
 );
 
 // rev from SetDefaultDllDirectories
+/**
+ * Specifies a default set of directories to search when the calling process loads a DLL.
+ *
+ * @param [in] DirectoryFlags The directories to search.
+ * @return NTSTATUS Successful or errant status.
+ * @remarks https://learn.microsoft.com/en-us/windows/win32/api/libloaderapi/nf-libloaderapi-setdefaultdlldirectories
+ */
 NTSYSAPI
 NTSTATUS
 NTAPI
@@ -1453,6 +1535,14 @@ LdrSetDefaultDllDirectories(
 );
 
 // rev from AddDllDirectory
+/**
+ * Adds a directory to the process DLL search path.
+ *
+ * @param [in] NewDirectory An absolute path to the directory to add to the search path. For example, to add the directory Dir2 to the process DLL search path, specify \Dir2.
+ * @param [out] Cookie An opaque pointer that can be passed to RemoveDllDirectory to remove the DLL from the process DLL search path.
+ * @return NTSTATUS Successful or errant status.
+ * @remarks https://learn.microsoft.com/en-us/windows/win32/api/libloaderapi/nf-libloaderapi-adddlldirectory
+ */
 NTSYSAPI
 NTSTATUS
 NTAPI
@@ -1462,6 +1552,13 @@ LdrAddDllDirectory(
 );
 
 // rev from RemoveDllDirectory
+/**
+ * Removes a directory that was added to the process DLL search path by using LdrAddDllDirectory.
+ *
+ * @param [in] Cookie The cookie returned by LdrAddDllDirectory when the directory was added to the search path.
+ * @return NTSTATUS Successful or errant status.
+ * @remarks https://learn.microsoft.com/en-us/windows/win32/api/libloaderapi/nf-libloaderapi-removedlldirectory
+ */
 NTSYSAPI
 NTSTATUS
 NTAPI
@@ -1576,6 +1673,22 @@ typedef struct _LDR_SOFTWARE_ENCLAVE
 } LDR_SOFTWARE_ENCLAVE, * PLDR_SOFTWARE_ENCLAVE;
 
 // rev from CreateEnclave
+/**
+ * Creates a new uninitialized enclave. An enclave is an isolated region of code and data within the address space for an application. Only code that runs within the enclave can access data within the same enclave.
+ *
+ * @param ProcessHandle A handle to the process for which you want to create an enclave.
+ * @param BaseAddress The preferred base address of the enclave. Specify NULL to have the operating system assign the base address.
+ * @param Reserved Reserved.
+ * @param Size The size of the enclave that you want to create, including the size of the code that you will load into the enclave, in bytes.
+ * @param InitialCommitment The amount of memory to commit for the enclave, in bytes. This parameter is not used for virtualization-based security (VBS) enclaves.
+ * @param EnclaveType The architecture type of the enclave that you want to create. To verify that an enclave type is supported, call IsEnclaveTypeSupported.
+ * @param EnclaveInformation A pointer to the architecture-specific information to use to create the enclave.
+ * @param EnclaveInformationLength The length of the structure that the EnclaveInformation parameter points to, in bytes.
+ * For the ENCLAVE_TYPE_SGX and ENCLAVE_TYPE_SGX2 enclave types, this value must be 4096. For the ENCLAVE_TYPE_VBS enclave type, this value must be sizeof(ENCLAVE_CREATE_INFO_VBS), which is 36 bytes.
+ * @param EnclaveError An optional pointer to a variable that receives an enclave error code that is architecture-specific.
+ * @return NTSTATUS Successful or errant status.
+ * @remarks https://learn.microsoft.com/en-us/windows/win32/api/enclaveapi/nf-enclaveapi-createenclave
+ */
 NTSYSAPI
 NTSTATUS
 NTAPI
@@ -1592,6 +1705,18 @@ LdrCreateEnclave(
 );
 
 // rev from InitializeEnclave
+/**
+ * Initializes an enclave that you created and loaded with data.
+ *
+ * @param ProcessHandle A handle to the process for which the enclave was created.
+ * @param BaseAddress Any address within the enclave.
+ * @param EnclaveInformation A pointer to the architecture-specific information to use to initialize the enclave.
+ * @param EnclaveInformationLength The length of the structure that the EnclaveInformation parameter points to, in bytes.
+ * For the ENCLAVE_TYPE_SGX and ENCLAVE_TYPE_SGX2 enclave types, this value must be 4096. For the ENCLAVE_TYPE_VBS enclave type, this value must be sizeof(ENCLAVE_CREATE_INFO_VBS), which is 36 bytes.
+ * @param EnclaveError An optional pointer to a variable that receives an enclave error code that is architecture-specific.
+ * @return NTSTATUS Successful or errant status.
+ * @remarks https://learn.microsoft.com/en-us/windows/win32/api/enclaveapi/nf-enclaveapi-initializeenclave
+ */
 NTSYSAPI
 NTSTATUS
 NTAPI
@@ -1604,6 +1729,13 @@ LdrInitializeEnclave(
 );
 
 // rev from DeleteEnclave
+/**
+ * Deletes the specified enclave.
+ *
+ * @param BaseAddress The base address of the enclave that you want to delete.
+ * @return NTSTATUS Successful or errant status.
+ * @remarks https://learn.microsoft.com/en-us/windows/win32/api/enclaveapi/nf-enclaveapi-deleteenclave
+ */
 NTSYSAPI
 NTSTATUS
 NTAPI
@@ -1612,6 +1744,15 @@ LdrDeleteEnclave(
 );
 
 // rev from CallEnclave
+/**
+ * Calls a function within an enclave. LdrCallEnclave can also be called within an enclave to call a function outside of the enclave.
+ *
+ * @param Routine The address of the function that you want to call.
+ * @param Flags The flags to modify the call function.
+ * @param RoutineParamReturn The parameter than you want to pass to the function.
+ * @return NTSTATUS Successful or errant status.
+ * @remarks https://learn.microsoft.com/en-us/windows/win32/api/enclaveapi/nf-enclaveapi-callenclave
+ */
 NTSYSAPI
 NTSTATUS
 NTAPI
@@ -1622,6 +1763,15 @@ LdrCallEnclave(
 );
 
 // rev from LoadEnclaveImage
+/**
+ * Loads an image and all of its imports into an enclave.
+ *
+ * @param BaseAddress The base address of the image into which to load the image.
+ * @param DllPath A NULL-terminated string that contains the path of the image to load.
+ * @param DllName A NULL-terminated string that contains the name of the image to load.
+ * @return NTSTATUS Successful or errant status.
+ * @remarks https://learn.microsoft.com/en-us/windows/win32/api/enclaveapi/nf-enclaveapi-loadenclaveimagew
+ */
 NTSYSAPI
 NTSTATUS
 NTAPI
@@ -1638,6 +1788,7 @@ LdrLoadEnclaveModule(
  * @remarks This routine does not catch all potential deadlock cases; it is possible for a thread inside a loader callout
  * to acquire a lock while some thread outside a loader callout holds the same lock and makes a call into the loader.
  * In other words, there can be a lock order inversion between the loader lock and a client lock.
+ * https://learn.microsoft.com/en-us/windows/win32/devnotes/ldrfastfailinloadercallout
  */
 NTSYSAPI
 VOID

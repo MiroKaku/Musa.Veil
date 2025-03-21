@@ -133,6 +133,20 @@ RtlFailFast(
 #endif // !_KERNEL_MODE
 
 //
+// Time
+//
+
+#define RTL_NANOSEC_PER_SEC              1000000000ull
+#define RTL_NANOSEC_PER_MILLISEC            1000000ull
+#define RTL_100NANOSEC_PER_SEC             10000000ull
+#define RTL_100NANOSEC_PER_MILLISEC           10000ull
+#define RTL_MILLISEC_PER_SEC                   1000ull
+
+#define RTL_SEC_TO_MILLISEC(s)          ((s) * RTL_MILLISEC_PER_SEC)
+#define RTL_SEC_TO_100NANOSEC(s)        ((s) * RTL_100NANOSEC_PER_SEC)
+#define RTL_MILLISEC_TO_100NANOSEC(m)   ((m) * RTL_100NANOSEC_PER_MILLISEC)
+
+//
 //  Doubly-linked list manipulation routines.
 //
 
@@ -4450,6 +4464,10 @@ RtlFreeToPeb(
 // Processes
 //
 
+// CURDIR Handle | Flags
+#define RTL_USER_PROC_CURDIR_CLOSE      0x00000002
+#define RTL_USER_PROC_CURDIR_INHERIT    0x00000003
+
 typedef struct _CURDIR
 {
     UNICODE_STRING DosPath;
@@ -4464,8 +4482,9 @@ typedef struct _CURDIR32
 
 STATIC_ASSERT(sizeof(CURDIR32) == 12);
 
-#define RTL_USER_PROC_CURDIR_CLOSE      0x00000002
-#define RTL_USER_PROC_CURDIR_INHERIT    0x00000003
+// RTL_DRIVE_LETTER_CURDIR Flags
+#define RTL_MAX_DRIVE_LETTERS  32
+#define RTL_DRIVE_LETTER_VALID (USHORT)0x0001
 
 typedef struct _RTL_DRIVE_LETTER_CURDIR
 {
@@ -4485,8 +4504,9 @@ typedef struct _RTL_DRIVE_LETTER_CURDIR32
 
 STATIC_ASSERT(sizeof(RTL_DRIVE_LETTER_CURDIR32) == 16);
 
-#define RTL_MAX_DRIVE_LETTERS 32
-#define RTL_DRIVE_LETTER_VALID (USHORT)0x0001
+#define RTL_USER_PROC_DETACHED_PROCESS      ((HANDLE)(LONG_PTR)-1)
+#define RTL_USER_PROC_CREATE_NEW_CONSOLE    ((HANDLE)(LONG_PTR)-2)
+#define RTL_USER_PROC_CREATE_NO_WINDOW      ((HANDLE)(LONG_PTR)-3)
 
 typedef struct _RTL_USER_PROCESS_PARAMETERS
 {
@@ -4614,7 +4634,7 @@ NTSYSAPI
 NTSTATUS
 NTAPI
 RtlCreateProcessParameters(
-    _Out_ PRTL_USER_PROCESS_PARAMETERS* pProcessParameters,
+    _Out_ PRTL_USER_PROCESS_PARAMETERS* ProcessParameters,
     _In_ PCUNICODE_STRING ImagePathName,
     _In_opt_ PCUNICODE_STRING DllPath,
     _In_opt_ PCUNICODE_STRING CurrentDirectory,
@@ -4631,7 +4651,7 @@ NTSYSAPI
 NTSTATUS
 NTAPI
 RtlCreateProcessParametersEx(
-    _Out_ PRTL_USER_PROCESS_PARAMETERS* pProcessParameters,
+    _Out_ PRTL_USER_PROCESS_PARAMETERS* ProcessParameters,
     _In_ PCUNICODE_STRING ImagePathName,
     _In_opt_ PCUNICODE_STRING DllPath,
     _In_opt_ PCUNICODE_STRING CurrentDirectory,
@@ -4650,7 +4670,7 @@ NTSYSAPI
 NTSTATUS
 NTAPI
 RtlCreateProcessParametersWithTemplate(
-    _Out_ PRTL_USER_PROCESS_PARAMETERS* pProcessParameters,
+    _Out_ PRTL_USER_PROCESS_PARAMETERS* ProcessParameters,
     _In_ PUNICODE_STRING ImagePathName,
     _In_opt_ PUNICODE_STRING DllPath,
     _In_opt_ PUNICODE_STRING CurrentDirectory,
@@ -5319,6 +5339,13 @@ RtlRaiseStatus(
     _In_ NTSTATUS Status
 );
 
+/**
+ * Raises an exception in the calling thread.
+ *
+ * @param ExceptionRecord A pointer to an EXCEPTION_RECORD structure that contains the exception information. You must specify the ExceptionAddress and ExceptionCode members.
+ * @return This function does not return a value.
+ * @see https://learn.microsoft.com/en-us/windows/win32/api/errhandlingapi/nf-errhandlingapi-raiseexception
+ */
 NTSYSAPI
 VOID
 NTAPI
@@ -5608,7 +5635,7 @@ RtlQueryInformationActiveActivationContext(
 // Images
 //
 
-extern IMAGE_DOS_HEADER __ImageBase;
+extern const IMAGE_DOS_HEADER __ImageBase;
 #define RtlCurrentImageBase() ((PIMAGE_DOS_HEADER)&__ImageBase)
 
 NTSYSAPI
@@ -5706,6 +5733,14 @@ RtlPcToFilePath(
 );
 #endif
 
+/**
+ * Retrieves the base address of the image that contains the specified PC value.
+ *
+ * @param PcValue The PC value. The function searches all modules mapped into the address space of the calling process for a module that contains this value.
+ * @param BaseOfImage The base address of the image containing the PC value. This value must be added to any relative addresses in the headers to locate the image.
+ * @return If the PC value is found, returns the base address of the image that contains the PC value. If no image contains the PC value, the function returns NULL.
+ * @sa https://learn.microsoft.com/en-us/windows/win32/api/winnt/nf-winnt-rtlpctofileheader
+ */
 NTSYSAPI
 PVOID
 NTAPI
@@ -6489,13 +6524,13 @@ typedef struct _RTL_RELATIVE_NAME_U
 typedef enum _RTL_PATH_TYPE
 {
     RtlPathTypeUnknown,
-    RtlPathTypeUncAbsolute,
-    RtlPathTypeDriveAbsolute,
-    RtlPathTypeDriveRelative,
-    RtlPathTypeRooted,
-    RtlPathTypeRelative,
-    RtlPathTypeLocalDevice,
-    RtlPathTypeRootLocalDevice
+    RtlPathTypeUncAbsolute,     // "\\\\server\\share\\folder\\file.txt
+    RtlPathTypeDriveAbsolute,   // "C:\\folder\\file.txt"
+    RtlPathTypeDriveRelative,   // "C:folder\\file.txt"
+    RtlPathTypeRooted,          // "\\folder\\file.txt"
+    RtlPathTypeRelative,        // "folder\\file.txt"
+    RtlPathTypeLocalDevice,     // "\\\\.\\PhysicalDrive0"
+    RtlPathTypeRootLocalDevice  // "\\\\?\\C:\\folder\\file.txt"
 } RTL_PATH_TYPE;
 
 // Data exports (ntdll.lib/ntdllp.lib)
@@ -7228,6 +7263,19 @@ typedef struct _RTL_HEAP_MEMORY_LIMIT_INFO
 //
 #define HEAP_CREATE_HARDENED 0x00000200
 
+/**
+ * The RtlCreateHeap routine creates a heap object that can be used by the calling process. This routine reserves
+ * space in the virtual address space of the process and allocates physical storage for a specified initial portion of this block.
+ *
+ * @param Flags Flags specifying optional attributes of the heap.
+ * @param HeapBase If HeapBase is a non-NULL value, it specifies the base address for a block of caller-allocated memory to use for the heap.
+ * @param ReserveSize If ReserveSize is a nonzero value, it specifies the initial amount of memory, in bytes, to reserve for the heap.
+ * @param CommitSize If CommitSize is a nonzero value, it specifies the initial amount of memory, in bytes, to commit for the heap.
+ * @param Lock Pointer to an opaque structure to be used as the heap lock.
+ * @param Parameters Pointer to a RTL_HEAP_PARAMETERS structure that contains parameters to be applied when creating the heap.
+ * @return RtlCreateHeap returns a handle to be used in accessing the created heap.
+ * @remarks https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntifs/nf-ntifs-rtlcreateheap
+ */
 _Must_inspect_result_
 NTSYSAPI
 PVOID
@@ -7245,6 +7293,14 @@ RtlCreateHeap(
     PRTL_HEAP_PARAMETERS Parameters
 );
 
+/**
+ * The RtlDestroyHeap routine destroys the specified heap object. RtlDestroyHeap decommits and releases all the pages of a private heap object,
+ * and it invalidates the handle to the heap.
+ *
+ * @param HeapHandle Handle for the heap to be destroyed. This parameter is a heap handle returned by RtlCreateHeap.
+ * @return If the call to RtlDestroyHeap succeeds, the return value is a NULL pointer. If the call to RtlDestroyHeap fails, the return value is a handle for the heap.
+ * @remarks https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntifs/nf-ntifs-rtldestroyheap
+ */
 NTSYSAPI
 PVOID
 NTAPI
@@ -7252,6 +7308,15 @@ RtlDestroyHeap(
     _In_ _Post_invalid_ PVOID HeapHandle
 );
 
+/**
+ * The RtlAllocateHeap routine allocates a block of memory from a heap.
+ *
+ * @param HeapHandle Handle for a private heap from which the memory will be allocated.
+ * @param Flags Controllable aspects of heap allocation. Specifying any flags will override the corresponding value specified when the heap was created with RtlCreateHeap.
+ * @param Size Number of bytes to be allocated. If the heap, specified by the HeapHandle parameter, is a nongrowable heap, Size must be less than or equal to the heap's virtual memory threshold.
+ * @return If the call to RtlARtlSetHeapInformationllocateHeap succeeds, the return value is a pointer to the newly-allocated block. The return value is NULL if the allocation failed.
+ * @remarks https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntifs/nf-ntifs-rtlallocateheap
+ */
 NTSYSAPI
 _Must_inspect_result_
 _Ret_maybenull_
@@ -9902,6 +9967,15 @@ RtlDeriveCapabilitySidsFromName(
 // Security Descriptors
 //
 
+/**
+ * The RtlCreateSecurityDescriptor routine initializes a new absolute-format security descriptor.
+ * On return, the security descriptor is initialized with no system ACL, no discretionary ACL, no owner, no primary group, and all control flags set to zero.
+ *
+ * @param SecurityDescriptor Pointer to the buffer for the \ref SECURITY_DESCRIPTOR to be initialized.
+ * @param Revision Specifies the revision level to assign to the security descriptor. Set this parameter to SECURITY_DESCRIPTOR_REVISION.
+ * @return NTSTATUS Successful or errant status.
+ * @see https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/wdm/nf-wdm-rtlcreatesecuritydescriptor
+ */
 _IRQL_requires_max_(APC_LEVEL)
 NTSYSAPI
 NTSTATUS
@@ -9911,6 +9985,14 @@ RtlCreateSecurityDescriptor(
     _In_ ULONG Revision
 );
 
+/**
+ * The RtlValidSecurityDescriptor routine checks a given security descriptor's validity.
+ *
+ * @param SecurityDescriptor Pointer to the \ref SECURITY_DESCRIPTOR to be checked.
+ * @return Returns TRUE if the security descriptor is valid, or FALSE otherwise.
+ * @remarks The routine checks the validity of an absolute-format security descriptor. To check the validity of a self-relative security descriptor, use the \ref RtlValidRelativeSecurityDescriptor routine instead.
+ * @see https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/wdm/nf-wdm-rtlvalidsecuritydescriptor
+ */
 _IRQL_requires_max_(APC_LEVEL)
 _Must_inspect_result_
 NTSYSAPI
@@ -9920,6 +10002,13 @@ RtlValidSecurityDescriptor(
     _In_ PSECURITY_DESCRIPTOR SecurityDescriptor
 );
 
+/**
+ * The RtlLengthSecurityDescriptor routine returns the size of a given security descriptor.
+ *
+ * @param SecurityDescriptor A pointer to a \ref SECURITY_DESCRIPTOR structure whose length the function retrieves.
+ * @return Returns the length, in bytes, of the SECURITY_DESCRIPTOR structure.
+ * @see https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/wdm/nf-wdm-rtllengthsecuritydescriptor
+ */
 _IRQL_requires_max_(APC_LEVEL)
 NTSYSAPI
 ULONG
@@ -9928,6 +10017,16 @@ RtlLengthSecurityDescriptor(
     _In_ PSECURITY_DESCRIPTOR SecurityDescriptor
 );
 
+/**
+ * The RtlValidRelativeSecurityDescriptor routine checks the validity of a self-relative security descriptor.
+ *
+ * @param SecurityDescriptorInput A pointer to the buffer that contains the security descriptor in self-relative format.
+ * The buffer must begin with a SECURITY_DESCRIPTOR structure, which is followed by the rest of the security descriptor data.
+ * @param SecurityDescriptorLength The size of the SecurityDescriptorInput structure.
+ * @param RequiredInformation A SECURITY_INFORMATION value that specifies the information that is required to be contained in the security descriptor.
+ * @return RtlValidRelativeSecurityDescriptor returns TRUE if the security descriptor is valid and includes the information that the RequiredInformation parameter specifies. Otherwise, this routine returns FALSE.
+ * @see https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/wdm/nf-wdm-rtlvalidrelativesecuritydescriptor
+ */
 _IRQL_requires_max_(APC_LEVEL)
 _Must_inspect_result_
 NTSYSAPI
@@ -10035,6 +10134,19 @@ RtlGetSaclSecurityDescriptor(
     _Out_ PBOOLEAN SaclDefaulted
 );
 
+/**
+ * The RtlSetOwnerSecurityDescriptor routine sets the owner information of an absolute-format security descriptor. It replaces any owner information that is already present in the security descriptor.
+ *
+ * @param SecurityDescriptor Pointer to the SECURITY_DESCRIPTOR structure whose owner is to be set. RtlSetOwnerSecurityDescriptor replaces any existing owner with the new owner.
+ * @param Owner Pointer to a security identifier (SID) structure for the security descriptor's new primary owner.
+ * @li \c This pointer, not the SID structure itself, is copied into the security descriptor.
+ * @li \c If this parameter is NULL, RtlSetOwnerSecurityDescriptor clears the security descriptor's owner information. This marks the security descriptor as having no owner.
+ * @param OwnerDefaulted Set to TRUE if the owner information is derived from a default mechanism.
+ * @li \c If this value is TRUE, it is default information. RtlSetOwnerSecurityDescriptor sets the SE_OWNER_DEFAULTED flag in the security descriptor's SECURITY_DESCRIPTOR_CONTROL field.
+ * @li \c If this parameter is FALSE, the SE_OWNER_DEFAULTED flag is cleared.
+ * @return NTSTATUS Successful or errant status.
+ * @see https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntifs/nf-ntifs-rtlsetownersecuritydescriptor
+ */
 _IRQL_requires_max_(APC_LEVEL)
 NTSYSAPI
 NTSTATUS
@@ -10045,6 +10157,15 @@ RtlSetOwnerSecurityDescriptor(
     _In_ BOOLEAN OwnerDefaulted
 );
 
+/**
+ * The RtlGetOwnerSecurityDescriptor routine returns the owner information for a given security descriptor.
+ *
+ * @param SecurityDescriptor Pointer to the SECURITY_DESCRIPTOR structure.
+ * @param Owner Pointer to an address to receive a pointer to the owner security identifier (SID). If the security descriptor does not currently contain an owner SID, Owner receives NULL.
+ * @param OwnerDefaulted Pointer to a Boolean variable that receives TRUE if the owner information is derived from a default mechanism, FALSE otherwise. Valid only if Owner receives a non-NULL value.
+ * @return NTSTATUS Successful or errant status.
+ * @see https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntifs/nf-ntifs-rtlgetownersecuritydescriptor
+ */
 _IRQL_requires_max_(APC_LEVEL)
 NTSYSAPI
 NTSTATUS
@@ -10057,6 +10178,19 @@ RtlGetOwnerSecurityDescriptor(
     _Pre_ _Notnull_ _Pre_ _Writable_elements_(1) PBOOLEAN OwnerDefaulted
 );
 
+/**
+ * The RtlSetGroupSecurityDescriptor routine sets the primary group information of an absolute-format security descriptor. It replaces any primary group information that is already present in the security descriptor.
+ *
+ * @param SecurityDescriptor Pointer to the SECURITY_DESCRIPTOR structure whose primary group is to be set. RtlSetGroupSecurityDescriptor replaces any existing primary group with the new primary group.
+ * @param Group Pointer to a security identifier (SID) structure for the security descriptor's new primary owner.
+ * @li \c This pointer, not the SID structure itself, is copied into the security descriptor.
+ * @li \c If Group is NULL, RtlSetGroupSecurityDescriptor clears the security descriptor's primary group information. This marks the security descriptor as having no primary group.
+ * @param GroupDefaulted Set this Boolean variable to TRUE if the primary group information is derived from a default mechanism.
+ * @li \c If this parameter is TRUE, RtlSetGroupSecurityDescriptor sets the SE_GROUP_DEFAULTED flag in the security descriptor's SECURITY_DESCRIPTOR_CONTROL field.
+ * @li \c If this parameter is FALSE, RtlSetGroupSecurityDescriptor clears the SE_GROUP_DEFAULTED flag.
+ * @return NTSTATUS Successful or errant status.
+ * @see https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntifs/nf-ntifs-rtlsetgroupsecuritydescriptor
+ */
 _IRQL_requires_max_(APC_LEVEL)
 NTSYSAPI
 NTSTATUS
@@ -10145,6 +10279,16 @@ RtlNormalizeSecurityDescriptor(
 // Access masks
 //
 
+/**
+ * Checks if all desired accesses are granted.
+ *
+ * This function determines whether all the accesses specified in the DesiredAccess
+ * mask are granted by the GrantedAccess mask.
+ *
+ * @param GrantedAccess The access mask that specifies the granted accesses.
+ * @param DesiredAccess The access mask that specifies the desired accesses.
+ * @return Returns TRUE if all desired accesses are granted, otherwise FALSE.
+ */
 NTSYSAPI
 BOOLEAN
 NTAPI
@@ -10156,6 +10300,16 @@ RtlAreAllAccessesGranted(
 //    return (~GrantedAccess & DesiredAccess) == 0;
 //}
 
+/**
+ * Checks if any of the desired accesses are granted.
+ *
+ * This function determines if any of the access rights specified in the DesiredAccess
+ * mask are present in the GrantedAccess mask.
+ *
+ * @param GrantedAccess The access mask that specifies the granted access rights.
+ * @param DesiredAccess The access mask that specifies the desired access rights.
+ * @return Returns TRUE if any of the desired access rights are granted, otherwise FALSE.
+ */
 NTSYSAPI
 BOOLEAN
 NTAPI
@@ -11301,6 +11455,16 @@ RtlDeleteRegistryValue(
 #ifndef _KERNEL_MODE
 
 // rev
+/**
+ * Enables thread profiling on the specified thread.
+ *
+ * @param ThreadHandle The handle to the thread on which you want to enable profiling. This must be the current thread.
+ * @param Flags To receive thread profiling data such as context switch count, set this parameter to THREAD_PROFILING_FLAG_DISPATCH; otherwise, set to 0.
+ * @param HardwareCounters To receive hardware performance counter data, set this parameter to a bitmask that identifies the hardware counters to collect.
+ * @param PerformanceDataHandle An opaque handle that you use when calling the RtlReadThreadProfilingData and RtlDisableThreadProfiling functions.
+ * @return NTSTATUS Successful or errant status.
+ * @sa https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-enablethreadprofiling
+ */
 NTSYSAPI
 NTSTATUS
 NTAPI
@@ -11312,6 +11476,13 @@ RtlEnableThreadProfiling(
 );
 
 // rev
+/**
+ * Disables thread profiling.
+ *
+ * @param PerformanceDataHandle The handle that the RtlEnableThreadProfiling function returned.
+ * @return NTSTATUS Successful or errant status.
+ * @sa https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-querythreadprofiling
+ */
 NTSYSAPI
 NTSTATUS
 NTAPI
@@ -11320,6 +11491,14 @@ RtlDisableThreadProfiling(
 );
 
 // rev
+/**
+ * Determines whether thread profiling is enabled for the specified thread.
+ *
+ * @param ThreadHandle The handle to the thread on which you want to enable profiling. This must be the current thread.
+ * @param Enabled Is TRUE if thread profiling is enabled for the specified thread; otherwise, FALSE.
+ * @return NTSTATUS Successful or errant status.
+ * @sa https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-querythreadprofiling
+ */
 NTSYSAPI
 NTSTATUS
 NTAPI
@@ -11329,6 +11508,15 @@ RtlQueryThreadProfiling(
 );
 
 // rev
+/**
+ * Reads the specified profiling data associated with the thread.
+ *
+ * @param PerformanceDataHandle The handle that the RtlEnableThreadProfiling function returned.
+ * @param Flags One or more flags set when you called the RtlEnableThreadProfiling function that specify the counter data to read.
+ * @param PerformanceData A PERFORMANCE_DATA structure that contains the thread profiling and hardware counter data.
+ * @return NTSTATUS Successful or errant status.
+ * @sa https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-readthreadprofilingdata
+ */
 NTSYSAPI
 NTSTATUS
 NTAPI
@@ -11367,6 +11555,13 @@ RtlQueueApcWow64Thread(
     _In_opt_ PVOID ApcArgument3
 );
 
+/**
+ * Enables or disables file system redirection for the calling thread.
+ *
+ * @param Wow64FsEnableRedirection If TRUE, requests redirection be enabled; if FALSE, requests redirection be disabled.
+ * @return NTSTATUS Successful or errant status.
+ * @sa https://learn.microsoft.com/en-us/windows/win32/api/wow64apiset/nf-wow64apiset-wow64enablewow64fsredirection
+ */
 NTSYSAPI
 NTSTATUS
 NTAPI
@@ -11374,6 +11569,14 @@ RtlWow64EnableFsRedirection(
     _In_ BOOLEAN Wow64FsEnableRedirection
 );
 
+/**
+ * Enables or disables file system redirection for the calling thread.
+ *
+ * @param Wow64FsEnableRedirection If TRUE, requests redirection be enabled; if FALSE, requests redirection be disabled.
+ * @param OldFsRedirectionLevel The WOW64 file system redirection value. The system uses this parameter to store information necessary to revert (re-enable) file system redirection.
+ * @return NTSTATUS Successful or errant status.
+ * @sa https://learn.microsoft.com/en-us/windows/win32/api/wow64apiset/nf-wow64apiset-wow64disablewow64fsredirection
+ */
 NTSYSAPI
 NTSTATUS
 NTAPI
@@ -11397,6 +11600,13 @@ RtlComputeCrc32(
     _In_ ULONG Length
 );
 
+/**
+ * Encodes the specified pointer. Encoded pointers can be used to provide another layer of protection for pointer values.
+ *
+ * @param Ptr The system pointer to be encoded.
+ * @return The function returns the encoded pointer.
+ * @sa https://learn.microsoft.com/en-us/previous-versions/bb432254(v=vs.85)
+ */
 NTSYSAPI
 PVOID
 NTAPI
@@ -11404,6 +11614,13 @@ RtlEncodePointer(
     _In_opt_ PVOID Ptr
 );
 
+/**
+ * Decodes a pointer that was previously encoded with RtlEncodePointer.
+ *
+ * @param Ptr The system pointer to be decoded.
+ * @return The function returns the decoded pointer.
+ * @sa https://learn.microsoft.com/en-us/previous-versions/bb432242(v=vs.85)
+ */
 NTSYSAPI
 PVOID
 NTAPI
@@ -11412,6 +11629,14 @@ RtlDecodePointer(
 );
 
 // _KERNEL_MODE begin
+
+/**
+ * Encodes the specified pointer with a system-specific value. Encoded pointers can be used to provide another layer of protection for pointer values.
+ *
+ * @param Ptr The system pointer to be encoded.
+ * @return The function returns the encoded pointer.
+ * @sa https://learn.microsoft.com/en-us/previous-versions/bb432255(v=vs.85)
+ */
 NTSYSAPI
 PVOID
 NTAPI
@@ -11419,6 +11644,13 @@ RtlEncodeSystemPointer(
     _In_opt_ PVOID Ptr
 );
 
+/**
+ * Decodes a pointer that was previously encoded with RtlEncodeSystemPointer.
+ *
+ * @param Ptr The pointer to be decoded.
+ * @return The function returns the decoded pointer.
+ * @sa https://learn.microsoft.com/en-us/previous-versions/bb432243(v=vs.85)
+ */
 NTSYSAPI
 PVOID
 NTAPI
@@ -11428,6 +11660,15 @@ RtlDecodeSystemPointer(
 
 #if (NTDDI_VERSION >= NTDDI_WIN10)
 // rev
+/**
+ * Encodes the specified pointer of the specified process. Encoded pointers can be used to provide another layer of protection for pointer values.
+ *
+ * @param ProcessHandle Handle to the remote process that owns the pointer.
+ * @param Pointer The pointer to be encoded.
+ * @param EncodedPointer The encoded pointer.
+ * @return NTSTATUS Successful or errant status.
+ * @sa https://learn.microsoft.com/en-us/previous-versions/dn877135(v=vs.85)
+ */
 NTSYSAPI
 NTSTATUS
 NTAPI
@@ -11438,6 +11679,15 @@ RtlEncodeRemotePointer(
 );
 
 // rev
+/**
+ * Decodes a pointer in a specified process that was previously encoded with RtlEncodePointer or RtlEncodeRemotePointer.
+ *
+ * @param ProcessHandle Handle to the remote process that owns the pointer.
+ * @param Pointer The pointer to be decoded.
+ * @param EncodedPointer The decoded pointer.
+ * @return NTSTATUS Successful or errant status.
+ * @sa https://learn.microsoft.com/en-us/previous-versions/dn877133(v=vs.85)
+ */
 NTSYSAPI
 NTSTATUS
 NTAPI
@@ -11452,6 +11702,13 @@ RtlDecodeRemotePointer(
 
 #if (NTDDI_VERSION >= NTDDI_WINTHRESHOLD)
 // rev
+/**
+ * Determines whether the specified processor feature is supported by the current computer.
+ *
+ * @param ProcessorFeature The processor feature to be tested.
+ * @return If the feature is supported, the return value is a nonzero value.
+ * @sa https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-isprocessorfeaturepresent
+ */
 NTSYSAPI
 BOOLEAN
 NTAPI
@@ -11461,6 +11718,12 @@ RtlIsProcessorFeaturePresent(
 #endif
 
 // rev
+/**
+ * Retrieves the number of the processor the current thread was running on during the call to this function.
+ *
+ * @return The function returns the current processor number.
+ * @sa https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-getcurrentprocessornumber
+ */
 NTSYSAPI
 ULONG
 NTAPI
@@ -11470,6 +11733,13 @@ RtlGetCurrentProcessorNumber(
 
 #if (NTDDI_VERSION >= NTDDI_WIN10)
 // rev
+/**
+ * Retrieves the processor group and number of the logical processor in which the calling thread is running.
+ *
+ * @param ProcessorNumber A pointer to a PROCESSOR_NUMBER structure that receives the processor group and number of the logical processor the calling thread is running.
+ * @return This function does not return a value.
+ * @sa https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-getcurrentprocessornumberex
+ */
 NTSYSAPI
 VOID
 NTAPI
@@ -11544,6 +11814,13 @@ RtlGetCallersAddress(
 #endif
 #endif  // !_KERNEL_MODE
 
+/**
+ * The RtlGetEnabledExtendedFeatures routine returns a mask of extended processor features that are enabled by the system.
+ *
+ * @param FeatureMask A 64-bit feature mask. This parameter indicates a set of extended processor features for which the caller requests information about whether the features are enabled.
+ * @return A 64-bitmask of enabled extended processor features. The routine calculates this mask as the intersection (bitwise AND) between all enabled features and the value of the FeatureMask parameter.
+ * @sa https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntddk/nf-ntddk-rtlgetenabledextendedfeatures
+ */
 _IRQL_requires_max_(PASSIVE_LEVEL)
 NTSYSAPI
 ULONG64
@@ -11703,6 +11980,13 @@ RtlGetUnloadEventTraceEx(
 //
 
 // rev
+/**
+ * Retrieves the current value of the performance counter, which is a high resolution (<1us) time stamp that can be used for time-interval measurements.
+ *
+ * @param PerformanceCounter A pointer to a variable that receives the current performance-counter value, in counts.
+ * @return Returns TRUE if the function succeeds, otherwise FALSE. On systems that run Windows XP or later, the function will always succeed and will thus never return zero.
+ * @sa https://learn.microsoft.com/en-us/windows/win32/api/profileapi/nf-profileapi-queryperformancecounter
+ */
 NTSYSAPI
 LOGICAL
 NTAPI
@@ -11711,6 +11995,14 @@ RtlQueryPerformanceCounter(
 );
 
 // rev
+/**
+ * Retrieves the frequency of the performance counter. The frequency of the performance counter is fixed at system boot and is consistent across all processors.
+ * Therefore, the frequency need only be queried upon application initialization, and the result can be cached.
+ *
+ * @param PerformanceFrequency A pointer to a variable that receives the current performance-counter frequency, in counts per second.
+ * @return Returns TRUE if the function succeeds, otherwise FALSE. On systems that run Windows XP or later, the function will always succeed and will thus never return zero.
+ * @sa https://learn.microsoft.com/en-us/windows/win32/api/profileapi/nf-profileapi-queryperformancefrequency
+ */
 NTSYSAPI
 LOGICAL
 NTAPI

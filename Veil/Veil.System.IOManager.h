@@ -129,6 +129,8 @@ VEIL_BEGIN()
 #define FILE_VALID_MAILSLOT_OPTION_FLAGS        0x00000032
 #define FILE_VALID_SET_FLAGS                    0x00000036
 
+#if (NTDDI_VERSION >= NTDDI_WIN10_VB)
+
 //
 // While the highest 8 bits of the create options are reserved for the
 // create disposition in the IRP, if a create option flag is processed
@@ -142,31 +144,55 @@ VEIL_BEGIN()
 #define FILE_CONTAINS_EXTENDED_CREATE_INFORMATION   0x10000000
 #define FILE_VALID_EXTENDED_OPTION_FLAGS            0x10000000
 
-#if (NTDDI_VERSION >= NTDDI_WIN10_NI)
-
 //
 //================= Extended Create Information ====================
 //
+
+#if (NTDDI_VERSION >= NTDDI_WIN10_GE)
+
+typedef struct _EXTENDED_CREATE_DUAL_OPLOCK_KEYS {
+
+    //
+    //  Parent oplock key.
+    //  All-zero if not set.
+    //
+
+    GUID ParentOplockKey;
+
+    //
+    //  Target oplock key.
+    //  All-zero if not set.
+    //
+
+    GUID TargetOplockKey;
+
+} EXTENDED_CREATE_DUAL_OPLOCK_KEYS, * PEXTENDED_CREATE_DUAL_OPLOCK_KEYS;
+
+#endif // (NTDDI_VERSION >= NTDDI_WIN10_GE)
 
 //
 // This struct can be extended and new fields may be added to the end
 // of the struct in the future.
 //
-typedef struct _EXTENDED_CREATE_INFORMATION
-{
+typedef struct _EXTENDED_CREATE_INFORMATION {
     LONGLONG ExtendedCreateFlags;   // extended create flags
     PVOID EaBuffer;                 // EA buffer
     ULONG EaLength;                 // EA buffer length
+#if (NTDDI_VERSION >= NTDDI_WIN10_GE)
+    PEXTENDED_CREATE_DUAL_OPLOCK_KEYS DualOplockKeys;       // if not NULL, dual oplock keys
+#endif
 } EXTENDED_CREATE_INFORMATION, * PEXTENDED_CREATE_INFORMATION;
 
 //
 // 32-bit version of EXTENDED_CREATE_INFORMATION struct
 //
-typedef struct _EXTENDED_CREATE_INFORMATION_32
-{
+typedef struct _EXTENDED_CREATE_INFORMATION_32 {
     LONGLONG ExtendedCreateFlags;   // extended create flags
     void* POINTER_32 EaBuffer;      // EA buffer
     ULONG EaLength;                 // EA buffer length
+#if (NTDDI_VERSION >= NTDDI_WIN10_GE)
+    PEXTENDED_CREATE_DUAL_OPLOCK_KEYS POINTER_32 DualOplockKeys;       // if not NULL, dual oplock keys
+#endif
 } EXTENDED_CREATE_INFORMATION_32, * PEXTENDED_CREATE_INFORMATION_32;
 
 //
@@ -176,7 +202,7 @@ typedef struct _EXTENDED_CREATE_INFORMATION_32
 #define EX_CREATE_FLAG_FILE_SOURCE_OPEN_FOR_COPY        0x00000001
 #define EX_CREATE_FLAG_FILE_DEST_OPEN_FOR_COPY          0x00000002
 
-#endif // (NTDDI_VERSION >= NTDDI_WIN10_NI)
+#endif // (NTDDI_VERSION >= NTDDI_WIN10_VB)
 
 #define FILE_COPY_STRUCTURED_STORAGE    0x00000041
 #define FILE_STRUCTURED_STORAGE         0x00000441
@@ -313,14 +339,6 @@ typedef struct _EXTENDED_CREATE_INFORMATION_32
 
 #define MAILSLOT_SIZE_AUTO 0
 
-// private
-typedef struct _FILE_IO_COMPLETION_INFORMATION
-{
-    PVOID KeyContext;
-    PVOID ApcContext;
-    IO_STATUS_BLOCK IoStatusBlock;
-} FILE_IO_COMPLETION_INFORMATION, * PFILE_IO_COMPLETION_INFORMATION;
-
 #ifndef _KERNEL_MODE
 typedef enum _FILE_INFORMATION_CLASS
 {
@@ -416,10 +434,10 @@ typedef enum _FILE_INFORMATION_CLASS
 
 /**
  * The FILE_BASIC_INFORMATION structure contains timestamps and basic attributes of a file.
- * \li If you specify a value of zero for any of the XxxTime members, the file system keeps a file's current value for that time.
- * \li If you specify a value of -1 for any of the XxxTime members, time stamp updates are disabled for I/O operations preformed on the file handle.
- * \li If you specify a value of -2 for any of the XxxTime members, time stamp updates are enabled for I/O operations preformed on the file handle.
- * \remarks To set the members of this structure, the caller must have FILE_WRITE_ATTRIBUTES access to the file.
+ * @li If you specify a value of zero for any of the XxxTime members, the file system keeps a file's current value for that time.
+ * @li If you specify a value of -1 for any of the XxxTime members, time stamp updates are disabled for I/O operations preformed on the file handle.
+ * @li If you specify a value of -2 for any of the XxxTime members, time stamp updates are enabled for I/O operations preformed on the file handle.
+ * @remarks To set the members of this structure, the caller must have FILE_WRITE_ATTRIBUTES access to the file.
  */
 typedef struct _FILE_BASIC_INFORMATION
 {
@@ -432,7 +450,7 @@ typedef struct _FILE_BASIC_INFORMATION
 
 /**
  * The FILE_STANDARD_INFORMATION structure contains standard information of a file.
- * \remarks EndOfFile specifies the byte offset to the end of the file.
+ * @remarks EndOfFile specifies the byte offset to the end of the file.
  * Because this value is zero-based, it actually refers to the first free byte in the file; that is, it is the offset to the byte immediately following the last valid byte in the file.
  */
 typedef struct _FILE_STANDARD_INFORMATION
@@ -678,6 +696,9 @@ typedef struct _FILE_RENAME_INFORMATION
     WCHAR FileName[1];
 } FILE_RENAME_INFORMATION, * PFILE_RENAME_INFORMATION;
 
+/**
+ * The FILE_STREAM_INFORMATION structure contains information about a file stream.
+ */
 typedef struct _FILE_STREAM_INFORMATION
 {
     ULONG NextEntryOffset;
@@ -687,6 +708,9 @@ typedef struct _FILE_STREAM_INFORMATION
     WCHAR StreamName[1];
 } FILE_STREAM_INFORMATION, * PFILE_STREAM_INFORMATION;
 
+/**
+ * The FILE_TRACKING_INFORMATION structure contains information used for tracking file operations.
+ */
 typedef struct _FILE_TRACKING_INFORMATION
 {
     HANDLE DestinationFile;
@@ -694,18 +718,42 @@ typedef struct _FILE_TRACKING_INFORMATION
     CHAR ObjectInformation[1];
 } FILE_TRACKING_INFORMATION, * PFILE_TRACKING_INFORMATION;
 
+/**
+ * The FILE_COMPLETION_INFORMATION structure contains the port handle and key for an I/O completion port created for a file handle.
+ *
+ * @remarks he FILE_COMPLETION_INFORMATION structure is used to replace the completion information for a port handle set in Port.
+ * Completion information is replaced with the ZwSetInformationFile routine with the FileInformationClass parameter set to FileReplaceCompletionInformation.
+ * The Port and Key members of FILE_COMPLETION_INFORMATION are set to their new values. To remove an existing completion port for a file handle, Port is set to NULL.
+ *
+ * https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntifs/ns-ntifs-_file_completion_information
+ */
 typedef struct _FILE_COMPLETION_INFORMATION
 {
     HANDLE Port;
     PVOID Key;
 } FILE_COMPLETION_INFORMATION, * PFILE_COMPLETION_INFORMATION;
 
+/**
+ * The FILE_PIPE_INFORMATION structure contains information about a named pipe that is not specific to the local or the remote end of the pipe.
+ *
+ * @remarks If ReadMode is set to FILE_PIPE_BYTE_STREAM_MODE, any attempt to change it must fail with a STATUS_INVALID_PARAMETER error code.
+ * When CompletionMode is set to FILE_PIPE_QUEUE_OPERATION, if the pipe is connected to, read to, or written from,
+ * the operation is not completed until there is data to read, all data is written, or a client is connected.
+ * When CompletionMode is set to FILE_PIPE_COMPLETE_OPERATION, if the pipe is being connected to, read to, or written from, the operation is completed immediately.
+ *
+ * https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntifs/ns-ntifs-_file_pipe_information
+ */
 typedef struct _FILE_PIPE_INFORMATION
 {
     ULONG ReadMode;
     ULONG CompletionMode;
 } FILE_PIPE_INFORMATION, * PFILE_PIPE_INFORMATION;
 
+/**
+ * The FILE_PIPE_LOCAL_INFORMATION structure contains information about the local end of a named pipe.
+ *
+ * @remarks https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntifs/ns-ntifs-_file_pipe_local_information
+ */
 typedef struct _FILE_PIPE_LOCAL_INFORMATION
 {
     ULONG NamedPipeType;
@@ -720,12 +768,23 @@ typedef struct _FILE_PIPE_LOCAL_INFORMATION
     ULONG NamedPipeEnd;
 } FILE_PIPE_LOCAL_INFORMATION, * PFILE_PIPE_LOCAL_INFORMATION;
 
+/**
+ * The FILE_PIPE_REMOTE_INFORMATION structure contains information about the remote end of a named pipe.
+ *
+ * @remarks Remote information is not available for local pipes or for the server end of a remote pipe.
+ * https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntifs/ns-ntifs-_file_pipe_remote_information
+ */
 typedef struct _FILE_PIPE_REMOTE_INFORMATION
 {
     LARGE_INTEGER CollectDataTime;
     ULONG MaximumCollectionCount;
 } FILE_PIPE_REMOTE_INFORMATION, * PFILE_PIPE_REMOTE_INFORMATION;
 
+/**
+ * The FILE_MAILSLOT_QUERY_INFORMATION structure contains information about a mailslot.
+ *
+ * @remarks https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntifs/ns-ntifs-_file_mailslot_query_information
+ */
 typedef struct _FILE_MAILSLOT_QUERY_INFORMATION
 {
     ULONG MaximumMessageSize;
@@ -735,17 +794,28 @@ typedef struct _FILE_MAILSLOT_QUERY_INFORMATION
     LARGE_INTEGER ReadTimeout;
 } FILE_MAILSLOT_QUERY_INFORMATION, * PFILE_MAILSLOT_QUERY_INFORMATION;
 
+/**
+ * The FILE_MAILSLOT_SET_INFORMATION structure is used to set a value on a mailslot.
+ *
+ * @remarks https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntifs/ns-ntifs-_file_mailslot_set_information
+ */
 typedef struct _FILE_MAILSLOT_SET_INFORMATION
 {
     PLARGE_INTEGER ReadTimeout;
 } FILE_MAILSLOT_SET_INFORMATION, * PFILE_MAILSLOT_SET_INFORMATION;
 
+/**
+ * The FILE_REPARSE_POINT_INFORMATION structure contains information about a reparse point.
+ */
 typedef struct _FILE_REPARSE_POINT_INFORMATION
 {
     LONGLONG FileReference;
     ULONG Tag;
 } FILE_REPARSE_POINT_INFORMATION, * PFILE_REPARSE_POINT_INFORMATION;
 
+/**
+ * The FILE_LINK_ENTRY_INFORMATION structure contains information about a file link entry.
+ */
 typedef struct _FILE_LINK_ENTRY_INFORMATION
 {
     ULONG NextEntryOffset;
@@ -754,6 +824,9 @@ typedef struct _FILE_LINK_ENTRY_INFORMATION
     WCHAR FileName[1];
 } FILE_LINK_ENTRY_INFORMATION, * PFILE_LINK_ENTRY_INFORMATION;
 
+/**
+ * The FILE_LINKS_INFORMATION structure contains information about file links.
+ */
 typedef struct _FILE_LINKS_INFORMATION
 {
     ULONG BytesNeeded;
@@ -761,12 +834,18 @@ typedef struct _FILE_LINKS_INFORMATION
     FILE_LINK_ENTRY_INFORMATION Entry;
 } FILE_LINKS_INFORMATION, * PFILE_LINKS_INFORMATION;
 
+/**
+ * The FILE_NETWORK_PHYSICAL_NAME_INFORMATION structure contains information about the network physical name of a file.
+ */
 typedef struct _FILE_NETWORK_PHYSICAL_NAME_INFORMATION
 {
     ULONG FileNameLength;
     WCHAR FileName[1];
 } FILE_NETWORK_PHYSICAL_NAME_INFORMATION, * PFILE_NETWORK_PHYSICAL_NAME_INFORMATION;
 
+/**
+ * The FILE_STANDARD_LINK_INFORMATION structure contains standard information about a file link.
+ */
 typedef struct _FILE_STANDARD_LINK_INFORMATION
 {
     ULONG NumberOfAccessibleLinks;
@@ -910,6 +989,10 @@ typedef struct _FILE_VOLUME_NAME_INFORMATION
     ULONG DeviceNameLength;
     WCHAR DeviceName[1];
 } FILE_VOLUME_NAME_INFORMATION, * PFILE_VOLUME_NAME_INFORMATION;
+
+#ifndef FILE_INVALID_FILE_ID
+#define FILE_INVALID_FILE_ID               ((LONGLONG)-1LL)
+#endif // FILE_INVALID_FILE_ID
 
 #define FILE_ID_IS_INVALID(FID) ((FID).QuadPart == FILE_INVALID_FILE_ID)
 
@@ -2788,9 +2871,9 @@ ZwNotifyChangeDirectoryFileEx(
 #endif // NTDDI_VERSION >= NTDDI_WIN10_RS3
 
 /**
- * \brief The NtLoadDriver function loads a driver specified by the DriverServiceName parameter.
- * \param DriverServiceName A pointer to a UNICODE_STRING structure that specifies the name of the driver service to load.
- * \return NTSTATUS The status code returned by the function. Possible values include, but are not limited to:
+ * @brief The NtLoadDriver function loads a driver specified by the DriverServiceName parameter.
+ * @param DriverServiceName A pointer to a UNICODE_STRING structure that specifies the name of the driver service to load.
+ * @return NTSTATUS The status code returned by the function. Possible values include, but are not limited to:
  * - STATUS_SUCCESS: The driver was successfully loaded.
  * - STATUS_INVALID_PARAMETER: The DriverServiceName parameter is invalid.
  * - STATUS_INSUFFICIENT_RESOURCES: There are insufficient resources to load the driver.
@@ -2814,8 +2897,7 @@ ZwLoadDriver(
 );
 
 /**
- * @brief Unloads a driver.
- * This function unloads a driver specified by the DriverServiceName parameter.
+ * @brief The NtUnloadDriver function unloads a driver specified by the DriverServiceName parameter.
  * @param DriverServiceName A pointer to a UNICODE_STRING structure that specifies the name of the driver service to unload.
  * @return NTSTATUS The status code returned by the function. Possible values include, but are not limited to:
  * - STATUS_SUCCESS: The driver was successfully unloaded.
@@ -2990,6 +3072,14 @@ ZwRemoveIoCompletion(
     _Out_ PIO_STATUS_BLOCK IoStatusBlock,
     _In_opt_ PLARGE_INTEGER Timeout
 );
+
+// private
+typedef struct _FILE_IO_COMPLETION_INFORMATION
+{
+    PVOID KeyContext;
+    PVOID ApcContext;
+    IO_STATUS_BLOCK IoStatusBlock;
+} FILE_IO_COMPLETION_INFORMATION, * PFILE_IO_COMPLETION_INFORMATION;
 
 __kernel_entry NTSYSCALLAPI
 NTSTATUS
@@ -3863,6 +3953,9 @@ typedef struct _MOUNTMGR_VOLUME_PATHS
 
 
 // Filter manager
+
+#define FLT_PORT_CONNECT 0x0001
+#define FLT_PORT_ALL_ACCESS (FLT_PORT_CONNECT | STANDARD_RIGHTS_ALL)
 
 // rev
 #define FLT_SYMLINK_NAME     L"\\Global??\\FltMgr"
