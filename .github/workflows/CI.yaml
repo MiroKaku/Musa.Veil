@@ -37,14 +37,9 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/v')
         shell: pwsh
         run: |
-          if (startsWith(github.ref, 'refs/tags/v')){
-            $BuildVersion=${{ github.ref_name }}.Substring(1);
-          }
-          else{
-            $BuildVersion=${{ github.ref_name }};
-          }
+          $BuildVersion = "${{ github.ref_name }}".Substring(1);
           echo "BuildVersion=$BuildVersion" >> $env:GITHUB_ENV
-          echo ${{env.BuildVersion}}
+          echo $BuildVersion
 
       - name: Build Test
         shell: cmd
@@ -75,8 +70,8 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/v')
         shell: cmd
         run: |
-          if "${{env.BuildVersion}}" NEQ "" (
-              NuGet pack .\Veil.NuGet\Musa.Veil-New.nuspec -Properties version=${{env.BuildVersion}};commit=%GITHUB_SHA%
+          if "${{ env.BuildVersion }}" NEQ "" (
+              NuGet pack .\Veil.NuGet\Musa.Veil-New.nuspec -Properties version=${{ env.BuildVersion }};commit=%GITHUB_SHA%
           )
           if %ERRORLEVEL% NEQ 0 exit /B %ERRORLEVEL%
 
@@ -84,7 +79,7 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/v')
         shell: cmd
         run: |
-          NuGet push Musa.Veil.${{env.BuildVersion}}.nupkg -ApiKey ${{ secrets.NUGET_TOKEN }} -Source https://api.nuget.org/v3/index.json
+          NuGet push Musa.Veil.${{ env.BuildVersion }}.nupkg -ApiKey ${{ secrets.NUGET_TOKEN }} -Source https://api.nuget.org/v3/index.json
           if %ERRORLEVEL% NEQ 0 exit /B %ERRORLEVEL%
 
       - name: Publish
