@@ -2498,8 +2498,8 @@ typedef struct _PROCESS_BASIC_INFORMATION
     PPEB PebBaseAddress;                    // A pointer to the process environment block (PEB) of the process.
     KAFFINITY AffinityMask;                 // The affinity mask of the process. (GetProcessAffinityMask) (deprecated)
     KPRIORITY BasePriority;                 // The base priority of the process. (GetPriorityClass)
-    HANDLE UniqueProcessId;                 // The unique identifier of the process. (GetProcessId)
-    HANDLE InheritedFromUniqueProcessId;    // The unique identifier of the parent process.
+    ULONG_PTR UniqueProcessId;                 // The unique identifier of the process. (GetProcessId)
+    ULONG_PTR InheritedFromUniqueProcessId;    // The unique identifier of the parent process.
 } PROCESS_BASIC_INFORMATION, * PPROCESS_BASIC_INFORMATION;
 
 /**
@@ -2517,8 +2517,8 @@ typedef struct _PROCESS_EXTENDED_BASIC_INFORMATION
             PPEB PebBaseAddress;    // A pointer to the process environment block (PEB) of the process.
             KAFFINITY AffinityMask; // The affinity mask of the process. (GetProcessAffinityMask) (deprecated)
             KPRIORITY BasePriority; // The base priority of the process. (GetPriorityClass)
-            HANDLE UniqueProcessId; // The unique identifier of the process. (GetProcessId)
-            HANDLE InheritedFromUniqueProcessId; // The unique identifier of the parent process.
+            ULONG_PTR UniqueProcessId; // The unique identifier of the process. (GetProcessId)
+            ULONG_PTR InheritedFromUniqueProcessId; // The unique identifier of the parent process.
         };
     };
     union
