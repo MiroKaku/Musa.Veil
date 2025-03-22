@@ -5635,7 +5635,7 @@ RtlQueryInformationActiveActivationContext(
 // Images
 //
 
-extern const IMAGE_DOS_HEADER __ImageBase;
+extern IMAGE_DOS_HEADER __ImageBase;
 #define RtlCurrentImageBase() ((PIMAGE_DOS_HEADER)&__ImageBase)
 
 NTSYSAPI
