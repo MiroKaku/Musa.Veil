@@ -40,6 +40,23 @@
 
 首先，请确保您的程序使用的是最新的 Windows SDK。然后克隆项目，直接 include 即可。
 
+### CMake FetchContent
+
+```
+include(FetchContent)
+
+FetchContent_Declare(
+    Musa.Veil
+    GIT_REPOSITORY https://github.com/redbg/Musa.Veil.git
+    GIT_TAG main
+    GIT_SHALLOW TRUE
+)
+FetchContent_MakeAvailable(Musa.Veil)
+
+add_library(Musa.Veil INTERFACE)
+target_include_directories(Musa.Veil INTERFACE "${musa.veil_SOURCE_DIR}")
+```
+
 ## 其它
 
 ```C
