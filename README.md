@@ -42,14 +42,14 @@ If your project template uses [Mile.Project.Windows](https://github.com/ProjectM
 First make sure that your program is using the latest Windows SDK.
 Then clone and include it.
 
-### CMake FetchContent
+### Method 3 (CMake FetchContent)
 
 ```
 include(FetchContent)
 
 FetchContent_Declare(
     Musa.Veil
-    GIT_REPOSITORY https://github.com/redbg/Musa.Veil.git
+    GIT_REPOSITORY https://github.com/MiroKaku/Musa.Veil.git
     GIT_TAG main
     GIT_SHALLOW TRUE
 )
