@@ -607,18 +607,22 @@ RtlPublishWnfStateData(
     _In_opt_ const VOID* ExplicitScope
 );
 
+typedef struct WNF_USER_SUBSCRIPTION* PWNF_USER_SUBSCRIPTION;
+
+#define WNF_CREATE_SERIALIZATION_GROUP_FLAG 0x00000001L
+
 NTSYSAPI
 NTSTATUS
 NTAPI
 RtlSubscribeWnfStateChangeNotification(
-    _Outptr_ PVOID* SubscriptionHandle, // PWNF_USER_SUBSCRIPTION
+    _Out_ PWNF_USER_SUBSCRIPTION * SubscriptionHandle,
     _In_ WNF_STATE_NAME StateName,
     _In_ WNF_CHANGE_STAMP ChangeStamp,
     _In_ PWNF_USER_CALLBACK Callback,
     _In_opt_ PVOID CallbackContext,
     _In_opt_ PCWNF_TYPE_ID TypeId,
     _In_opt_ ULONG SerializationGroup,
-    _Reserved_ ULONG Flags
+    _In_ ULONG Flags
 );
 
 NTSYSAPI
@@ -2263,7 +2267,8 @@ NTSYSAPI
 HANDLE
 NTAPI
 RtlQueryCriticalSectionOwner(
-    _In_ HANDLE EventHandle
+    _In_ HANDLE EventHandle,
+    _In_ BOOLEAN ExactMatchOwnerAddress
 );
 
 NTSYSAPI
@@ -2352,6 +2357,12 @@ RtlConvertExclusiveToShared(
 //
 
 // winbase:InitializeSRWLock
+/**
+ * The RtlInitializeSRWLock routine initializes a slim reader/writer (SRW) lock.
+ *
+ * \param SRWLock A pointer to the SRW lock.
+ * \sa https://learn.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-initializesrwlock
+ */
 NTSYSAPI
 VOID
 NTAPI
@@ -2560,7 +2571,61 @@ RtlWakeAddressSingleNoFence(
     _In_ PVOID Address
 );
 
-#endif
+#endif // (NTDDI_VERSION >= NTDDI_WIN8)
+
+
+#ifndef _KERNEL_MODE
+#if (NTDDI_VERSION >= NTDDI_WIN11)
+//
+// Read-Copy-Update (RCU).
+//
+// RCU synchronization allows concurrent access to shared data structures,
+// such as linked lists, trees, or hash tables, without using traditional locking methods
+// in scenarios where read operations are frequent and need to be fast.
+// It is particularly useful in multi-threaded environments where multiple threads
+// may read from the same data structure while one or more threads may modify it.
+// \remarks RCU synchronization is not for general-purpose synchronization.
+// Teb->Rcu is used to store the RCU state.
+
+NTSYSAPI
+PVOID
+NTAPI
+RtlRcuAllocate(
+    _In_ SIZE_T Size
+);
+
+NTSYSAPI
+LOGICAL
+NTAPI
+RtlRcuFree(
+    _In_ PULONG Rcu
+);
+
+NTSYSAPI
+VOID
+NTAPI
+RtlRcuReadLock(
+    _Inout_ PRTL_SRWLOCK SRWLock,
+    _Out_ PULONG Rcu
+);
+
+NTSYSAPI
+VOID
+NTAPI
+RtlRcuReadUnlock(
+    _Inout_ PRTL_SRWLOCK SRWLock,
+    _Inout_ PULONG* Rcu
+);
+
+NTSYSAPI
+LONG
+NTAPI
+RtlRcuSynchronize(
+    _Inout_ PRTL_SRWLOCK SRWLock
+);
+#endif // (NTDDI_VERSION >= NTDDI_WIN11)
+#endif // !_KERNEL_MODE
+
 // end_rev
 
 
@@ -2817,6 +2882,14 @@ RtlInitUnicodeStringEx(
 );
 #endif
 
+/**
+ * The RtlCreateUnicodeString routine creates a new counted Unicode string.
+ *
+ * \param DestinationString Pointer to the newly allocated and initialized Unicode string.
+ * \param SourceString Pointer to a null-terminated Unicode string with which to initialize the new string.
+ * \return TRUE if the Unicode string was successfully created, FALSE otherwise.
+ * \sa https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntifs/nf-ntifs-rtlcreateunicodestring
+ */
 _IRQL_requires_max_(APC_LEVEL)
 _Success_(return != 0)
 _Must_inspect_result_
@@ -2837,6 +2910,12 @@ RtlCreateUnicodeStringFromAsciiz(
     _In_z_ PCSTR SourceString
 );
 
+/**
+ * The RtlFreeUnicodeString routine releases storage that was allocated by RtlAnsiStringToUnicodeString or RtlUpcaseUnicodeString.
+ *
+ * \param UnicodeString A pointer to the string buffer.
+ * \sa https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/wdm/nf-wdm-rtlfreeunicodestring
+ */
 _IRQL_requires_max_(PASSIVE_LEVEL)
 NTSYSAPI
 VOID
@@ -2863,6 +2942,13 @@ RtlDuplicateUnicodeString(
     PUNICODE_STRING StringOut
 );
 
+/**
+ * The RtlCopyUnicodeString routine copies a source string to a destination string.
+ *
+ * \param[in] DestinationString A pointer to the destination string buffer.
+ * \param[in] SourceString A pointer to the source string buffer.
+ * \sa https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/wdm/nf-wdm-rtlcopyunicodestring
+ */
 _Unchanged_(DestinationString->Buffer)
 _Unchanged_(DestinationString->MaximumLength)
 _At_(DestinationString->Length,
@@ -2878,6 +2964,13 @@ _At_(DestinationString->Length,
         _In_opt_ PCUNICODE_STRING SourceString
     );
 
+/**
+ * The RtlUpcaseUnicodeChar routine converts the specified Unicode character to uppercase.
+ *
+ * \param[in] SourceCharacter Specifies the character to convert.
+ * \return The uppercase version of the specified Unicode character.
+ * \sa https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/wdm/nf-wdm-rtlupcaseunicodechar
+ */
 _IRQL_requires_max_(PASSIVE_LEVEL)
 NTSYSAPI
 WCHAR
@@ -2886,6 +2979,13 @@ RtlUpcaseUnicodeChar(
     _In_ WCHAR SourceCharacter
 );
 
+/**
+ * The RtlDowncaseUnicodeChar routine converts the specified Unicode character to lowercase.
+ *
+ * \param[in] SourceCharacter Specifies the character to convert.
+ * \return The lowercase version of the specified Unicode character.
+ * \sa https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/wdm/nf-wdm-rtldowncaseunicodechar
+ */
 _IRQL_requires_max_(PASSIVE_LEVEL)
 NTSYSAPI
 WCHAR
@@ -2894,6 +2994,15 @@ RtlDowncaseUnicodeChar(
     _In_ WCHAR SourceCharacter
 );
 
+/**
+ * The RtlCompareUnicodeString routine compares two Unicode strings.
+ *
+ * \param[in] String1 Pointer to the first string.
+ * \param[in] String2 Pointer to the second string.
+ * \param[in] CaseInSensitive If TRUE, case should be ignored when doing the comparison.
+ * \return A signed value that gives the results of the comparison.
+ * \sa https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/wdm/nf-wdm-rtlcompareunicodestring
+ */
 _IRQL_requires_max_(PASSIVE_LEVEL)
 _Must_inspect_result_
 NTSYSAPI
@@ -2905,6 +3014,16 @@ RtlCompareUnicodeString(
     _In_ BOOLEAN CaseInSensitive
 );
 
+/**
+ * The RtlCompareUnicodeString routine compares two Unicode strings.
+ *
+ * \param[in] String1 Pointer to the first string.
+ * \param[in] String1Length The length, in bytes, of the first string.
+ * \param[in] String2 Pointer to the second string.
+ * \param[in] String2Length The length, in bytes, of the second string.
+ * \param[in] CaseInSensitive If TRUE, case should be ignored when doing the comparison.
+ * \return A signed value that gives the results of the comparison.
+ */
 _IRQL_requires_max_(PASSIVE_LEVEL)
 _Must_inspect_result_
 NTSYSAPI
@@ -2918,6 +3037,15 @@ RtlCompareUnicodeStrings(
     _In_ BOOLEAN CaseInSensitive
 );
 
+/**
+ * The RtlEqualUnicodeString routine compares two Unicode strings to determine whether they are equal.
+ *
+ * \param[in] String1 Pointer to the first Unicode string.
+ * \param[in] String2 Pointer to the second Unicode string.
+ * \param[in] CaseInSensitive If TRUE, case should be ignored when doing the comparison.
+ * \return TRUE if the two Unicode strings are equal; otherwise, it returns FALSE.
+ * \sa https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/wdm/nf-wdm-rtlequalunicodestring
+ */
 _IRQL_requires_max_(PASSIVE_LEVEL)
 _Must_inspect_result_
 NTSYSAPI
@@ -2935,6 +3063,16 @@ RtlEqualUnicodeString(
 #define HASH_STRING_ALGORITHM_INVALID   (0xffffffff)
 #endif // !_KERNEL_MODE
 
+/**
+ * The RtlHashUnicodeString routine creates a hash value from a given Unicode string and hash algorithm.
+ *
+ * \param[in] String A pointer to a UNICODE_STRING structure that contains the Unicode string to be converted to a hash value.
+ * \param[in] CaseInSensitive Specifies whether to treat the Unicode string as case sensitive when computing the hash value. If CaseInSensitive is TRUE, a lowercase and uppercase string hash to the same value.
+ * \param[in] HashAlgorithm The hash algorithm to use.
+ * \param[out] HashValue A pointer to a ULONG variable that receives the hash value.
+ * \return NTSTATUS Successful or errant status.
+ * \sa https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/wdm/nf-wdm-rtlhashunicodestring
+ */
 _IRQL_requires_max_(PASSIVE_LEVEL)
 NTSYSAPI
 NTSTATUS
@@ -2955,6 +3093,15 @@ RtlValidateUnicodeString(
     _In_ PCUNICODE_STRING String
 );
 
+/**
+ * The RtlPrefixUnicodeString routine compares two Unicode strings to determine whether one string is a prefix of the other.
+ *
+ * \param[in] String1 Pointer to the first string, which might be a prefix of the buffered Unicode string at String2.
+ * \param[in] String2 Pointer to the second string.
+ * \param[in] CaseInSensitive TRUE, case should be ignored when doing the comparison.
+ * \return TRUE if String1 is a prefix of String2.
+ * \sa https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntddk/nf-ntddk-rtlprefixunicodestring
+ */
 _IRQL_requires_max_(PASSIVE_LEVEL)
 _Must_inspect_result_
 NTSYSAPI
@@ -2977,7 +3124,33 @@ RtlSuffixUnicodeString(
     _In_ PCUNICODE_STRING String2,
     _In_ BOOLEAN CaseInSensitive
 );
+#endif // (NTDDI_VERSION >= NTDDI_WINTHRESHOLD)
+
+#ifndef _KERNEL_MODE
+#pragma prefast(push)
+#pragma prefast(disable : 6101, "Out parameter is not written fully or at all.")
+FORCEINLINE
+VOID
+RtlSanitizeUnicodeStringPadding(
+    _Out_ PUNICODE_STRING String
+)
+{
+#if defined(_WIN64)
+    ULONG PaddingSize;
+    ULONG PaddingStart;
+
+    PaddingStart = FIELD_OFFSET(UNICODE_STRING, MaximumLength) +
+        sizeof(String->MaximumLength);
+
+    PaddingSize = FIELD_OFFSET(UNICODE_STRING, Buffer) - PaddingStart;
+
+    memset((PCH)String + PaddingStart, 0, PaddingSize);
+#else
+    UNREFERENCED_PARAMETER(String);
 #endif
+}
+#pragma prefast(pop)
+#endif // !_KERNEL_MODE
 
 #if (NTDDI_VERSION >= NTDDI_WIN10)
 _Must_inspect_result_
@@ -3004,6 +3177,26 @@ RtlFindCharInUnicodeString(
     _In_ PCUNICODE_STRING StringToSearch,
     _In_ PCUNICODE_STRING CharSet,
     _Out_ PUSHORT NonInclusivePrefixLength
+);
+
+typedef struct _RTL_UNICODE_STRING_BUFFER RTL_UNICODE_STRING_BUFFER, * PRTL_UNICODE_STRING_BUFFER;
+
+NTSYSAPI
+NTSTATUS
+NTAPI
+RtlMultiAppendUnicodeStringBuffer(
+    _Inout_ PRTL_UNICODE_STRING_BUFFER Buffer,
+    _In_ ULONG BufferCount,
+    _In_ PCUNICODE_STRING Source
+);
+
+NTSYSAPI
+NTSTATUS
+NTAPI
+RtlAppendPathElement(
+    _In_ ULONG Flags,
+    _Inout_ PRTL_UNICODE_STRING_BUFFER Buffer,
+    _In_ PCUNICODE_STRING Source
 );
 
 _Success_(1)
@@ -3154,6 +3347,17 @@ _When_(AllocateDestinationString,
         _In_ BOOLEAN AllocateDestinationString
     );
 
+/**
+ * The RtlUTF8ToUnicodeN routine translates the specified source string into a Unicode string, using the 8-bit Unicode Transformation Format (UTF-8) code page.
+ *
+ * \param UnicodeStringDestination Pointer to a caller-allocated buffer to receive the translated string.
+ * \param UnicodeStringMaxByteCount Maximum number of bytes to be written at MultiByteString. If this value causes the translated string to be truncated, RtlUpcaseUnicodeToMultiByteN does not return an error status.
+ * \param UnicodeStringActualByteCount Pointer to a caller-allocated variable that receives the length, in bytes, of the translated string. This parameter can be NULL.
+ * \param UTF8StringSource Pointer to the Unicode source string to be translated.
+ * \param UTF8StringByteCount Size, in bytes, of the string at UnicodeString.
+ * \return NTSTATUS Successful or errant status.
+ * \sa https://learn.microsoft.com/en-us/windows/win32/devnotes/rtlutf8tounicoden
+ */
 _IRQL_requires_max_(PASSIVE_LEVEL)
 _Must_inspect_result_
 NTSYSAPI
@@ -3167,6 +3371,17 @@ RtlUTF8ToUnicodeN(
     _In_ ULONG UTF8StringByteCount
 );
 
+/**
+ * The RtlUnicodeToUTF8N routine translates the specified Unicode string into a new character string, using the 8-bit Unicode Transformation Format (UTF-8) code page.
+ *
+ * \param UTF8StringDestination Pointer to a caller-allocated buffer to receive the translated string.
+ * \param UTF8StringMaxByteCount Maximum number of bytes to be written to UTF8StringDestination. If this value causes the translated string to be truncated, RtlUnicodeToUTF8N returns an error status.
+ * \param UTF8StringActualByteCount A pointer to a caller-allocated variable that receives the length, in bytes, of the translated string. This parameter is optional and can be NULL. If the string is truncated then the returned number counts the actual truncated string count.
+ * \param UnicodeStringSource A pointer to the Unicode source string to be translated.
+ * \param UnicodeStringByteCount Specifies the number of bytes in the Unicode source string that the UnicodeStringSource parameter points to.
+ * \return NTSTATUS Successful or errant status.
+ * \sa https://learn.microsoft.com/en-us/windows/win32/devnotes/rtlunicodetoutf8n
+ */
 _IRQL_requires_max_(PASSIVE_LEVEL)
 _Must_inspect_result_
 NTSYSAPI
@@ -3489,6 +3704,18 @@ RtlUpcaseUnicodeStringToCountedOemString(
     _In_ BOOLEAN AllocateDestinationString
 );
 
+/**
+ * The RtlMultiByteToUnicodeN routine translates the specified source string into a Unicode string, using the current system ANSI code page (ACP).
+ * The source string is not necessarily from a multibyte character set.
+ *
+ * \param UnicodeString Pointer to a caller-allocated buffer that receives the translated string. UnicodeString buffer must not overlap with MultiByteString buffer.
+ * \param MaxBytesInUnicodeString Maximum number of bytes to be written at UnicodeString. If this value causes the translated string to be truncated, RtlMultiByteToUnicodeN does not return an error status.
+ * \param BytesInUnicodeString Pointer to a caller-allocated variable that receives the length, in bytes, of the translated string. This parameter can be NULL.
+ * \param MultiByteString Pointer to the string to be translated.
+ * \param BytesInMultiByteString Size, in bytes, of the string at MultiByteString.
+ * \return NTSTATUS Successful or errant status.
+ * \sa https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntifs/nf-ntifs-rtlmultibytetounicoden
+ */
 _IRQL_requires_max_(PASSIVE_LEVEL)
 NTSYSAPI
 NTSTATUS
@@ -3501,6 +3728,16 @@ RtlMultiByteToUnicodeN(
     _In_ ULONG BytesInMultiByteString
 );
 
+/**
+ * The RtlMultiByteToUnicodeSize routine determines the number of bytes that are required to store the Unicode translation for the specified source string.
+ * The translation is assumed to use the current system ANSI code page (ACP). The source string is not necessarily from a multibyte character set.
+ *
+ * \param BytesInUnicodeString Pointer to a caller-allocated variable that receives the number of bytes that are required to store the translated string.
+ * \param MultiByteString Pointer to the source string for which the Unicode length is to be calculated.
+ * \param BytesInMultiByteString Length, in bytes, of the source string.
+ * \return NTSTATUS Successful or errant status.
+ * \sa https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntifs/nf-ntifs-rtlmultibytetounicodesize
+ */
 _IRQL_requires_max_(PASSIVE_LEVEL)
 NTSYSAPI
 NTSTATUS
@@ -3511,6 +3748,18 @@ RtlMultiByteToUnicodeSize(
     _In_ ULONG BytesInMultiByteString
 );
 
+/**
+ * The RtlUnicodeToMultiByteN routine translates the specified Unicode string into a new character string, using the current system ANSI code page (ACP).
+ * The source string is not necessarily from a multibyte character set.
+ *
+ * \param MultiByteString Pointer to a caller-allocated buffer to receive the translated string. MultiByteString buffer must not overlap with UnicodeString buffer.
+ * \param MaxBytesInMultiByteString Maximum number of bytes to be written to MultiByteString. If this value causes the translated string to be truncated, RtlUnicodeToMultiByteN does not return an error status.
+ * \param BytesInMultiByteString Pointer to a caller-allocated variable that receives the length, in bytes, of the translated string. This parameter is optional and can be NULL.
+ * \param UnicodeString Pointer to the Unicode source string to be translated.
+ * \param BytesInUnicodeString Size, in bytes, of the string at UnicodeString.
+ * \return NTSTATUS Successful or errant status.
+ * \sa https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntifs/nf-ntifs-rtlunicodetomultibyten
+ */
 _IRQL_requires_max_(PASSIVE_LEVEL)
 NTSYSAPI
 NTSTATUS
@@ -3523,6 +3772,16 @@ RtlUnicodeToMultiByteN(
     _In_ ULONG BytesInUnicodeString
 );
 
+/**
+ * The RtlUnicodeToMultiByteSize routine determines the number of bytes that are required to store the multibyte translation for the specified Unicode string.
+ * The translation is assumed to use the current system ANSI code page (ACP). The source string is not necessarily from a multibyte character set.
+ *
+ * \param BytesInMultiByteString Pointer to a caller-allocated variable that receives the number of bytes required to store the translated string.
+ * \param UnicodeString Pointer to the Unicode string for which the multibyte length is to be calculated.
+ * \param BytesInUnicodeString Length, in bytes, of the source string.
+ * \return NTSTATUS Successful or errant status.
+ * \sa https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntifs/nf-ntifs-rtlunicodetomultibytesize
+ */
 _IRQL_requires_max_(PASSIVE_LEVEL)
 NTSYSAPI
 NTSTATUS
@@ -3533,6 +3792,18 @@ RtlUnicodeToMultiByteSize(
     _In_ ULONG BytesInUnicodeString
 );
 
+/**
+ * The RtlUpcaseUnicodeToMultiByteN routine translates the specified Unicode string into a new uppercase character string, using the current system ANSI code page (ACP).
+ * The translated string is not necessarily from a multibyte character set.
+ *
+ * \param MultiByteString Pointer to a caller-allocated buffer to receive the translated string.
+ * \param MaxBytesInMultiByteString Maximum number of bytes to be written at MultiByteString. If this value causes the translated string to be truncated, RtlUpcaseUnicodeToMultiByteN does not return an error status.
+ * \param BytesInMultiByteString Pointer to a caller-allocated variable that receives the length, in bytes, of the translated string. This parameter can be NULL.
+ * \param UnicodeString Pointer to the Unicode source string to be translated.
+ * \param BytesInUnicodeString Size, in bytes, of the string at UnicodeString.
+ * \return NTSTATUS Successful or errant status.
+ * \sa https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntifs/nf-ntifs-rtlupcaseunicodetomultibyten
+ */
 _IRQL_requires_max_(PASSIVE_LEVEL)
 NTSYSAPI
 NTSTATUS
@@ -3775,6 +4046,14 @@ RtlDnsHostNameToComputerName(
 #define RTL_GUID_STRING_SIZE 38
 #endif // !_KERNEL_MODE
 
+/**
+ * The RtlStringFromGUID routine converts a given GUID from binary format into a Unicode string.
+ *
+ * \param[in] Guid Specifies the binary-format GUID to convert.
+ * \param[out] GuidString Pointer to a caller-supplied variable in which a pointer to the converted GUID string is returned and must free by calling RtlFreeUnicodeString.
+ * \return NTSTATUS Successful or errant status.
+ * \sa https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/wdm/nf-wdm-rtlstringfromguid
+ */
 _IRQL_requires_max_(PASSIVE_LEVEL)
 _Must_inspect_result_
 NTSYSAPI
@@ -3787,6 +4066,9 @@ RtlStringFromGUID(
 );
 
 #if (NTDDI_VERSION >= NTDDI_WINBLUE)
+
+#define RTL_GUID_STRING_SIZE 38
+#define MAX_UNICODE_GUID_STRING_LENGTH (36 + sizeof(UNICODE_NULL))
 
 // rev
 _IRQL_requires_max_(PASSIVE_LEVEL)
@@ -4716,6 +4998,22 @@ typedef struct _RTL_USER_PROCESS_INFORMATION
 } RTL_USER_PROCESS_INFORMATION, * PRTL_USER_PROCESS_INFORMATION;
 
 // private
+/**
+ * Creates a new process and its primary thread. The new process runs in the security context of the calling process.
+ *
+ * \param NtImagePathName The path of the image to be executed.
+ * \param ExtendedParameters Reserved
+ * \param ProcessParameters The process parameter information.
+ * \param ProcessSecurityDescriptor The security descriptor for the new process. If NULL, the process gets a default security descriptor.
+ * \param ThreadSecurityDescriptor The security descriptor for the initial thread. If NULL, the thread gets a default security descriptor.
+ * \param ParentProcess The handle of a process to use (instead of the calling process) as the parent for the process being created.
+ * \param InheritHandles If this parameter is TRUE, each inheritable handle in the calling process is inherited by the new process.
+ * \param DebugPort The handle of an ALPC port for debug messages. If NULL, the process gets a default port. (WindowsErrorReportingServicePort)
+ * \param TokenHandle The handle of a Token to use as the security context.
+ * \param ProcessInformation The user process information.
+ * \return NTSTATUS Successful or errant status.
+ * \sa https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-createprocessw
+ */
 NTSYSAPI
 NTSTATUS
 NTAPI
@@ -4775,6 +5073,16 @@ RtlExitUserProcess(
 // end_rev
 
 // private
+/**
+ * Creates a new process from the current process.
+ *
+ * \param ProcessFlags The path of the image to be executed.
+ * \param ProcessSecurityDescriptor The security descriptor for the new process. If NULL, the process gets a default security descriptor.
+ * \param ThreadSecurityDescriptor The security descriptor for the initial thread. If NULL, the thread gets a default security descriptor.
+ * \param DebugPort The handle of an ALPC port for debug messages. If NULL, the process gets a default port. (WindowsErrorReportingServicePort)
+ * \param ProcessInformation The new process information.
+ * \return NTSTATUS Successful or errant status.
+ */
 NTSYSAPI
 NTSTATUS
 NTAPI
@@ -4961,11 +5269,6 @@ RtlExitUserThread(
 );
 
 #ifndef _KERNEL_MODE
-
-typedef NTSTATUS(NTAPI* PUSER_THREAD_START_ROUTINE)(
-    _In_ PVOID ThreadParameter
-    );
-
 NTSYSAPI
 NTSTATUS
 NTAPI
@@ -5212,10 +5515,10 @@ RtlRemoteCall(
 /**
  * Registers a vectored exception handler.
  *
- * @param First If this parameter is TRUE, the handler is the first handler in the list.
- * @param Handler A pointer to the vectored exception handler to be called.
- * @return A handle to the vectored exception handler.
- * @see https://docs.microsoft.com/en-us/windows/win32/api/errhandlingapi/nf-errhandlingapi-addvectoredexceptionhandler
+ * \param First If this parameter is TRUE, the handler is the first handler in the list.
+ * \param Handler A pointer to the vectored exception handler to be called.
+ * \return A handle to the vectored exception handler.
+ * \sa https://docs.microsoft.com/en-us/windows/win32/api/errhandlingapi/nf-errhandlingapi-addvectoredexceptionhandler
  */
 NTSYSAPI
 PVOID
@@ -5228,9 +5531,9 @@ RtlAddVectoredExceptionHandler(
 /**
  * Removes a vectored exception handler.
  *
- * @param Handle A handle to the vectored exception handler to remove.
- * @return The function returns 0 if the handler is removed, or -1 if the handler is not found.
- * @see https://docs.microsoft.com/en-us/windows/win32/api/errhandlingapi/nf-errhandlingapi-removevectoredexceptionhandler
+ * \param Handle A handle to the vectored exception handler to remove.
+ * \return The function returns 0 if the handler is removed, or -1 if the handler is not found.
+ * \sa https://docs.microsoft.com/en-us/windows/win32/api/errhandlingapi/nf-errhandlingapi-removevectoredexceptionhandler
  */
 NTSYSAPI
 ULONG
@@ -5242,10 +5545,10 @@ RtlRemoveVectoredExceptionHandler(
 /**
  * Registers a vectored continue handler.
  *
- * @param First If this parameter is TRUE, the handler is the first handler in the list.
- * @param Handler A pointer to the vectored exception handler to be called.
- * @return A handle to the vectored continue handler.
- * @see https://docs.microsoft.com/en-us/windows/win32/api/errhandlingapi/nf-errhandlingapi-addvectoredcontinuehandler
+ * \param First If this parameter is TRUE, the handler is the first handler in the list.
+ * \param Handler A pointer to the vectored exception handler to be called.
+ * \return A handle to the vectored continue handler.
+ * \sa https://docs.microsoft.com/en-us/windows/win32/api/errhandlingapi/nf-errhandlingapi-addvectoredcontinuehandler
  */
 NTSYSAPI
 PVOID
@@ -5258,9 +5561,9 @@ RtlAddVectoredContinueHandler(
 /**
  * Removes a vectored continue handler.
  *
- * @param Handle A handle to the vectored continue handler to remove.
- * @return The function returns 0 if the handler is removed, or -1 if the handler is not found.
- * @see https://docs.microsoft.com/en-us/windows/win32/api/errhandlingapi/nf-errhandlingapi-removevectoredcontinuehandler
+ * \param Handle A handle to the vectored continue handler to remove.
+ * \return The function returns 0 if the handler is removed, or -1 if the handler is not found.
+ * \sa https://docs.microsoft.com/en-us/windows/win32/api/errhandlingapi/nf-errhandlingapi-removevectoredcontinuehandler
  */
 NTSYSAPI
 ULONG
@@ -5342,9 +5645,9 @@ RtlRaiseStatus(
 /**
  * Raises an exception in the calling thread.
  *
- * @param ExceptionRecord A pointer to an EXCEPTION_RECORD structure that contains the exception information. You must specify the ExceptionAddress and ExceptionCode members.
- * @return This function does not return a value.
- * @see https://learn.microsoft.com/en-us/windows/win32/api/errhandlingapi/nf-errhandlingapi-raiseexception
+ * \param ExceptionRecord A pointer to an EXCEPTION_RECORD structure that contains the exception information. You must specify the ExceptionAddress and ExceptionCode members.
+ * \return This function does not return a value.
+ * \sa https://learn.microsoft.com/en-us/windows/win32/api/errhandlingapi/nf-errhandlingapi-raiseexception
  */
 NTSYSAPI
 VOID
@@ -5370,7 +5673,6 @@ RtlAssert(
 typedef LONG(WINAPI* PTOP_LEVEL_EXCEPTION_FILTER)(
     _In_ struct _EXCEPTION_POINTERS* ExceptionInfo
     );
-
 typedef PTOP_LEVEL_EXCEPTION_FILTER LPTOP_LEVEL_EXCEPTION_FILTER;
 #endif
 
@@ -5736,10 +6038,10 @@ RtlPcToFilePath(
 /**
  * Retrieves the base address of the image that contains the specified PC value.
  *
- * @param PcValue The PC value. The function searches all modules mapped into the address space of the calling process for a module that contains this value.
- * @param BaseOfImage The base address of the image containing the PC value. This value must be added to any relative addresses in the headers to locate the image.
- * @return If the PC value is found, returns the base address of the image that contains the PC value. If no image contains the PC value, the function returns NULL.
- * @sa https://learn.microsoft.com/en-us/windows/win32/api/winnt/nf-winnt-rtlpctofileheader
+ * \param PcValue The PC value. The function searches all modules mapped into the address space of the calling process for a module that contains this value.
+ * \param BaseOfImage The base address of the image containing the PC value. This value must be added to any relative addresses in the headers to locate the image.
+ * \return If the PC value is found, returns the base address of the image that contains the PC value. If no image contains the PC value, the function returns NULL.
+ * \sa https://learn.microsoft.com/en-us/windows/win32/api/winnt/nf-winnt-rtlpctofileheader
  */
 NTSYSAPI
 PVOID
@@ -6229,7 +6531,7 @@ RtlLookupFunctionEntry(
 
 NTSYSAPI
 VOID
-__cdecl
+STDAPIVCALLTYPE
 RtlRestoreContext(
     _In_ PCONTEXT ContextRecord,
     _In_opt_ PEXCEPTION_RECORD ExceptionRecord
@@ -6264,6 +6566,67 @@ RtlVirtualUnwind(
 #endif // _M_AMD64 | _M_ARM64 | _M_ARM
 
 #endif // _KERNEL_MODE
+
+#ifndef _KERNEL_MODE
+#if defined(_M_AMD64) && defined(_M_ARM64EC)
+NTSYSAPI
+BOOLEAN
+STDAPIVCALLTYPE
+RtlAddFunctionTable(
+    _In_reads_(EntryCount) PRUNTIME_FUNCTION FunctionTable,
+    _In_ ULONG EntryCount,
+    _In_ ULONG64 BaseAddress
+);
+
+NTSYSAPI
+BOOLEAN
+STDAPIVCALLTYPE
+RtlDeleteFunctionTable(
+    _In_ PRUNTIME_FUNCTION FunctionTable
+);
+
+NTSYSAPI
+BOOLEAN
+STDAPIVCALLTYPE
+RtlInstallFunctionTableCallback(
+    _In_ ULONG64 TableIdentifier,
+    _In_ ULONG64 BaseAddress,
+    _In_ ULONG Length,
+    _In_ PGET_RUNTIME_FUNCTION_CALLBACK Callback,
+    _In_opt_ PVOID Context,
+    _In_opt_ PCWSTR OutOfProcessCallbackDll
+);
+
+#if (NTDDI_VERSION >= NTDDI_WIN8)
+NTSYSAPI
+ULONG
+NTAPI
+RtlAddGrowableFunctionTable(
+    _Out_ PVOID* DynamicTable,
+    _In_reads_(MaximumEntryCount) PRUNTIME_FUNCTION FunctionTable,
+    _In_ ULONG EntryCount,
+    _In_ ULONG MaximumEntryCount,
+    _In_ ULONG_PTR RangeBase,
+    _In_ ULONG_PTR RangeEnd
+);
+
+NTSYSAPI
+VOID
+NTAPI
+RtlGrowFunctionTable(
+    _Inout_ PVOID DynamicTable,
+    _In_ ULONG NewEntryCount
+);
+
+NTSYSAPI
+VOID
+NTAPI
+RtlDeleteGrowableFunctionTable(
+    _In_ PVOID DynamicTable
+);
+#endif // NTDDI_VERSION >= NTDDI_WIN8
+#endif // _M_AMD64 && _M_ARM64EC
+#endif
 
 typedef struct _RTL_MODULE_BASIC_INFO {
     PVOID ImageBase;
@@ -6385,6 +6748,45 @@ RtlIsZeroMemory(
     _In_ SIZE_T Length
 );
 #endif // NTDDI_VERSION >= NTDDI_WIN10_VB
+
+NTSYSAPI
+ULONG
+NTAPI
+RtlCrc32(
+    _In_reads_bytes_(Size) const void* Buffer,
+    _In_ size_t Size,
+    _In_ ULONG InitialCrc
+);
+
+NTSYSAPI
+ULONGLONG
+NTAPI
+RtlCrc64(
+    _In_reads_bytes_(Size) const void* Buffer,
+    _In_ size_t Size,
+    _In_ ULONGLONG InitialCrc
+);
+
+// RTL_SYSTEM_GLOBAL_DATA_ID
+#define GlobalDataIdUnknown 0
+#define GlobalDataIdRngSeedVersion 1                // KUSER_SHARED_DATA->RngSeedVersion
+#define GlobalDataIdInterruptTime 2                 // KUSER_SHARED_DATA->InterruptTime
+#define GlobalDataIdTimeZoneBias 3                  // KUSER_SHARED_DATA->TimeZoneBias
+#define GlobalDataIdImageNumberLow 4                // KUSER_SHARED_DATA->ImageNumberLow
+#define GlobalDataIdImageNumberHigh 5               // KUSER_SHARED_DATA->ImageNumberHigh
+#define GlobalDataIdTimeZoneId 6                    // KUSER_SHARED_DATA->TimeZoneId
+#define GlobalDataIdNtMajorVersion 7                // KUSER_SHARED_DATA->NtMajorVersion
+#define GlobalDataIdNtMinorVersion 8                // KUSER_SHARED_DATA->NtMinorVersion
+#define GlobalDataIdSystemExpirationDate 9          // KUSER_SHARED_DATA->SystemExpirationDate
+#define GlobalDataIdKdDebuggerEnabled 10            // KUSER_SHARED_DATA->KdDebuggerEnabled
+#define GlobalDataIdCyclesPerYield 11               // KUSER_SHARED_DATA->CyclesPerYield
+#define GlobalDataIdSafeBootMode 12                 // KUSER_SHARED_DATA->SafeBootMode
+#define GlobalDataIdLastSystemRITEventTickCount 13  // KUSER_SHARED_DATA->LastSystemRITEventTickCount
+#define GlobalDataIdConsoleSharedDataFlags 14       // KUSER_SHARED_DATA->ConsoleSharedDataFlags
+#define GlobalDataIdNtSystemRootDrive 15            // KUSER_SHARED_DATA->NtSystemRoot // RtlGetNtSystemRoot 
+#define GlobalDataIdQpcBypassEnabled 16             // KUSER_SHARED_DATA->QpcBypassEnabled
+#define GlobalDataIdQpcData 17                      // KUSER_SHARED_DATA->QpcData
+#define GlobalDataIdQpcBias 18                      // KUSER_SHARED_DATA->QpcBias
 
 //
 // Environment
@@ -7130,8 +7532,8 @@ typedef enum _HEAP_MEMORY_INFO_CLASS
     HeapMemoryBasicInformation
 } HEAP_MEMORY_INFO_CLASS;
 
-typedef NTSTATUS
-ALLOCATE_VIRTUAL_MEMORY_EX_CALLBACK(
+typedef _Function_class_(ALLOCATE_VIRTUAL_MEMORY_EX_CALLBACK)
+NTSTATUS NTAPI ALLOCATE_VIRTUAL_MEMORY_EX_CALLBACK(
     _Inout_ HANDLE CallbackContext,
     _In_ HANDLE ProcessHandle,
     _Inout_ _At_(*BaseAddress, _Readable_bytes_(*RegionSize) _Writable_bytes_(*RegionSize) _Post_readable_byte_size_(*RegionSize)) PVOID* BaseAddress,
@@ -7141,22 +7543,20 @@ ALLOCATE_VIRTUAL_MEMORY_EX_CALLBACK(
     _Inout_updates_opt_(ExtendedParameterCount) PMEM_EXTENDED_PARAMETER ExtendedParameters,
     _In_ ULONG ExtendedParameterCount
 );
-
 typedef ALLOCATE_VIRTUAL_MEMORY_EX_CALLBACK* PALLOCATE_VIRTUAL_MEMORY_EX_CALLBACK;
 
-typedef NTSTATUS
-FREE_VIRTUAL_MEMORY_EX_CALLBACK(
+typedef _Function_class_(FREE_VIRTUAL_MEMORY_EX_CALLBACK)
+NTSTATUS NTAPI FREE_VIRTUAL_MEMORY_EX_CALLBACK(
     _Inout_ HANDLE CallbackContext,
     _In_ HANDLE ProcessHandle,
     _Inout_ __drv_freesMem(Mem) PVOID* BaseAddress,
     _Inout_ PSIZE_T RegionSize,
     _In_ ULONG FreeType
 );
-
 typedef FREE_VIRTUAL_MEMORY_EX_CALLBACK* PFREE_VIRTUAL_MEMORY_EX_CALLBACK;
 
-typedef NTSTATUS
-QUERY_VIRTUAL_MEMORY_CALLBACK(
+typedef _Function_class_(QUERY_VIRTUAL_MEMORY_CALLBACK)
+NTSTATUS NTAPI QUERY_VIRTUAL_MEMORY_CALLBACK(
     _Inout_ HANDLE CallbackContext,
     _In_ HANDLE ProcessHandle,
     _In_opt_ PVOID BaseAddress,
@@ -7165,7 +7565,6 @@ QUERY_VIRTUAL_MEMORY_CALLBACK(
     _In_ SIZE_T MemoryInformationLength,
     _Out_opt_ PSIZE_T ReturnLength
 );
-
 typedef QUERY_VIRTUAL_MEMORY_CALLBACK* PQUERY_VIRTUAL_MEMORY_CALLBACK;
 
 typedef struct _RTL_SEGMENT_HEAP_VA_CALLBACKS
@@ -7267,14 +7666,14 @@ typedef struct _RTL_HEAP_MEMORY_LIMIT_INFO
  * The RtlCreateHeap routine creates a heap object that can be used by the calling process. This routine reserves
  * space in the virtual address space of the process and allocates physical storage for a specified initial portion of this block.
  *
- * @param Flags Flags specifying optional attributes of the heap.
- * @param HeapBase If HeapBase is a non-NULL value, it specifies the base address for a block of caller-allocated memory to use for the heap.
- * @param ReserveSize If ReserveSize is a nonzero value, it specifies the initial amount of memory, in bytes, to reserve for the heap.
- * @param CommitSize If CommitSize is a nonzero value, it specifies the initial amount of memory, in bytes, to commit for the heap.
- * @param Lock Pointer to an opaque structure to be used as the heap lock.
- * @param Parameters Pointer to a RTL_HEAP_PARAMETERS structure that contains parameters to be applied when creating the heap.
- * @return RtlCreateHeap returns a handle to be used in accessing the created heap.
- * @remarks https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntifs/nf-ntifs-rtlcreateheap
+ * \param Flags Flags specifying optional attributes of the heap.
+ * \param HeapBase If HeapBase is a non-NULL value, it specifies the base address for a block of caller-allocated memory to use for the heap.
+ * \param ReserveSize If ReserveSize is a nonzero value, it specifies the initial amount of memory, in bytes, to reserve for the heap.
+ * \param CommitSize If CommitSize is a nonzero value, it specifies the initial amount of memory, in bytes, to commit for the heap.
+ * \param Lock Pointer to an opaque structure to be used as the heap lock.
+ * \param Parameters Pointer to a RTL_HEAP_PARAMETERS structure that contains parameters to be applied when creating the heap.
+ * \return RtlCreateHeap returns a handle to be used in accessing the created heap.
+ * \sa https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntifs/nf-ntifs-rtlcreateheap
  */
 _Must_inspect_result_
 NTSYSAPI
@@ -7297,9 +7696,9 @@ RtlCreateHeap(
  * The RtlDestroyHeap routine destroys the specified heap object. RtlDestroyHeap decommits and releases all the pages of a private heap object,
  * and it invalidates the handle to the heap.
  *
- * @param HeapHandle Handle for the heap to be destroyed. This parameter is a heap handle returned by RtlCreateHeap.
- * @return If the call to RtlDestroyHeap succeeds, the return value is a NULL pointer. If the call to RtlDestroyHeap fails, the return value is a handle for the heap.
- * @remarks https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntifs/nf-ntifs-rtldestroyheap
+ * \param HeapHandle Handle for the heap to be destroyed. This parameter is a heap handle returned by RtlCreateHeap.
+ * \return If the call to RtlDestroyHeap succeeds, the return value is a NULL pointer. If the call to RtlDestroyHeap fails, the return value is a handle for the heap.
+ * \sa https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntifs/nf-ntifs-rtldestroyheap
  */
 NTSYSAPI
 PVOID
@@ -7311,11 +7710,11 @@ RtlDestroyHeap(
 /**
  * The RtlAllocateHeap routine allocates a block of memory from a heap.
  *
- * @param HeapHandle Handle for a private heap from which the memory will be allocated.
- * @param Flags Controllable aspects of heap allocation. Specifying any flags will override the corresponding value specified when the heap was created with RtlCreateHeap.
- * @param Size Number of bytes to be allocated. If the heap, specified by the HeapHandle parameter, is a nongrowable heap, Size must be less than or equal to the heap's virtual memory threshold.
- * @return If the call to RtlARtlSetHeapInformationllocateHeap succeeds, the return value is a pointer to the newly-allocated block. The return value is NULL if the allocation failed.
- * @remarks https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntifs/nf-ntifs-rtlallocateheap
+ * \param HeapHandle Handle for a private heap from which the memory will be allocated.
+ * \param Flags Controllable aspects of heap allocation. Specifying any flags will override the corresponding value specified when the heap was created with RtlCreateHeap.
+ * \param Size Number of bytes to be allocated. If the heap, specified by the HeapHandle parameter, is a nongrowable heap, Size must be less than or equal to the heap's virtual memory threshold.
+ * \return If the call to RtlARtlSetHeapInformationllocateHeap succeeds, the return value is a pointer to the newly-allocated block. The return value is NULL if the allocation failed.
+ * \sa https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntifs/nf-ntifs-rtlallocateheap
  */
 NTSYSAPI
 _Must_inspect_result_
@@ -7568,7 +7967,7 @@ RtlWalkHeap(
 #define HeapEnableTerminationOnCorruption   ((HEAP_INFORMATION_CLASS)0x1       ) // q; s: NULL
 #define HeapExtendedInformation             ((HEAP_INFORMATION_CLASS)0x2       ) // q; s: HEAP_EXTENDED_INFORMATION
 #define HeapOptimizeResources               ((HEAP_INFORMATION_CLASS)0x3       ) // q; s: HEAP_OPTIMIZE_RESOURCES_INFORMATION
-#define HeapTaggingInformation              ((HEAP_INFORMATION_CLASS)0x4       )
+#define HeapTaggingInformation              ((HEAP_INFORMATION_CLASS)0x4       ) // q: RTLP_HEAP_TAGGING_INFO
 #define HeapStackDatabase                   ((HEAP_INFORMATION_CLASS)0x5       ) // q: RTL_HEAP_STACK_QUERY; s: RTL_HEAP_STACK_CONTROL
 #define HeapMemoryLimit                     ((HEAP_INFORMATION_CLASS)0x6       ) // since 19H2
 #define HeapTag                             ((HEAP_INFORMATION_CLASS)0x6       ) // since 20H1
@@ -7577,23 +7976,25 @@ RtlWalkHeap(
 
 typedef enum _HEAP_COMPATIBILITY_MODE
 {
-    HEAP_COMPATIBILITY_STANDARD = 0UL,
-    HEAP_COMPATIBILITY_LAL = 1UL,
-    HEAP_COMPATIBILITY_LFH = 2UL,
+    HEAP_COMPATIBILITY_MODE_STANDARD = 0UL,
+    HEAP_COMPATIBILITY_MODE_LAL = 1UL, // Lookaside list heap (LAL) compatibility mode.
+    HEAP_COMPATIBILITY_MODE_LFH = 2UL, // Low-fragmentation heap (LFH) compatibility mode.
 } HEAP_COMPATIBILITY_MODE;
 
 typedef struct _RTLP_TAG_INFO
 {
     GUID Id;
-    ULONG_PTR CurrentAllocatedBytes;
+    SIZE_T CurrentAllocatedBytes;
 } RTLP_TAG_INFO, * PRTLP_TAG_INFO;
+
+#define RTLP_HEAP_TAGGING_INFO_VERSION 0x1
 
 typedef struct _RTLP_HEAP_TAGGING_INFO
 {
     USHORT Version;
-    USHORT Flags;
-    PVOID ProcessHandle;
-    ULONG_PTR EntriesCount;
+    USHORT Flags; // 1: Multiple Tags, 2: Single Tag + Hash
+    HANDLE ProcessHandle;
+    SIZE_T EntriesCount;
     RTLP_TAG_INFO Entries[1];
 } RTLP_HEAP_TAGGING_INFO, * PRTLP_HEAP_TAGGING_INFO;
 
@@ -7647,7 +8048,7 @@ typedef struct _SEGMENT_HEAP_PERFORMANCE_COUNTER_INFORMATION
 {
     SIZE_T SegmentReserveSize;
     SIZE_T SegmentCommitSize;
-    ULONG_PTR SegmentCount;
+    SIZE_T SegmentCount;
     SIZE_T AllocatedSize;
     SIZE_T LargeAllocReserveSize;
     SIZE_T LargeAllocCommitSize;
@@ -7725,11 +8126,13 @@ typedef struct _HEAP_EXTENDED_INFORMATION
 } HEAP_EXTENDED_INFORMATION, * PHEAP_EXTENDED_INFORMATION;
 
 // rev
-typedef NTSTATUS(NTAPI* RTL_HEAP_STACK_WRITE_ROUTINE)(
+typedef _Function_class_(RTL_HEAP_STACK_WRITE_ROUTINE)
+NTSTATUS NTAPI RTL_HEAP_STACK_WRITE_ROUTINE(
     _In_ PVOID Information, // TODO: 3 missing structures (dmex)
     _In_ ULONG Size,
     _In_opt_ PVOID Context
-    );
+);
+typedef RTL_HEAP_STACK_WRITE_ROUTINE* PRTL_HEAP_STACK_WRITE_ROUTINE;
 
 // rev
 typedef struct _RTLP_HEAP_STACK_TRACE_SERIALIZATION_INIT
@@ -7769,7 +8172,7 @@ typedef struct _RTL_HEAP_STACK_QUERY
 {
     ULONG Version;
     HANDLE ProcessHandle;
-    RTL_HEAP_STACK_WRITE_ROUTINE WriteRoutine;
+    PRTL_HEAP_STACK_WRITE_ROUTINE WriteRoutine;
     PVOID SerializationContext;
     UCHAR QueryLevel;
     UCHAR Flags;
@@ -8973,7 +9376,7 @@ RtlGetSystemTimePrecise(
 );
 
 NTSYSAPI
-BOOLEAN
+LARGE_INTEGER
 NTAPI
 RtlQueryUnbiasedInterruptTime(
     _Out_ PLARGE_INTEGER InterruptTime
@@ -8999,6 +9402,16 @@ RtlGetInterruptTimePrecise(
     _Out_ PLARGE_INTEGER PerformanceCounter
 );
 #endif
+
+#if (NTDDI_VERSION >= NTDDI_WIN11_GE)
+// rev
+NTSYSAPI
+LARGE_INTEGER
+NTAPI
+RtlQueryUnbiasedInterruptTimePrecise(
+    _Out_ PLARGE_INTEGER InterruptTime
+);
+#endif // (NTDDI_VERSION >= NTDDI_WIN11_GE)
 
 NTSYSAPI
 ULONG
@@ -9971,10 +10384,10 @@ RtlDeriveCapabilitySidsFromName(
  * The RtlCreateSecurityDescriptor routine initializes a new absolute-format security descriptor.
  * On return, the security descriptor is initialized with no system ACL, no discretionary ACL, no owner, no primary group, and all control flags set to zero.
  *
- * @param SecurityDescriptor Pointer to the buffer for the \ref SECURITY_DESCRIPTOR to be initialized.
- * @param Revision Specifies the revision level to assign to the security descriptor. Set this parameter to SECURITY_DESCRIPTOR_REVISION.
- * @return NTSTATUS Successful or errant status.
- * @see https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/wdm/nf-wdm-rtlcreatesecuritydescriptor
+ * \param SecurityDescriptor Pointer to the buffer for the \ref SECURITY_DESCRIPTOR to be initialized.
+ * \param Revision Specifies the revision level to assign to the security descriptor. Set this parameter to SECURITY_DESCRIPTOR_REVISION.
+ * \return NTSTATUS Successful or errant status.
+ * \sa https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/wdm/nf-wdm-rtlcreatesecuritydescriptor
  */
 _IRQL_requires_max_(APC_LEVEL)
 NTSYSAPI
@@ -9988,10 +10401,10 @@ RtlCreateSecurityDescriptor(
 /**
  * The RtlValidSecurityDescriptor routine checks a given security descriptor's validity.
  *
- * @param SecurityDescriptor Pointer to the \ref SECURITY_DESCRIPTOR to be checked.
- * @return Returns TRUE if the security descriptor is valid, or FALSE otherwise.
- * @remarks The routine checks the validity of an absolute-format security descriptor. To check the validity of a self-relative security descriptor, use the \ref RtlValidRelativeSecurityDescriptor routine instead.
- * @see https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/wdm/nf-wdm-rtlvalidsecuritydescriptor
+ * \param SecurityDescriptor Pointer to the \ref SECURITY_DESCRIPTOR to be checked.
+ * \return Returns TRUE if the security descriptor is valid, or FALSE otherwise.
+ * \remarks The routine checks the validity of an absolute-format security descriptor. To check the validity of a self-relative security descriptor, use the \ref RtlValidRelativeSecurityDescriptor routine instead.
+ * \sa https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/wdm/nf-wdm-rtlvalidsecuritydescriptor
  */
 _IRQL_requires_max_(APC_LEVEL)
 _Must_inspect_result_
@@ -10005,9 +10418,9 @@ RtlValidSecurityDescriptor(
 /**
  * The RtlLengthSecurityDescriptor routine returns the size of a given security descriptor.
  *
- * @param SecurityDescriptor A pointer to a \ref SECURITY_DESCRIPTOR structure whose length the function retrieves.
- * @return Returns the length, in bytes, of the SECURITY_DESCRIPTOR structure.
- * @see https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/wdm/nf-wdm-rtllengthsecuritydescriptor
+ * \param SecurityDescriptor A pointer to a \ref SECURITY_DESCRIPTOR structure whose length the function retrieves.
+ * \return Returns the length, in bytes, of the SECURITY_DESCRIPTOR structure.
+ * \sa https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/wdm/nf-wdm-rtllengthsecuritydescriptor
  */
 _IRQL_requires_max_(APC_LEVEL)
 NTSYSAPI
@@ -10020,12 +10433,12 @@ RtlLengthSecurityDescriptor(
 /**
  * The RtlValidRelativeSecurityDescriptor routine checks the validity of a self-relative security descriptor.
  *
- * @param SecurityDescriptorInput A pointer to the buffer that contains the security descriptor in self-relative format.
+ * \param SecurityDescriptorInput A pointer to the buffer that contains the security descriptor in self-relative format.
  * The buffer must begin with a SECURITY_DESCRIPTOR structure, which is followed by the rest of the security descriptor data.
- * @param SecurityDescriptorLength The size of the SecurityDescriptorInput structure.
- * @param RequiredInformation A SECURITY_INFORMATION value that specifies the information that is required to be contained in the security descriptor.
- * @return RtlValidRelativeSecurityDescriptor returns TRUE if the security descriptor is valid and includes the information that the RequiredInformation parameter specifies. Otherwise, this routine returns FALSE.
- * @see https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/wdm/nf-wdm-rtlvalidrelativesecuritydescriptor
+ * \param SecurityDescriptorLength The size of the SecurityDescriptorInput structure.
+ * \param RequiredInformation A SECURITY_INFORMATION value that specifies the information that is required to be contained in the security descriptor.
+ * \return RtlValidRelativeSecurityDescriptor returns TRUE if the security descriptor is valid and includes the information that the RequiredInformation parameter specifies. Otherwise, this routine returns FALSE.
+ * \sa https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/wdm/nf-wdm-rtlvalidrelativesecuritydescriptor
  */
 _IRQL_requires_max_(APC_LEVEL)
 _Must_inspect_result_
@@ -10137,15 +10550,15 @@ RtlGetSaclSecurityDescriptor(
 /**
  * The RtlSetOwnerSecurityDescriptor routine sets the owner information of an absolute-format security descriptor. It replaces any owner information that is already present in the security descriptor.
  *
- * @param SecurityDescriptor Pointer to the SECURITY_DESCRIPTOR structure whose owner is to be set. RtlSetOwnerSecurityDescriptor replaces any existing owner with the new owner.
- * @param Owner Pointer to a security identifier (SID) structure for the security descriptor's new primary owner.
- * @li \c This pointer, not the SID structure itself, is copied into the security descriptor.
- * @li \c If this parameter is NULL, RtlSetOwnerSecurityDescriptor clears the security descriptor's owner information. This marks the security descriptor as having no owner.
- * @param OwnerDefaulted Set to TRUE if the owner information is derived from a default mechanism.
- * @li \c If this value is TRUE, it is default information. RtlSetOwnerSecurityDescriptor sets the SE_OWNER_DEFAULTED flag in the security descriptor's SECURITY_DESCRIPTOR_CONTROL field.
- * @li \c If this parameter is FALSE, the SE_OWNER_DEFAULTED flag is cleared.
- * @return NTSTATUS Successful or errant status.
- * @see https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntifs/nf-ntifs-rtlsetownersecuritydescriptor
+ * \param SecurityDescriptor Pointer to the SECURITY_DESCRIPTOR structure whose owner is to be set. RtlSetOwnerSecurityDescriptor replaces any existing owner with the new owner.
+ * \param Owner Pointer to a security identifier (SID) structure for the security descriptor's new primary owner.
+ * \li \c This pointer, not the SID structure itself, is copied into the security descriptor.
+ * \li \c If this parameter is NULL, RtlSetOwnerSecurityDescriptor clears the security descriptor's owner information. This marks the security descriptor as having no owner.
+ * \param OwnerDefaulted Set to TRUE if the owner information is derived from a default mechanism.
+ * \li \c If this value is TRUE, it is default information. RtlSetOwnerSecurityDescriptor sets the SE_OWNER_DEFAULTED flag in the security descriptor's SECURITY_DESCRIPTOR_CONTROL field.
+ * \li \c If this parameter is FALSE, the SE_OWNER_DEFAULTED flag is cleared.
+ * \return NTSTATUS Successful or errant status.
+ * \sa https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntifs/nf-ntifs-rtlsetownersecuritydescriptor
  */
 _IRQL_requires_max_(APC_LEVEL)
 NTSYSAPI
@@ -10160,11 +10573,11 @@ RtlSetOwnerSecurityDescriptor(
 /**
  * The RtlGetOwnerSecurityDescriptor routine returns the owner information for a given security descriptor.
  *
- * @param SecurityDescriptor Pointer to the SECURITY_DESCRIPTOR structure.
- * @param Owner Pointer to an address to receive a pointer to the owner security identifier (SID). If the security descriptor does not currently contain an owner SID, Owner receives NULL.
- * @param OwnerDefaulted Pointer to a Boolean variable that receives TRUE if the owner information is derived from a default mechanism, FALSE otherwise. Valid only if Owner receives a non-NULL value.
- * @return NTSTATUS Successful or errant status.
- * @see https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntifs/nf-ntifs-rtlgetownersecuritydescriptor
+ * \param SecurityDescriptor Pointer to the SECURITY_DESCRIPTOR structure.
+ * \param Owner Pointer to an address to receive a pointer to the owner security identifier (SID). If the security descriptor does not currently contain an owner SID, Owner receives NULL.
+ * \param OwnerDefaulted Pointer to a Boolean variable that receives TRUE if the owner information is derived from a default mechanism, FALSE otherwise. Valid only if Owner receives a non-NULL value.
+ * \return NTSTATUS Successful or errant status.
+ * \sa https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntifs/nf-ntifs-rtlgetownersecuritydescriptor
  */
 _IRQL_requires_max_(APC_LEVEL)
 NTSYSAPI
@@ -10181,15 +10594,15 @@ RtlGetOwnerSecurityDescriptor(
 /**
  * The RtlSetGroupSecurityDescriptor routine sets the primary group information of an absolute-format security descriptor. It replaces any primary group information that is already present in the security descriptor.
  *
- * @param SecurityDescriptor Pointer to the SECURITY_DESCRIPTOR structure whose primary group is to be set. RtlSetGroupSecurityDescriptor replaces any existing primary group with the new primary group.
- * @param Group Pointer to a security identifier (SID) structure for the security descriptor's new primary owner.
- * @li \c This pointer, not the SID structure itself, is copied into the security descriptor.
- * @li \c If Group is NULL, RtlSetGroupSecurityDescriptor clears the security descriptor's primary group information. This marks the security descriptor as having no primary group.
- * @param GroupDefaulted Set this Boolean variable to TRUE if the primary group information is derived from a default mechanism.
- * @li \c If this parameter is TRUE, RtlSetGroupSecurityDescriptor sets the SE_GROUP_DEFAULTED flag in the security descriptor's SECURITY_DESCRIPTOR_CONTROL field.
- * @li \c If this parameter is FALSE, RtlSetGroupSecurityDescriptor clears the SE_GROUP_DEFAULTED flag.
- * @return NTSTATUS Successful or errant status.
- * @see https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntifs/nf-ntifs-rtlsetgroupsecuritydescriptor
+ * \param SecurityDescriptor Pointer to the SECURITY_DESCRIPTOR structure whose primary group is to be set. RtlSetGroupSecurityDescriptor replaces any existing primary group with the new primary group.
+ * \param Group Pointer to a security identifier (SID) structure for the security descriptor's new primary owner.
+ * \li \c This pointer, not the SID structure itself, is copied into the security descriptor.
+ * \li \c If Group is NULL, RtlSetGroupSecurityDescriptor clears the security descriptor's primary group information. This marks the security descriptor as having no primary group.
+ * \param GroupDefaulted Set this Boolean variable to TRUE if the primary group information is derived from a default mechanism.
+ * \li \c If this parameter is TRUE, RtlSetGroupSecurityDescriptor sets the SE_GROUP_DEFAULTED flag in the security descriptor's SECURITY_DESCRIPTOR_CONTROL field.
+ * \li \c If this parameter is FALSE, RtlSetGroupSecurityDescriptor clears the SE_GROUP_DEFAULTED flag.
+ * \return NTSTATUS Successful or errant status.
+ * \sa https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntifs/nf-ntifs-rtlsetgroupsecuritydescriptor
  */
 _IRQL_requires_max_(APC_LEVEL)
 NTSYSAPI
@@ -10285,9 +10698,9 @@ RtlNormalizeSecurityDescriptor(
  * This function determines whether all the accesses specified in the DesiredAccess
  * mask are granted by the GrantedAccess mask.
  *
- * @param GrantedAccess The access mask that specifies the granted accesses.
- * @param DesiredAccess The access mask that specifies the desired accesses.
- * @return Returns TRUE if all desired accesses are granted, otherwise FALSE.
+ * \param GrantedAccess The access mask that specifies the granted accesses.
+ * \param DesiredAccess The access mask that specifies the desired accesses.
+ * \return Returns TRUE if all desired accesses are granted, otherwise FALSE.
  */
 NTSYSAPI
 BOOLEAN
@@ -10306,9 +10719,9 @@ RtlAreAllAccessesGranted(
  * This function determines if any of the access rights specified in the DesiredAccess
  * mask are present in the GrantedAccess mask.
  *
- * @param GrantedAccess The access mask that specifies the granted access rights.
- * @param DesiredAccess The access mask that specifies the desired access rights.
- * @return Returns TRUE if any of the desired access rights are granted, otherwise FALSE.
+ * \param GrantedAccess The access mask that specifies the granted access rights.
+ * \param DesiredAccess The access mask that specifies the desired access rights.
+ * \return Returns TRUE if any of the desired access rights are granted, otherwise FALSE.
  */
 NTSYSAPI
 BOOLEAN
@@ -10998,6 +11411,85 @@ RtlAddIntegrityLabelToBoundaryDescriptor(
 // Version
 //
 
+// rev
+typedef struct _RTL_OSVERSIONINFO
+{
+    ULONG OSVersionInfoSize;
+    ULONG MajorVersion;
+    ULONG MinorVersion;
+    ULONG BuildNumber;
+    ULONG PlatformId;
+    WCHAR CSDVersion[128];
+} RTL_OSVERSIONINFO, * PRTL_OSVERSIONINFO;
+
+// rev
+typedef struct _RTL_OSVERSIONINFOEX
+{
+    ULONG OSVersionInfoSize;
+    ULONG MajorVersion;
+    ULONG MinorVersion;
+    ULONG BuildNumber;
+    ULONG PlatformId;
+    WCHAR CSDVersion[128];
+    USHORT ServicePackMajor;
+    USHORT ServicePackMinor;
+    USHORT SuiteMask;
+    UCHAR ProductType;
+    UCHAR Reserved;
+} RTL_OSVERSIONINFOEX, * PRTL_OSVERSIONINFOEX;
+
+// rev
+typedef struct _RTL_OSVERSIONINFOEX2
+{
+    ULONG OSVersionInfoSize;
+    ULONG MajorVersion;
+    ULONG MinorVersion;
+    ULONG BuildNumber;
+    ULONG PlatformId;
+    WCHAR CSDVersion[128];
+    USHORT ServicePackMajor;
+    USHORT ServicePackMinor;
+    USHORT SuiteMask;
+    UCHAR ProductType;
+    UCHAR Reserved;
+    ULONG SuiteMaskEx;
+    ULONG Reserved2;
+} RTL_OSVERSIONINFOEX2, * PRTL_OSVERSIONINFOEX2;
+
+// rev
+typedef struct _RTL_OSVERSIONINFOEX3
+{
+    ULONG OSVersionInfoSize;
+    ULONG MajorVersion;
+    ULONG MinorVersion;
+    ULONG BuildNumber;
+    union
+    {
+        ULONG PlatformId;
+        ULONG QfeNumber;
+    };
+    union
+    {
+        WCHAR CSDVersion[128];
+        WCHAR LayerAttrib[128];
+    };
+    USHORT ServicePackMajor;
+    USHORT ServicePackMinor;
+    USHORT SuiteMask;
+    UCHAR ProductType;
+    UCHAR Reserved;
+    ULONG SuiteMaskEx;
+    ULONG Reserved2;
+    union
+    {
+        USHORT RawInput16;
+        USHORT LayerNumber : 12;
+        USHORT AttribSelector : 4;
+    } Input;
+    USHORT LayerCount;
+    ULONG LayerFlags;
+} RTL_OSVERSIONINFOEX3, * PRTL_OSVERSIONINFOEX3;
+
 _IRQL_requires_max_(PASSIVE_LEVEL)
 NTSYSAPI
 NTSTATUS
@@ -11086,6 +11578,16 @@ RtlDeregisterWait(
 
 #define RTL_WAITER_DEREGISTER_WAIT_FOR_COMPLETION ((HANDLE)(LONG_PTR)-1)
 
+/**
+ * Releases all resources used by a wait object.
+ *
+ * \param WaitHandle The access mask that specifies the granted access rights.
+ * \param CompletionEvent Optional completion event for wait callback completion.
+ * \remarks RTL_WAITER_DEREGISTER_WAIT_FOR_COMPLETION: blocking wait for wait callback completion.
+ * NULL: non-blocking wait for wait callback completion.
+ * EventHandle: caller wait for wait callback completion.
+ * \return NTSTATUS Successful or errant status.
+ */
 NTSYSAPI
 NTSTATUS
 NTAPI
@@ -11458,12 +11960,12 @@ RtlDeleteRegistryValue(
 /**
  * Enables thread profiling on the specified thread.
  *
- * @param ThreadHandle The handle to the thread on which you want to enable profiling. This must be the current thread.
- * @param Flags To receive thread profiling data such as context switch count, set this parameter to THREAD_PROFILING_FLAG_DISPATCH; otherwise, set to 0.
- * @param HardwareCounters To receive hardware performance counter data, set this parameter to a bitmask that identifies the hardware counters to collect.
- * @param PerformanceDataHandle An opaque handle that you use when calling the RtlReadThreadProfilingData and RtlDisableThreadProfiling functions.
- * @return NTSTATUS Successful or errant status.
- * @sa https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-enablethreadprofiling
+ * \param ThreadHandle The handle to the thread on which you want to enable profiling. This must be the current thread.
+ * \param Flags To receive thread profiling data such as context switch count, set this parameter to THREAD_PROFILING_FLAG_DISPATCH; otherwise, set to 0.
+ * \param HardwareCounters To receive hardware performance counter data, set this parameter to a bitmask that identifies the hardware counters to collect.
+ * \param PerformanceDataHandle An opaque handle that you use when calling the RtlReadThreadProfilingData and RtlDisableThreadProfiling functions.
+ * \return NTSTATUS Successful or errant status.
+ * \sa https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-enablethreadprofiling
  */
 NTSYSAPI
 NTSTATUS
@@ -11479,9 +11981,9 @@ RtlEnableThreadProfiling(
 /**
  * Disables thread profiling.
  *
- * @param PerformanceDataHandle The handle that the RtlEnableThreadProfiling function returned.
- * @return NTSTATUS Successful or errant status.
- * @sa https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-querythreadprofiling
+ * \param PerformanceDataHandle The handle that the RtlEnableThreadProfiling function returned.
+ * \return NTSTATUS Successful or errant status.
+ * \sa https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-querythreadprofiling
  */
 NTSYSAPI
 NTSTATUS
@@ -11494,10 +11996,10 @@ RtlDisableThreadProfiling(
 /**
  * Determines whether thread profiling is enabled for the specified thread.
  *
- * @param ThreadHandle The handle to the thread on which you want to enable profiling. This must be the current thread.
- * @param Enabled Is TRUE if thread profiling is enabled for the specified thread; otherwise, FALSE.
- * @return NTSTATUS Successful or errant status.
- * @sa https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-querythreadprofiling
+ * \param ThreadHandle The handle to the thread on which you want to enable profiling. This must be the current thread.
+ * \param Enabled Is TRUE if thread profiling is enabled for the specified thread; otherwise, FALSE.
+ * \return NTSTATUS Successful or errant status.
+ * \sa https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-querythreadprofiling
  */
 NTSYSAPI
 NTSTATUS
@@ -11511,11 +12013,11 @@ RtlQueryThreadProfiling(
 /**
  * Reads the specified profiling data associated with the thread.
  *
- * @param PerformanceDataHandle The handle that the RtlEnableThreadProfiling function returned.
- * @param Flags One or more flags set when you called the RtlEnableThreadProfiling function that specify the counter data to read.
- * @param PerformanceData A PERFORMANCE_DATA structure that contains the thread profiling and hardware counter data.
- * @return NTSTATUS Successful or errant status.
- * @sa https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-readthreadprofilingdata
+ * \param PerformanceDataHandle The handle that the RtlEnableThreadProfiling function returned.
+ * \param Flags One or more flags set when you called the RtlEnableThreadProfiling function that specify the counter data to read.
+ * \param PerformanceData A PERFORMANCE_DATA structure that contains the thread profiling and hardware counter data.
+ * \return NTSTATUS Successful or errant status.
+ * \sa https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-readthreadprofilingdata
  */
 NTSYSAPI
 NTSTATUS
@@ -11558,9 +12060,9 @@ RtlQueueApcWow64Thread(
 /**
  * Enables or disables file system redirection for the calling thread.
  *
- * @param Wow64FsEnableRedirection If TRUE, requests redirection be enabled; if FALSE, requests redirection be disabled.
- * @return NTSTATUS Successful or errant status.
- * @sa https://learn.microsoft.com/en-us/windows/win32/api/wow64apiset/nf-wow64apiset-wow64enablewow64fsredirection
+ * \param Wow64FsEnableRedirection If TRUE, requests redirection be enabled; if FALSE, requests redirection be disabled.
+ * \return NTSTATUS Successful or errant status.
+ * \sa https://learn.microsoft.com/en-us/windows/win32/api/wow64apiset/nf-wow64apiset-wow64enablewow64fsredirection
  */
 NTSYSAPI
 NTSTATUS
@@ -11572,10 +12074,10 @@ RtlWow64EnableFsRedirection(
 /**
  * Enables or disables file system redirection for the calling thread.
  *
- * @param Wow64FsEnableRedirection If TRUE, requests redirection be enabled; if FALSE, requests redirection be disabled.
- * @param OldFsRedirectionLevel The WOW64 file system redirection value. The system uses this parameter to store information necessary to revert (re-enable) file system redirection.
- * @return NTSTATUS Successful or errant status.
- * @sa https://learn.microsoft.com/en-us/windows/win32/api/wow64apiset/nf-wow64apiset-wow64disablewow64fsredirection
+ * \param Wow64FsEnableRedirection If TRUE, requests redirection be enabled; if FALSE, requests redirection be disabled.
+ * \param OldFsRedirectionLevel The WOW64 file system redirection value. The system uses this parameter to store information necessary to revert (re-enable) file system redirection.
+ * \return NTSTATUS Successful or errant status.
+ * \sa https://learn.microsoft.com/en-us/windows/win32/api/wow64apiset/nf-wow64apiset-wow64disablewow64fsredirection
  */
 NTSYSAPI
 NTSTATUS
@@ -11603,10 +12105,11 @@ RtlComputeCrc32(
 /**
  * Encodes the specified pointer. Encoded pointers can be used to provide another layer of protection for pointer values.
  *
- * @param Ptr The system pointer to be encoded.
- * @return The function returns the encoded pointer.
- * @sa https://learn.microsoft.com/en-us/previous-versions/bb432254(v=vs.85)
+ * \param Ptr The system pointer to be encoded.
+ * \return The function returns the encoded pointer.
+ * \sa https://learn.microsoft.com/en-us/previous-versions/bb432254(v=vs.85)
  */
+_Ret_maybenull_
 NTSYSAPI
 PVOID
 NTAPI
@@ -11617,10 +12120,11 @@ RtlEncodePointer(
 /**
  * Decodes a pointer that was previously encoded with RtlEncodePointer.
  *
- * @param Ptr The system pointer to be decoded.
- * @return The function returns the decoded pointer.
- * @sa https://learn.microsoft.com/en-us/previous-versions/bb432242(v=vs.85)
+ * \param Ptr The system pointer to be decoded.
+ * \return The function returns the decoded pointer.
+ * \sa https://learn.microsoft.com/en-us/previous-versions/bb432242(v=vs.85)
  */
+_Ret_maybenull_
 NTSYSAPI
 PVOID
 NTAPI
@@ -11633,9 +12137,9 @@ RtlDecodePointer(
 /**
  * Encodes the specified pointer with a system-specific value. Encoded pointers can be used to provide another layer of protection for pointer values.
  *
- * @param Ptr The system pointer to be encoded.
- * @return The function returns the encoded pointer.
- * @sa https://learn.microsoft.com/en-us/previous-versions/bb432255(v=vs.85)
+ * \param Ptr The system pointer to be encoded.
+ * \return The function returns the encoded pointer.
+ * \sa https://learn.microsoft.com/en-us/previous-versions/bb432255(v=vs.85)
  */
 NTSYSAPI
 PVOID
@@ -11647,9 +12151,9 @@ RtlEncodeSystemPointer(
 /**
  * Decodes a pointer that was previously encoded with RtlEncodeSystemPointer.
  *
- * @param Ptr The pointer to be decoded.
- * @return The function returns the decoded pointer.
- * @sa https://learn.microsoft.com/en-us/previous-versions/bb432243(v=vs.85)
+ * \param Ptr The pointer to be decoded.
+ * \return The function returns the decoded pointer.
+ * \sa https://learn.microsoft.com/en-us/previous-versions/bb432243(v=vs.85)
  */
 NTSYSAPI
 PVOID
@@ -11663,11 +12167,11 @@ RtlDecodeSystemPointer(
 /**
  * Encodes the specified pointer of the specified process. Encoded pointers can be used to provide another layer of protection for pointer values.
  *
- * @param ProcessHandle Handle to the remote process that owns the pointer.
- * @param Pointer The pointer to be encoded.
- * @param EncodedPointer The encoded pointer.
- * @return NTSTATUS Successful or errant status.
- * @sa https://learn.microsoft.com/en-us/previous-versions/dn877135(v=vs.85)
+ * \param ProcessHandle Handle to the remote process that owns the pointer.
+ * \param Pointer The pointer to be encoded.
+ * \param EncodedPointer The encoded pointer.
+ * \return NTSTATUS Successful or errant status.
+ * \sa https://learn.microsoft.com/en-us/previous-versions/dn877135(v=vs.85)
  */
 NTSYSAPI
 NTSTATUS
@@ -11682,11 +12186,11 @@ RtlEncodeRemotePointer(
 /**
  * Decodes a pointer in a specified process that was previously encoded with RtlEncodePointer or RtlEncodeRemotePointer.
  *
- * @param ProcessHandle Handle to the remote process that owns the pointer.
- * @param Pointer The pointer to be decoded.
- * @param EncodedPointer The decoded pointer.
- * @return NTSTATUS Successful or errant status.
- * @sa https://learn.microsoft.com/en-us/previous-versions/dn877133(v=vs.85)
+ * \param ProcessHandle Handle to the remote process that owns the pointer.
+ * \param Pointer The pointer to be decoded.
+ * \param EncodedPointer The decoded pointer.
+ * \return NTSTATUS Successful or errant status.
+ * \sa https://learn.microsoft.com/en-us/previous-versions/dn877133(v=vs.85)
  */
 NTSYSAPI
 NTSTATUS
@@ -11705,9 +12209,9 @@ RtlDecodeRemotePointer(
 /**
  * Determines whether the specified processor feature is supported by the current computer.
  *
- * @param ProcessorFeature The processor feature to be tested.
- * @return If the feature is supported, the return value is a nonzero value.
- * @sa https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-isprocessorfeaturepresent
+ * \param ProcessorFeature The processor feature to be tested.
+ * \return If the feature is supported, the return value is a nonzero value.
+ * \sa https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-isprocessorfeaturepresent
  */
 NTSYSAPI
 BOOLEAN
@@ -11721,8 +12225,8 @@ RtlIsProcessorFeaturePresent(
 /**
  * Retrieves the number of the processor the current thread was running on during the call to this function.
  *
- * @return The function returns the current processor number.
- * @sa https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-getcurrentprocessornumber
+ * \return The function returns the current processor number.
+ * \sa https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-getcurrentprocessornumber
  */
 NTSYSAPI
 ULONG
@@ -11736,9 +12240,9 @@ RtlGetCurrentProcessorNumber(
 /**
  * Retrieves the processor group and number of the logical processor in which the calling thread is running.
  *
- * @param ProcessorNumber A pointer to a PROCESSOR_NUMBER structure that receives the processor group and number of the logical processor the calling thread is running.
- * @return This function does not return a value.
- * @sa https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-getcurrentprocessornumberex
+ * \param ProcessorNumber A pointer to a PROCESSOR_NUMBER structure that receives the processor group and number of the logical processor the calling thread is running.
+ * \return This function does not return a value.
+ * \sa https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-getcurrentprocessornumberex
  */
 NTSYSAPI
 VOID
@@ -11778,7 +12282,9 @@ RtlGetFrame(
 #endif // !_KERNEL_MODE
 
 #define RTL_WALK_USER_MODE_STACK    0x00000001
-#define RTL_WALK_VALID_FLAGS        0x00000001
+#define RTL_WALK_KERNEL_STACK       0x00000002
+#define RTL_WALK_USER_KERNEL_STACK  0x00000003
+#define RTL_WALK_VALID_FLAGS        0x00000006
 
 #ifndef _KERNEL_MODE
 #define RTL_STACK_WALKING_MODE_FRAMES_TO_SKIP_SHIFT 0x00000008
@@ -11803,10 +12309,11 @@ RtlWalkFrameChain(
 
 #else
 
+DECLSPEC_DEPRECATED
 NTSYSAPI
 VOID
 NTAPI
-RtlGetCallersAddress(
+RtlGetCallersAddress( // Use the intrinsic _ReturnAddress instead.
     _Out_ PVOID* CallersAddress,
     _Out_ PVOID* CallersCaller
 );
@@ -11817,9 +12324,9 @@ RtlGetCallersAddress(
 /**
  * The RtlGetEnabledExtendedFeatures routine returns a mask of extended processor features that are enabled by the system.
  *
- * @param FeatureMask A 64-bit feature mask. This parameter indicates a set of extended processor features for which the caller requests information about whether the features are enabled.
- * @return A 64-bitmask of enabled extended processor features. The routine calculates this mask as the intersection (bitwise AND) between all enabled features and the value of the FeatureMask parameter.
- * @sa https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntddk/nf-ntddk-rtlgetenabledextendedfeatures
+ * \param FeatureMask A 64-bit feature mask. This parameter indicates a set of extended processor features for which the caller requests information about whether the features are enabled.
+ * \return A 64-bitmask of enabled extended processor features. The routine calculates this mask as the intersection (bitwise AND) between all enabled features and the value of the FeatureMask parameter.
+ * \sa https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntddk/nf-ntddk-rtlgetenabledextendedfeatures
  */
 _IRQL_requires_max_(PASSIVE_LEVEL)
 NTSYSAPI
@@ -11934,28 +12441,39 @@ RtlUnlockModuleSection(
 #define RTL_UNLOAD_EVENT_TRACE_NUMBER 64
 
 // private
+/**
+ * The RTL_UNLOAD_EVENT_TRACE structure contains the unloaded module event information.
+ *
+ * @sa https://learn.microsoft.com/en-us/windows/win32/devnotes/rtlgetunloadeventtrace
+ */
 typedef struct _RTL_UNLOAD_EVENT_TRACE
 {
-    PVOID BaseAddress;
-    SIZE_T SizeOfImage;
-    ULONG Sequence;
-    ULONG TimeDateStamp;
-    ULONG CheckSum;
-    WCHAR ImageName[32];
+    PVOID BaseAddress;   // Base address of dll
+    SIZE_T SizeOfImage;  // Size of image
+    ULONG Sequence;      // Sequence number for this event
+    ULONG TimeDateStamp; // Time and date of image
+    ULONG CheckSum;      // Image checksum
+    WCHAR ImageName[32]; // Image name
     ULONG Version[2];
 } RTL_UNLOAD_EVENT_TRACE, * PRTL_UNLOAD_EVENT_TRACE;
 
 typedef struct _RTL_UNLOAD_EVENT_TRACE32
 {
-    ULONG BaseAddress;
-    ULONG SizeOfImage;
-    ULONG Sequence;
-    ULONG TimeDateStamp;
-    ULONG CheckSum;
-    WCHAR ImageName[32];
+    ULONG BaseAddress;   // Base address of dll
+    ULONG SizeOfImage;   // Size of image
+    ULONG Sequence;      // Sequence number for this event
+    ULONG TimeDateStamp; // Time and date of image
+    ULONG CheckSum;      // Image checksum
+    WCHAR ImageName[32]; // Image name
     ULONG Version[2];
 } RTL_UNLOAD_EVENT_TRACE32, * PRTL_UNLOAD_EVENT_TRACE32;
 
+/**
+ * Enables the dump code to get the unloaded module information from Ntdll.dll for storage in the minidump.
+ *
+ * @return A pointer to an array of unload events.
+ * @sa https://learn.microsoft.com/en-us/windows/win32/devnotes/rtlgetunloadeventtrace
+ */
 NTSYSAPI
 PRTL_UNLOAD_EVENT_TRACE
 NTAPI
@@ -11963,6 +12481,15 @@ RtlGetUnloadEventTrace(
     VOID
 );
 
+/**
+ * Retrieves the size and location of the dynamically unloaded module list for the current process.
+ *
+ * @param ElementSize A pointer to a variable that contains the size of an element in the list.
+ * @param ElementCount A pointer to a variable that contains the number of elements in the list.
+ * @param EventTrace A pointer to an array of RTL_UNLOAD_EVENT_TRACE structures.
+ * @return A pointer to an array of unload events.
+ * @sa https://learn.microsoft.com/en-us/windows/win32/devnotes/rtlgetunloadeventtraceex
+ */
 NTSYSAPI
 PRTL_UNLOAD_EVENT_TRACE
 NTAPI
@@ -11983,9 +12510,9 @@ RtlGetUnloadEventTraceEx(
 /**
  * Retrieves the current value of the performance counter, which is a high resolution (<1us) time stamp that can be used for time-interval measurements.
  *
- * @param PerformanceCounter A pointer to a variable that receives the current performance-counter value, in counts.
- * @return Returns TRUE if the function succeeds, otherwise FALSE. On systems that run Windows XP or later, the function will always succeed and will thus never return zero.
- * @sa https://learn.microsoft.com/en-us/windows/win32/api/profileapi/nf-profileapi-queryperformancecounter
+ * \param PerformanceCounter A pointer to a variable that receives the current performance-counter value, in counts.
+ * \return Returns TRUE if the function succeeds, otherwise FALSE. On systems that run Windows XP or later, the function will always succeed and will thus never return zero.
+ * \sa https://learn.microsoft.com/en-us/windows/win32/api/profileapi/nf-profileapi-queryperformancecounter
  */
 NTSYSAPI
 LOGICAL
@@ -11999,9 +12526,9 @@ RtlQueryPerformanceCounter(
  * Retrieves the frequency of the performance counter. The frequency of the performance counter is fixed at system boot and is consistent across all processors.
  * Therefore, the frequency need only be queried upon application initialization, and the result can be cached.
  *
- * @param PerformanceFrequency A pointer to a variable that receives the current performance-counter frequency, in counts per second.
- * @return Returns TRUE if the function succeeds, otherwise FALSE. On systems that run Windows XP or later, the function will always succeed and will thus never return zero.
- * @sa https://learn.microsoft.com/en-us/windows/win32/api/profileapi/nf-profileapi-queryperformancefrequency
+ * \param PerformanceFrequency A pointer to a variable that receives the current performance-counter frequency, in counts per second.
+ * \return Returns TRUE if the function succeeds, otherwise FALSE. On systems that run Windows XP or later, the function will always succeed and will thus never return zero.
+ * \sa https://learn.microsoft.com/en-us/windows/win32/api/profileapi/nf-profileapi-queryperformancefrequency
  */
 NTSYSAPI
 LOGICAL
@@ -12910,6 +13437,16 @@ typedef struct _PS_PKG_CLAIM
     ULONG Origin; // PackageOrigin from appmodel.h
 } PS_PKG_CLAIM, * PPS_PKG_CLAIM;
 
+// private // WIN://BGKD
+typedef enum _PSM_ACTIVATE_BACKGROUND_TYPE
+{
+    PsmActNotBackground = 0,
+    PsmActMixedHost = 1,
+    PsmActPureHost = 2,
+    PsmActSystemHost = 3,
+    PsmActInvalidType = 4,
+} PSM_ACTIVATE_BACKGROUND_TYPE;
+
 #if (NTDDI_VERSION >= NTDDI_WIN10)
 NTSYSAPI
 NTSTATUS
@@ -13713,6 +14250,8 @@ RtlCompareExchangePropertyStore(
     _Out_ PULONG_PTR Context
 );
 
+#ifndef _KERNEL_MODE
+
 typedef enum _THREAD_STATE_CHANGE_TYPE THREAD_STATE_CHANGE_TYPE, * PTHREAD_STATE_CHANGE_TYPE;
 
 // rev
@@ -13728,6 +14267,40 @@ RtlWow64ChangeThreadState(
     _In_opt_ ULONG64 Reserved
 );
 #endif // (NTDDI_VERSION >= NTDDI_WIN11)
+
+#if (NTDDI_VERSION >= NTDDI_WIN10_RS1)
+// rev
+NTSYSAPI
+USHORT
+NTAPI
+RtlGetCurrentThreadPrimaryGroup(
+    VOID
+);
+#endif // NTDDI_VERSION >= NTDDI_WIN10_RS1
+
+#if (NTDDI_VERSION >= NTDDI_WIN11_GE)
+// rev
+NTSYSAPI
+NTSTATUS
+NTAPI
+RtlQueryProcessAvailableCpus(
+    _In_ HANDLE ProcessHandle,
+    _In_ PKAFFINITY_EX Affinity,
+    _In_ ULONG64 ObservedSequenceNumber,
+    _Out_opt_ PULONG64 SequenceNumber
+);
+
+// rev
+NTSYSAPI
+NTSTATUS
+NTAPI
+RtlQueryProcessAvailableCpusCount(
+    _In_ HANDLE ProcessHandle,
+    _Out_ PULONG AvailableCpusCount,
+    _Out_opt_ PULONG64 SequenceNumber
+);
+#endif // NTDDI_VERSION >= NTDDI_WIN11_GE
+#endif //!_KERNEL_MODE
 
 //
 // Only Kernel RTL

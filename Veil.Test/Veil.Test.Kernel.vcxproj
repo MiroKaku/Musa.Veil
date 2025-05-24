@@ -21,10 +21,43 @@
     <Inf Include="Veil.inf" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\Veil\Veil.C.stdint.h" />
+    <ClInclude Include="..\Veil\Veil.System.ALPC.h" />
+    <ClInclude Include="..\Veil\Veil.System.ConfigurationManager.h" />
+    <ClInclude Include="..\Veil\Veil.System.Debug.h" />
+    <ClInclude Include="..\Veil\Veil.System.Define.h" />
+    <ClInclude Include="..\Veil\Veil.System.Device.Afd.h" />
+    <ClInclude Include="..\Veil\Veil.System.Device.h" />
+    <ClInclude Include="..\Veil\Veil.System.Device.Xusb.h" />
+    <ClInclude Include="..\Veil\Veil.System.Etw.h" />
+    <ClInclude Include="..\Veil\Veil.System.Executive.h" />
+    <ClInclude Include="..\Veil\Veil.System.IOManager.h" />
+    <ClInclude Include="..\Veil\Veil.System.KernelCore.h" />
+    <ClInclude Include="..\Veil\Veil.System.Loader.h" />
+    <ClInclude Include="..\Veil\Veil.System.MemoryManager.h" />
+    <ClInclude Include="..\Veil\Veil.System.MinCrypt.h" />
+    <ClInclude Include="..\Veil\Veil.System.Nls.h" />
+    <ClInclude Include="..\Veil\Veil.System.ObjectManager.h" />
+    <ClInclude Include="..\Veil\Veil.System.PNP.h" />
+    <ClInclude Include="..\Veil\Veil.System.PowerManager.h" />
+    <ClInclude Include="..\Veil\Veil.System.Prefetcher.h" />
+    <ClInclude Include="..\Veil\Veil.System.Process.h" />
+    <ClInclude Include="..\Veil\Veil.System.RuntimeLibrary.h" />
+    <ClInclude Include="..\Veil\Veil.System.Security.h" />
+    <ClInclude Include="..\Veil\Veil.System.SMBios.h" />
+    <ClInclude Include="..\Veil\Veil.System.SxS.h" />
+    <ClInclude Include="..\Veil\Veil.System.TransactionManager.h" />
+    <ClInclude Include="..\Veil\Veil.System.UserManagerService.h" />
+    <ClInclude Include="..\Veil\Veil.System.VDM.h" />
+    <ClInclude Include="..\Veil\Veil.System.VersionResource.h" />
+    <ClInclude Include="..\Veil\Veil.System.VirtualDesktop.h" />
+    <ClInclude Include="..\Veil\Veil.System.Win32.h" />
+    <ClInclude Include="..\Veil\Veil.System.WindowStation.h" />
+    <ClInclude Include="..\Veil\Veil.System.WinNT.h" />
     <ClInclude Include="Universal.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Universal.cpp" >
+    <ClCompile Include="Universal.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="Veil.Test.Main.cpp" />

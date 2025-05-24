@@ -372,9 +372,9 @@ typedef struct _MINCRYPT_POLICY_INFO
 *  Resets a PolicyInfo struct - frees the dynamically allocated buffer in PolicyInfo (ChainInfo) if not null.
 *  Zeros the entire PolicyInfo struct.
 *
-*  @param  PolicyInfo - the struct to reset.
+*  \param  PolicyInfo - the struct to reset.
 *
-*  @return the struct which was reset.
+*  \return the struct which was reset.
 */
 _IRQL_requires_max_(PASSIVE_LEVEL)
 MINCRYPTAPI
@@ -393,23 +393,23 @@ CiFreePolicyInfo(
 *
 *  @note   must be attached to the PsInitialSystemProcess first!
 *
-*  @param  Hash - buffer containing the digest
+*  \param  Hash - buffer containing the digest
 *
-*  @param  HashSize - size of the digest, e.g. 0x14(160bit) for SHA1, 0x20(256bit) for SHA256
+*  \param  HashSize - size of the digest, e.g. 0x14(160bit) for SHA1, 0x20(256bit) for SHA256
 *
-*  @param  HashAlgId - digest algorithm identifier, e.g. CALG_SHA1(0x8004), CALG_SHA_256(0x800C)
+*  \param  HashAlgId - digest algorithm identifier, e.g. CALG_SHA1(0x8004), CALG_SHA_256(0x800C)
 *
-*  @param  SecurityDirectory - pointer to the start of the security directory
+*  \param  SecurityDirectory - pointer to the start of the security directory
 *
-*  @param  SizeOfSecurityDirectory - size the security directory
+*  \param  SizeOfSecurityDirectory - size the security directory
 *
-*  @param  PolicyInfo[out] - PolicyInfo containing information about the signer certificate chain
+*  \param  PolicyInfo[out] - PolicyInfo containing information about the signer certificate chain
 *
-*  @param  SigningTime[out] - when the file was signed (FILETIME format)
+*  \param  SigningTime[out] - when the file was signed (FILETIME format)
 *
-*  @param  TimeStampPolicyInfo[out] - PolicyInfo containing information about the timestamping authority (TSA) certificate chain
+*  \param  TimeStampPolicyInfo[out] - PolicyInfo containing information about the timestamping authority (TSA) certificate chain
 *
-*  @return STATUS_SUCCESS if the file digest in the signature matches the given digest and the signer cetificate is verified.
+*  \return STATUS_SUCCESS if the file digest in the signature matches the given digest and the signer cetificate is verified.
 *           Various error values otherwise, for example:
 *           STATUS_INVALID_IMAGE_HASH - the digest does not match the digest in the signature
 *           STATUS_IMAGE_CERT_REVOKED - the certificate used for signing the file is revoked
@@ -438,27 +438,27 @@ CiCheckSignedFile(
 *
 *  @note   must be attached to the PsInitialSystemProcess first!
 *
-*  @param  Hash - buffer containing the digest
+*  \param  Hash - buffer containing the digest
 *
-*  @param  HashSize - size of the digest, e.g. 0x14(160bit) for SHA1, 0x20(256bit) for SHA256
+*  \param  HashSize - size of the digest, e.g. 0x14(160bit) for SHA1, 0x20(256bit) for SHA256
 *
-*  @param  HashAlgId - digest algorithm identifier, e.g. CALG_SHA1(0x8004), CALG_SHA_256(0x800C)
+*  \param  HashAlgId - digest algorithm identifier, e.g. CALG_SHA1(0x8004), CALG_SHA_256(0x800C)
 *
-*  @param  IsReloadCatalogs - is reload catalogs cache.
+*  \param  IsReloadCatalogs - is reload catalogs cache.
 *
-*  @param  SecureProcess - this is for Recheck, Always0 != 0 ? 16 : 24;
+*  \param  SecureProcess - this is for Recheck, Always0 != 0 ? 16 : 24;
 * 
-*  @param  AcceptRoots - unknown, always 0x2007F, maybe a mask.
+*  \param  AcceptRoots - unknown, always 0x2007F, maybe a mask.
 *
-*  @param  PolicyInfo[out] - PolicyInfo containing information about the signer certificate chain.
+*  \param  PolicyInfo[out] - PolicyInfo containing information about the signer certificate chain.
 *
-*  @param  CatalogName[out option] - catalog file name.
+*  \param  CatalogName[out option] - catalog file name.
 * 
-*  @param  SigningTime[out] - when the file was signed (FILETIME format)
+*  \param  SigningTime[out] - when the file was signed (FILETIME format)
 *
-*  @param  TimeStampPolicyInfo[out] - PolicyInfo containing information about the timestamping authority (TSA) certificate chain.
+*  \param  TimeStampPolicyInfo[out] - PolicyInfo containing information about the timestamping authority (TSA) certificate chain.
 *
-*  @return STATUS_SUCCESS if the file digest in the signature matches the given digest and the signer cetificate is verified.
+*  \return STATUS_SUCCESS if the file digest in the signature matches the given digest and the signer cetificate is verified.
 *           Various error values otherwise, for example:
 *           STATUS_INVALID_IMAGE_HASH - the digest does not match the digest in the signature
 *           STATUS_IMAGE_CERT_REVOKED - the certificate used for signing the file is revoked
@@ -499,13 +499,13 @@ typedef MINCRYPT_ALLOCATE_ROUTINE* PMINCRYPT_ALLOCATE_ROUTINE;
 /**
 *  Parse the publisher name from the certificate
 *
-*  @param  Certificate - &PolicyInfo.ChainInfo->ChainElements[x].Certificate
+*  \param  Certificate - &PolicyInfo.ChainInfo->ChainElements[x].Certificate
 *
-*  @param  AllocateRoutine - used to allocate PublisherName buffer.
+*  \param  AllocateRoutine - used to allocate PublisherName buffer.
 *
-*  @param  PublisherName[out] - publisher name.
+*  \param  PublisherName[out] - publisher name.
 *
-*  @return buffer length.
+*  \return buffer length.
 */
 _IRQL_requires_max_(PASSIVE_LEVEL)
 MINCRYPTAPI
@@ -531,25 +531,25 @@ CiSetTrustedOriginClaimId(
 *  Given a file object, verify the signature and provide information regarding
 *   the certificates that was used for signing (the entire certificate chain)
 *
-*  @param  FileObject - FileObject of the PE in question
+*  \param  FileObject - FileObject of the PE in question
 *
-*  @param  SecureRequired - unknown, 0 is a valid value. 
+*  \param  SecureRequired - unknown, 0 is a valid value. 
 *
-*  @param  RequestedSigningLevel - unknown, 0 is a valid value.
+*  \param  RequestedSigningLevel - unknown, 0 is a valid value.
 *
-*  @param  PolicyInfo[out] - PolicyInfo containing information about the signer certificate chain.
+*  \param  PolicyInfo[out] - PolicyInfo containing information about the signer certificate chain.
 *
-*  @param  TimeStampPolicyInfo[out] - PolicyInfo containing information about the timestamping authority (TSA) certificate chain.
+*  \param  TimeStampPolicyInfo[out] - PolicyInfo containing information about the timestamping authority (TSA) certificate chain.
 *
-*  @param  SigningTime[out] - when the file was signed (FILETIME format)
+*  \param  SigningTime[out] - when the file was signed (FILETIME format)
 *
-*  @param  Hash - buffer containing the digest
+*  \param  Hash - buffer containing the digest
 *
-*  @param  HashSize - size of the digest, e.g. 0x14(160bit) for SHA1, 0x20(256bit) for SHA256
+*  \param  HashSize - size of the digest, e.g. 0x14(160bit) for SHA1, 0x20(256bit) for SHA256
 *
-*  @param  HashAlgId - digest algorithm identifier, e.g. CALG_SHA1(0x8004), CALG_SHA_256(0x800C)
+*  \param  HashAlgId - digest algorithm identifier, e.g. CALG_SHA1(0x8004), CALG_SHA_256(0x800C)
 *
-*  @return STATUS_SUCCESS if the file digest in the signature matches the given digest and the signer cetificate is verified.
+*  \return STATUS_SUCCESS if the file digest in the signature matches the given digest and the signer cetificate is verified.
 *           Various error values otherwise, for example:
 *           STATUS_INVALID_IMAGE_HASH - the digest does not match the digest in the signature
 *           STATUS_IMAGE_CERT_REVOKED - the certificate used for signing the file is revoked

@@ -205,12 +205,14 @@ typedef struct _SYSDBG_CONTROL_SPACE
     ULONG Processor;
 } SYSDBG_CONTROL_SPACE, * PSYSDBG_CONTROL_SPACE;
 
+typedef enum _INTERFACE_TYPE INTERFACE_TYPE;
+
 typedef struct _SYSDBG_IO_SPACE
 {
     ULONG64 Address;
     PVOID Buffer;
     ULONG Request;
-    enum _INTERFACE_TYPE InterfaceType;
+    INTERFACE_TYPE InterfaceType;
     ULONG BusNumber;
     ULONG AddressSpace;
 } SYSDBG_IO_SPACE, * PSYSDBG_IO_SPACE;
@@ -221,12 +223,14 @@ typedef struct _SYSDBG_MSR
     ULONG64 Data;
 } SYSDBG_MSR, * PSYSDBG_MSR;
 
+typedef enum _BUS_DATA_TYPE BUS_DATA_TYPE;
+
 typedef struct _SYSDBG_BUS_DATA
 {
     ULONG Address;
     PVOID Buffer;
     ULONG Request;
-    enum _BUS_DATA_TYPE BusDataType;
+    BUS_DATA_TYPE BusDataType;
     ULONG BusNumber;
     ULONG SlotNumber;
 } SYSDBG_BUS_DATA, * PSYSDBG_BUS_DATA;

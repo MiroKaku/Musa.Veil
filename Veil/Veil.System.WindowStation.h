@@ -202,7 +202,7 @@ typedef struct _WINSTATIONCREATE
 typedef struct _WINSTACONFIGWIRE
 {
     WCHAR Comment[61]; // The WinStation descriptive comment.
-    CHAR OEMId[4]; // Value identifying the OEM implementor of the TermService Listener to which this session (WinStation) belongs. This can be any value defined by the implementer (OEM) of the listener.
+    CHAR OEMId[4]; // Value identifying the OEM implementer of the TermService Listener to which this session (WinStation) belongs. This can be any value defined by the implementer (OEM) of the listener.
     VARDATA_WIRE UserConfig; // VARDATA_WIRE structure defining the size and offset of the variable-length user configuration data succeeding it.
     VARDATA_WIRE NewFields; // VARDATA_WIRE structure defining the size and offset of the variable-length new data succeeding it. This field is not used and is a placeholder for any new data, if and when added.
 } WINSTACONFIGWIRE, * PWINSTACONFIGWIRE;
@@ -793,21 +793,21 @@ typedef struct _TS_SYS_PROCESS_INFORMATION
 
 typedef struct _TS_ALL_PROCESSES_INFO
 {
-    PTS_SYS_PROCESS_INFORMATION pTsProcessInfo;
+    PTS_SYS_PROCESS_INFORMATION TsProcessInfo;
     ULONG SizeOfSid;
-    PSID pSid;
+    PSID Sid;
 } TS_ALL_PROCESSES_INFO, * PTS_ALL_PROCESSES_INFO;
 
 typedef struct _TS_COUNTER_HEADER
 {
-    DWORD dwCounterID;
+    ULONG dwCounterID;
     BOOLEAN bResult;
 } TS_COUNTER_HEADER, * PTS_COUNTER_HEADER;
 
 typedef struct _TS_COUNTER
 {
     TS_COUNTER_HEADER CounterHead;
-    DWORD dwValue;
+    ULONG dwValue;
     LARGE_INTEGER StartTime;
 } TS_COUNTER, * PTS_COUNTER;
 

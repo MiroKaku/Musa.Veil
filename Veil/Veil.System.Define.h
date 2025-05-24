@@ -156,6 +156,25 @@ VEIL_BEGIN()
 STATIC_ASSERT(__alignof(LARGE_INTEGER) == 8,
     "Windows headers require the default packing option. Changing the packing can lead to memory corruption.");
 
+//
+// Swap
+//
+
+#ifndef SWAP
+#if __cplusplus || __STDC_VERSION__ > 201710L
+#define SWAP(_x, _y) do { auto _t = (_x); (_x) = (_y); (_y) = _t; } while(0)
+#else
+#define SWAP(_x, _y)  \
+    do { \
+        STATIC_ASSERT( sizeof((_x)) == sizeof((_y)), "SWAP() arguments must have same size"); \
+        union { char buf[ sizeof((_x)) ]; max_align_t align; } _t;  \
+        memcpy( _t.buf, &(_x), sizeof((_x)) );                      \
+        (_x) = (_y);                                                \
+        memcpy( &(_y), _t.buf, sizeof((_y)) );                      \
+    } while (0)
+#endif // __cplusplus
+#endif // SWAP
+
 
 typedef void* POINTER_32    PVOID32;
 typedef int                 INT_PTR32;

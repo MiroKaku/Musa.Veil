@@ -340,6 +340,9 @@ typedef struct _EXTENDED_CREATE_INFORMATION_32 {
 #define MAILSLOT_SIZE_AUTO 0
 
 #ifndef _KERNEL_MODE
+//
+// NtQueryInformationFile/NtSetInformationFile types
+//
 typedef enum _FILE_INFORMATION_CLASS
 {
     FileDirectoryInformation = 1, // q: FILE_DIRECTORY_INFORMATION (requires FILE_LIST_DIRECTORY) (NtQueryDirectoryFile[Ex])
@@ -397,8 +400,8 @@ typedef enum _FILE_INFORMATION_CLASS
     FileNumaNodeInformation, // q: FILE_NUMA_NODE_INFORMATION
     FileStandardLinkInformation, // q: FILE_STANDARD_LINK_INFORMATION
     FileRemoteProtocolInformation, // q: FILE_REMOTE_PROTOCOL_INFORMATION
-    FileRenameInformationBypassAccessCheck, // (kernel-mode only); s: FILE_RENAME_INFORMATION // since WIN8
-    FileLinkInformationBypassAccessCheck, // (kernel-mode only); s: FILE_LINK_INFORMATION
+    FileRenameInformationBypassAccessCheck, // s: FILE_RENAME_INFORMATION // (kernel-mode only) // since WIN8
+    FileLinkInformationBypassAccessCheck, // s: FILE_LINK_INFORMATION // (kernel-mode only)
     FileVolumeNameInformation, // q: FILE_VOLUME_NAME_INFORMATION
     FileIdInformation, // q: FILE_ID_INFORMATION
     FileIdExtdDirectoryInformation, // q: FILE_ID_EXTD_DIR_INFORMATION (requires FILE_LIST_DIRECTORY) (NtQueryDirectoryFile[Ex]) // 60
@@ -407,18 +410,18 @@ typedef enum _FILE_INFORMATION_CLASS
     FileIdExtdBothDirectoryInformation, // q: FILE_ID_EXTD_BOTH_DIR_INFORMATION (requires FILE_LIST_DIRECTORY) (NtQueryDirectoryFile[Ex]) // since THRESHOLD
     FileDispositionInformationEx, // s: FILE_DISPOSITION_INFO_EX (requires DELETE) // since REDSTONE
     FileRenameInformationEx, // s: FILE_RENAME_INFORMATION_EX
-    FileRenameInformationExBypassAccessCheck, // (kernel-mode only); s: FILE_RENAME_INFORMATION_EX
-    FileDesiredStorageClassInformation, // q; s: FILE_DESIRED_STORAGE_CLASS_INFORMATION (q: requires FILE_READ_ATTRIBUTES; s: requires FILE_WRITE_ATTRIBUTES) // since REDSTONE2
+    FileRenameInformationExBypassAccessCheck, // s: FILE_RENAME_INFORMATION_EX // (kernel-mode only)
+    FileDesiredStorageClassInformation, // qs: FILE_DESIRED_STORAGE_CLASS_INFORMATION (q: requires FILE_READ_ATTRIBUTES; s: requires FILE_WRITE_ATTRIBUTES) // since REDSTONE2
     FileStatInformation, // q: FILE_STAT_INFORMATION (requires FILE_READ_ATTRIBUTES)
     FileMemoryPartitionInformation, // s: FILE_MEMORY_PARTITION_INFORMATION // since REDSTONE3
     FileStatLxInformation, // q: FILE_STAT_LX_INFORMATION (requires FILE_READ_ATTRIBUTES and FILE_READ_EA) // since REDSTONE4 // 70
     FileCaseSensitiveInformation, // q; s: FILE_CASE_SENSITIVE_INFORMATION (q: requires FILE_READ_ATTRIBUTES; s: requires FILE_WRITE_ATTRIBUTES)
     FileLinkInformationEx, // s: FILE_LINK_INFORMATION_EX // since REDSTONE5
-    FileLinkInformationExBypassAccessCheck, // (kernel-mode only); s: FILE_LINK_INFORMATION_EX
+    FileLinkInformationExBypassAccessCheck, // s: FILE_LINK_INFORMATION_EX (kernel-mode only)
     FileStorageReserveIdInformation, // q; s: FILE_STORAGE_RESERVE_ID_INFORMATION (q: requires FILE_READ_ATTRIBUTES; s: requires FILE_WRITE_ATTRIBUTES)
     FileCaseSensitiveInformationForceAccessCheck, // q; s: FILE_CASE_SENSITIVE_INFORMATION 
     FileKnownFolderInformation, // q; s: FILE_KNOWN_FOLDER_INFORMATION (q: requires FILE_READ_ATTRIBUTES; s: requires FILE_WRITE_ATTRIBUTES) // since WIN11
-    FileStatBasicInformation, // since 23H2
+    FileStatBasicInformation, // qs: FILE_STAT_BASIC_INFORMATION // since 23H2
     FileId64ExtdDirectoryInformation, // FILE_ID_64_EXTD_DIR_INFORMATION
     FileId64ExtdBothDirectoryInformation, // FILE_ID_64_EXTD_BOTH_DIR_INFORMATION
     FileIdAllExtdDirectoryInformation, // FILE_ID_ALL_EXTD_DIR_INFORMATION
@@ -434,10 +437,11 @@ typedef enum _FILE_INFORMATION_CLASS
 
 /**
  * The FILE_BASIC_INFORMATION structure contains timestamps and basic attributes of a file.
- * @li If you specify a value of zero for any of the XxxTime members, the file system keeps a file's current value for that time.
- * @li If you specify a value of -1 for any of the XxxTime members, time stamp updates are disabled for I/O operations preformed on the file handle.
- * @li If you specify a value of -2 for any of the XxxTime members, time stamp updates are enabled for I/O operations preformed on the file handle.
- * @remarks To set the members of this structure, the caller must have FILE_WRITE_ATTRIBUTES access to the file.
+ * \li If you specify a value of zero for any of the XxxTime members, the file system keeps a file's current value for that time.
+ * \li If you specify a value of -1 for any of the XxxTime members, time stamp updates are disabled for I/O operations preformed on the file handle.
+ * \li If you specify a value of -2 for any of the XxxTime members, time stamp updates are enabled for I/O operations preformed on the file handle.
+ * \remarks To set the members of this structure, the caller must have FILE_WRITE_ATTRIBUTES access to the file.
+ * \sa https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/wdm/ns-wdm-_file_basic_information
  */
 typedef struct _FILE_BASIC_INFORMATION
 {
@@ -450,8 +454,9 @@ typedef struct _FILE_BASIC_INFORMATION
 
 /**
  * The FILE_STANDARD_INFORMATION structure contains standard information of a file.
- * @remarks EndOfFile specifies the byte offset to the end of the file.
+ * \remarks EndOfFile specifies the byte offset to the end of the file.
  * Because this value is zero-based, it actually refers to the first free byte in the file; that is, it is the offset to the byte immediately following the last valid byte in the file.
+ * \sa https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/wdm/ns-wdm-_file_standard_information
  */
 typedef struct _FILE_STANDARD_INFORMATION
 {
@@ -463,6 +468,10 @@ typedef struct _FILE_STANDARD_INFORMATION
 } FILE_STANDARD_INFORMATION, * PFILE_STANDARD_INFORMATION;
 
 #if (NTDDI_VERSION >= NTDDI_WINTHRESHOLD)
+/**
+ * The FILE_STANDARD_INFORMATION_EX structure is used as an argument to routines that query or set file information
+ * \sa https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/wdm/ns-wdm-_file_standard_information_ex
+ */
 typedef struct _FILE_STANDARD_INFORMATION_EX
 {
     LARGE_INTEGER AllocationSize;
@@ -475,6 +484,10 @@ typedef struct _FILE_STANDARD_INFORMATION_EX
 } FILE_STANDARD_INFORMATION_EX, * PFILE_STANDARD_INFORMATION_EX;
 #endif
 
+/**
+ * The FILE_INTERNAL_INFORMATION structure is used to query for the file system's 8-byte file reference number for a file.
+ * \sa https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntifs/ns-ntifs-_file_internal_information
+ */
 typedef struct _FILE_INTERNAL_INFORMATION
 {
     union
@@ -488,37 +501,65 @@ typedef struct _FILE_INTERNAL_INFORMATION
     };
 } FILE_INTERNAL_INFORMATION, * PFILE_INTERNAL_INFORMATION;
 
+/**
+ * The FILE_EA_INFORMATION structure is used to query for the size of the extended attributes (EA) for a file.
+ * \sa https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntifs/ns-ntifs-_file_ea_information
+ */
 typedef struct _FILE_EA_INFORMATION
 {
     ULONG EaSize;
 } FILE_EA_INFORMATION, * PFILE_EA_INFORMATION;
 
+/**
+ * The FILE_ACCESS_INFORMATION structure is used to query for or set the access rights of a file.
+ * \sa https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntifs/ns-ntifs-_file_access_information
+ */
 typedef struct _FILE_ACCESS_INFORMATION
 {
     ACCESS_MASK AccessFlags;
 } FILE_ACCESS_INFORMATION, * PFILE_ACCESS_INFORMATION;
 
+/**
+ * The FILE_POSITION_INFORMATION structure is used as an argument to routines that query or set file information.
+ * \sa https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/wdm/ns-wdm-_file_position_information
+ */
 typedef struct _FILE_POSITION_INFORMATION
 {
     LARGE_INTEGER CurrentByteOffset;
 } FILE_POSITION_INFORMATION, * PFILE_POSITION_INFORMATION;
 
+/**
+ * The FILE_MODE_INFORMATION structure is used to query or set the access mode of a file.
+ * \sa https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntifs/ns-ntifs-_file_mode_information
+ */
 typedef struct _FILE_MODE_INFORMATION
 {
     ULONG Mode;
 } FILE_MODE_INFORMATION, * PFILE_MODE_INFORMATION;
 
+/**
+ * The FILE_ALIGNMENT_INFORMATION structure is used to query or set the buffer alignment required by the underlying device.
+ * \sa https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntddk/ns-ntddk-_file_alignment_information
+ */
 typedef struct _FILE_ALIGNMENT_INFORMATION
 {
     ULONG AlignmentRequirement;
 } FILE_ALIGNMENT_INFORMATION, * PFILE_ALIGNMENT_INFORMATION;
 
+/**
+ * The FILE_NAME_INFORMATION structure is used to query or set the file name and/or new short name for a file.
+ * \sa https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntddk/ns-ntddk-_file_name_information
+ */
 typedef struct _FILE_NAME_INFORMATION
 {
     ULONG FileNameLength;
     WCHAR FileName[1];
 } FILE_NAME_INFORMATION, * PFILE_NAME_INFORMATION;
 
+/**
+ * The FILE_ALL_INFORMATION structure is used as a container for several FILE_XXX_INFORMATION structures.
+ * \sa https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntifs/ns-ntifs-_file_all_information
+ */
 typedef struct _FILE_ALL_INFORMATION
 {
     FILE_BASIC_INFORMATION BasicInformation;
@@ -532,6 +573,10 @@ typedef struct _FILE_ALL_INFORMATION
     FILE_NAME_INFORMATION NameInformation;
 } FILE_ALL_INFORMATION, * PFILE_ALL_INFORMATION;
 
+/**
+ * The FILE_NETWORK_OPEN_INFORMATION structure is used to query for information that is commonly needed when a file is opened across a network.
+ * \sa https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/wdm/ns-wdm-_file_network_open_information
+ */
 typedef struct _FILE_NETWORK_OPEN_INFORMATION
 {
     LARGE_INTEGER CreationTime;
@@ -543,17 +588,29 @@ typedef struct _FILE_NETWORK_OPEN_INFORMATION
     ULONG FileAttributes;
 } FILE_NETWORK_OPEN_INFORMATION, * PFILE_NETWORK_OPEN_INFORMATION;
 
+/**
+ * The FILE_ATTRIBUTE_TAG_INFORMATION structure is used to query for attribute and reparse tag information for a file.
+ * \sa https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntddk/ns-ntddk-_file_attribute_tag_information
+ */
 typedef struct _FILE_ATTRIBUTE_TAG_INFORMATION
 {
     ULONG FileAttributes;
     ULONG ReparseTag;
 } FILE_ATTRIBUTE_TAG_INFORMATION, * PFILE_ATTRIBUTE_TAG_INFORMATION;
 
+/**
+ * The FILE_ALLOCATION_INFORMATION structure is used to set the allocation size for a file.
+ * \sa https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntifs/ns-ntifs-_file_allocation_information
+ */
 typedef struct _FILE_ALLOCATION_INFORMATION
 {
     LARGE_INTEGER AllocationSize;
 } FILE_ALLOCATION_INFORMATION, * PFILE_ALLOCATION_INFORMATION;
 
+/**
+ * The FILE_COMPRESSION_INFORMATION structure describes the state of a compressed data buffer.
+ * \sa https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntifs/ns-ntifs-_file_compression_information
+ */
 typedef struct _FILE_COMPRESSION_INFORMATION
 {
     LARGE_INTEGER CompressedFileSize;
@@ -564,6 +621,10 @@ typedef struct _FILE_COMPRESSION_INFORMATION
     UCHAR Reserved[3];
 } FILE_COMPRESSION_INFORMATION, * PFILE_COMPRESSION_INFORMATION;
 
+/**
+ * The FILE_DISPOSITION_INFORMATION structure is used to mark a file for deletion.
+ * \sa https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntddk/ns-ntddk-_file_disposition_information
+ */
 typedef struct _FILE_DISPOSITION_INFORMATION
 {
     BOOLEAN DeleteFile;
@@ -585,6 +646,10 @@ typedef struct _FILE_DISPOSITION_INFORMATION_EX
 } FILE_DISPOSITION_INFORMATION_EX, * PFILE_DISPOSITION_INFORMATION_EX;
 #endif
 
+/**
+ * The FILE_END_OF_FILE_INFORMATION structure is used to set end-of-file information for a file.
+ * \sa https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntddk/ns-ntddk-_file_end_of_file_information
+ */
 typedef struct _FILE_END_OF_FILE_INFORMATION
 {
     LARGE_INTEGER EndOfFile;
@@ -607,6 +672,10 @@ typedef struct _FILE_END_OF_FILE_INFORMATION_EX
 } FILE_END_OF_FILE_INFORMATION_EX, * PFILE_END_OF_FILE_INFORMATION_EX;
 #endif
 
+/**
+ * The FILE_VALID_DATA_LENGTH_INFORMATION structure is used to set the valid data length information for a file.
+ * \sa https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntddk/ns-ntddk-_file_valid_data_length_information
+ */
 typedef struct _FILE_VALID_DATA_LENGTH_INFORMATION
 {
     LARGE_INTEGER ValidDataLength;
@@ -633,6 +702,10 @@ typedef struct _FILE_VALID_DATA_LENGTH_INFORMATION
 #define FILE_LINK_FORCE_RESIZE_SR                       0x00000180  // combination
 #endif
 
+/**
+ * The FILE_LINK_INFORMATION structure is used to create an NTFS hard link to an existing file.
+ * \sa https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntifs/ns-ntifs-_file_link_information
+ */
 typedef struct _FILE_LINK_INFORMATION
 {
 #if (NTDDI_VERSION >= NTDDI_WIN10_RS5)
@@ -680,6 +753,10 @@ typedef struct _FILE_MOVE_CLUSTER_INFORMATION
 #define FILE_RENAME_FORCE_RESIZE_SR                       0x00000180  // combination
 #endif
 
+/**
+ * The FILE_RENAME_INFORMATION structure is used to rename a file.
+ * \sa https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntifs/ns-ntifs-_file_rename_information
+ */
 typedef struct _FILE_RENAME_INFORMATION
 {
 #if (NTDDI_VERSION >= NTDDI_WIN10_RS1)
@@ -721,11 +798,10 @@ typedef struct _FILE_TRACKING_INFORMATION
 /**
  * The FILE_COMPLETION_INFORMATION structure contains the port handle and key for an I/O completion port created for a file handle.
  *
- * @remarks he FILE_COMPLETION_INFORMATION structure is used to replace the completion information for a port handle set in Port.
+ * \remarks he FILE_COMPLETION_INFORMATION structure is used to replace the completion information for a port handle set in Port.
  * Completion information is replaced with the ZwSetInformationFile routine with the FileInformationClass parameter set to FileReplaceCompletionInformation.
  * The Port and Key members of FILE_COMPLETION_INFORMATION are set to their new values. To remove an existing completion port for a file handle, Port is set to NULL.
- *
- * https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntifs/ns-ntifs-_file_completion_information
+ * \sa https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntifs/ns-ntifs-_file_completion_information
  */
 typedef struct _FILE_COMPLETION_INFORMATION
 {
@@ -736,12 +812,11 @@ typedef struct _FILE_COMPLETION_INFORMATION
 /**
  * The FILE_PIPE_INFORMATION structure contains information about a named pipe that is not specific to the local or the remote end of the pipe.
  *
- * @remarks If ReadMode is set to FILE_PIPE_BYTE_STREAM_MODE, any attempt to change it must fail with a STATUS_INVALID_PARAMETER error code.
+ * \remarks If ReadMode is set to FILE_PIPE_BYTE_STREAM_MODE, any attempt to change it must fail with a STATUS_INVALID_PARAMETER error code.
  * When CompletionMode is set to FILE_PIPE_QUEUE_OPERATION, if the pipe is connected to, read to, or written from,
  * the operation is not completed until there is data to read, all data is written, or a client is connected.
  * When CompletionMode is set to FILE_PIPE_COMPLETE_OPERATION, if the pipe is being connected to, read to, or written from, the operation is completed immediately.
- *
- * https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntifs/ns-ntifs-_file_pipe_information
+ * \sa https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntifs/ns-ntifs-_file_pipe_information
  */
 typedef struct _FILE_PIPE_INFORMATION
 {
@@ -751,8 +826,7 @@ typedef struct _FILE_PIPE_INFORMATION
 
 /**
  * The FILE_PIPE_LOCAL_INFORMATION structure contains information about the local end of a named pipe.
- *
- * @remarks https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntifs/ns-ntifs-_file_pipe_local_information
+ * \sa https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntifs/ns-ntifs-_file_pipe_local_information
  */
 typedef struct _FILE_PIPE_LOCAL_INFORMATION
 {
@@ -771,8 +845,8 @@ typedef struct _FILE_PIPE_LOCAL_INFORMATION
 /**
  * The FILE_PIPE_REMOTE_INFORMATION structure contains information about the remote end of a named pipe.
  *
- * @remarks Remote information is not available for local pipes or for the server end of a remote pipe.
- * https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntifs/ns-ntifs-_file_pipe_remote_information
+ * \remarks Remote information is not available for local pipes or for the server end of a remote pipe.
+ * \sa https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntifs/ns-ntifs-_file_pipe_remote_information
  */
 typedef struct _FILE_PIPE_REMOTE_INFORMATION
 {
@@ -782,8 +856,7 @@ typedef struct _FILE_PIPE_REMOTE_INFORMATION
 
 /**
  * The FILE_MAILSLOT_QUERY_INFORMATION structure contains information about a mailslot.
- *
- * @remarks https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntifs/ns-ntifs-_file_mailslot_query_information
+ * \sa https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntifs/ns-ntifs-_file_mailslot_query_information
  */
 typedef struct _FILE_MAILSLOT_QUERY_INFORMATION
 {
@@ -796,8 +869,7 @@ typedef struct _FILE_MAILSLOT_QUERY_INFORMATION
 
 /**
  * The FILE_MAILSLOT_SET_INFORMATION structure is used to set a value on a mailslot.
- *
- * @remarks https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntifs/ns-ntifs-_file_mailslot_set_information
+ * \sa https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntifs/ns-ntifs-_file_mailslot_set_information
  */
 typedef struct _FILE_MAILSLOT_SET_INFORMATION
 {
@@ -806,6 +878,7 @@ typedef struct _FILE_MAILSLOT_SET_INFORMATION
 
 /**
  * The FILE_REPARSE_POINT_INFORMATION structure contains information about a reparse point.
+ * \sa https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntifs/ns-ntifs-_file_reparse_point_information
  */
 typedef struct _FILE_REPARSE_POINT_INFORMATION
 {
@@ -836,6 +909,7 @@ typedef struct _FILE_LINKS_INFORMATION
 
 /**
  * The FILE_NETWORK_PHYSICAL_NAME_INFORMATION structure contains information about the network physical name of a file.
+ * \sa https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntifs/ns-ntifs-_file_network_physical_name_information
  */
 typedef struct _FILE_NETWORK_PHYSICAL_NAME_INFORMATION
 {
@@ -845,6 +919,7 @@ typedef struct _FILE_NETWORK_PHYSICAL_NAME_INFORMATION
 
 /**
  * The FILE_STANDARD_LINK_INFORMATION structure contains standard information about a file link.
+ * \sa https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntifs/ns-ntifs-file_standard_link_information
  */
 typedef struct _FILE_STANDARD_LINK_INFORMATION
 {
@@ -881,11 +956,19 @@ typedef enum _IO_PRIORITY_HINT
     MaxIoPriorityTypes
 } IO_PRIORITY_HINT;
 
+/**
+ * The FILE_IO_PRIORITY_HINT_INFORMATION structure is used to query and set the default IRP priority hint for requests on the specified file handle.
+ * \sa https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/wdm/ns-wdm-_file_io_priority_hint_information
+ */
 typedef struct DECLSPEC_ALIGN(8) _FILE_IO_PRIORITY_HINT_INFORMATION
 {
     IO_PRIORITY_HINT PriorityHint;
 } FILE_IO_PRIORITY_HINT_INFORMATION, * PFILE_IO_PRIORITY_HINT_INFORMATION;
 
+/**
+ * The FILE_IO_PRIORITY_HINT_INFORMATION_EX structure is used to query and set the default IRP priority hint for requests on the specified file handle.
+ * \sa https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/wdm/ns-wdm-_file_io_priority_hint_information
+ */
 typedef struct _FILE_IO_PRIORITY_HINT_INFORMATION_EX
 {
     IO_PRIORITY_HINT PriorityHint;
@@ -904,11 +987,12 @@ typedef struct _FILE_IO_COMPLETION_NOTIFICATION_INFORMATION
 typedef struct _FILE_PROCESS_IDS_USING_FILE_INFORMATION
 {
     ULONG NumberOfProcessIdsInList;
-    ULONG_PTR ProcessIdList[1];
+    _Field_size_(NumberOfProcessIdsInList) ULONG_PTR ProcessIdList[1];
 } FILE_PROCESS_IDS_USING_FILE_INFORMATION, * PFILE_PROCESS_IDS_USING_FILE_INFORMATION;
 
 /**
  * The FILE_IS_REMOTE_DEVICE_INFORMATION structure indicates whether the file system that contains the file is a remote file system.
+ * \sa https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/wdm/ns-wdm-_file_is_remote_device_information
  */
 typedef struct _FILE_IS_REMOTE_DEVICE_INFORMATION
 {
@@ -1032,6 +1116,10 @@ typedef struct _FILE_VOLUME_NAME_INFORMATION
     ((FID128).Identifier[15] = (UCHAR)-1);  \
 }
 
+/**
+ * The FILE_ID_INFORMATION structure is used to query file identification information.
+ * \sa https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntifs/ns-ntifs-file_id_information
+ */
 typedef struct _FILE_ID_INFORMATION
 {
     ULONGLONG VolumeSerialNumber;
@@ -1046,6 +1134,10 @@ typedef struct _FILE_ID_INFORMATION
     };
 } FILE_ID_INFORMATION, * PFILE_ID_INFORMATION;
 
+/**
+ * The FILE_ID_EXTD_DIR_INFORMATION structure is used to query 128-bit file reference number information for the files in a directory.
+ * \sa https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntifs/ns-ntifs-file_id_extd_dir_information
+ */
 typedef struct _FILE_ID_EXTD_DIR_INFORMATION
 {
     ULONG NextEntryOffset;
@@ -1257,6 +1349,10 @@ typedef struct _FILE_STAT_BASIC_INFORMATION
 } FILE_STAT_BASIC_INFORMATION, * PFILE_STAT_BASIC_INFORMATION;
 #endif
 
+/**
+ * The FILE_MEMORY_PARTITION_INFORMATION structure is used to query information about a memory partition.
+ * \sa https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/wdm/ns-wdm-_file_memory_partition_information
+ */
 typedef struct _FILE_MEMORY_PARTITION_INFORMATION
 {
     HANDLE OwnerPartitionHandle;
@@ -1758,6 +1854,23 @@ typedef struct _FILE_FS_GUID_INFORMATION {
 
 #endif // !_KERNEL_MODE
 
+/**
+ * The NtCreateFile routine creates a new file or directory, or opens an existing file, device, directory, or volume.
+ *
+ * \param[out] FileHandle Pointer to a variable that receives a handle to the pipe.
+ * \param[in] DesiredAccess The requested access to the object.
+ * \param[in] ObjectAttributes Pointer to an OBJECT_ATTRIBUTES structure that contains the object attributes, including pipe name.
+ * \param[out] IoStatusBlock Pointer to an IO_STATUS_BLOCK structure that receives the final completion status and information about the operation.
+ * \param[in] AllocationSize The initial allocation size in bytes for the file. Specify a non-zero value to eliminate disk fragmentation, since the file system pre-allocates the file using a contiguous block.
+ * \param[in] FileAttributes The file attributes. Explicitly specified attributes are applied only when the file is created, superseded, or, in some cases, overwritten.
+ * \param[in] ShareAccess The type of share access that the caller would like to use in the file.
+ * \param[in] CreateDisposition Specifies how the file should be handled when the file already exists.
+ * \param[in] CreateOptions Specifies the options to be applied when creating or opening the file.
+ * \param[in] EaBuffer Pointer to an EA buffer used to pass extended attributes.
+ * \param[in] EaLength Length of the EA buffer.
+ * \return NTSTATUS Successful or errant status.
+ * \sa https://learn.microsoft.com/en-us/windows/win32/api/Winternl/nf-winternl-ntcreatefile
+ */
 __kernel_entry NTSYSCALLAPI
 NTSTATUS
 NTAPI
@@ -1793,6 +1906,26 @@ ZwCreateFile(
     _In_ ULONG EaLength
 );
 
+/**
+ * The NtCreateNamedPipeFile routine deletes the specified file.
+ *
+ * \param[out] FileHandle Pointer to a variable that receives a handle to the pipe.
+ * \param[in] DesiredAccess The requested access to the object.
+ * \param[in] ObjectAttributes Pointer to an OBJECT_ATTRIBUTES structure that contains the object attributes, including pipe name.
+ * \param[out] IoStatusBlock Pointer to an IO_STATUS_BLOCK structure that receives the final completion status and information about the operation.
+ * \param[in] ShareAccess Specifies the type of share access for the file.
+ * \param[in] CreateDisposition Specifies how the file should be handled when the file already exists.
+ * \param[in] CreateOptions Specifies the options to be applied when creating or opening the file.
+ * \param[in] NamedPipeType Type of named pipe to create (byte-type or message-type).
+ * \param[in] ReadMode Mode in which to read the pipe (byte-type or message-type).
+ * \param[in] CompletionMode Specifies blocking or non-blocking mode of the pipe.
+ * \param[in] MaximumInstances Maximum number of simultaneous instances of the named pipe.
+ * \param[in] InboundQuota Specifies the pool quota that is reserved for writes to the inbound side of the named pipe.
+ * \param[in] OutboundQuota Specifies the pool quota that is reserved for writes to the inbound side of the named pipe.
+ * \param[in] DefaultTimeout An optional pointer to a timeout value that is used if a timeout value is not specified when waiting for an instance of a named pipe.
+ * \return NTSTATUS Successful or errant status.
+ * \sa https://learn.microsoft.com/en-us/windows/win32/devnotes/nt-create-named-pipe-file
+ */
 __kernel_entry NTSYSCALLAPI
 NTSTATUS
 NTAPI
@@ -1861,6 +1994,18 @@ ZwCreateMailslotFile(
     _In_ PLARGE_INTEGER ReadTimeout
 );
 
+/**
+ * The NtOpenFile routine deletes the specified file.
+ *
+ * \param[out] FileHandle Pointer to a variable that receives a handle to the file.
+ * \param[in] DesiredAccess The requested access to the object.
+ * \param[in] ObjectAttributes Pointer to an OBJECT_ATTRIBUTES structure that contains the file's attributes, including file name.
+ * \param[out] IoStatusBlock Pointer to an IO_STATUS_BLOCK structure that receives the final completion status and information about the operation.
+ * \param[in] ShareAccess Specifies the type of share access for the file.
+ * \param[in] OpenOptions Specifies the options to apply when opening the file.
+ * \return NTSTATUS Successful or errant status.
+ * \sa https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntifs/nf-ntifs-ntopenfile
+ */
 __kernel_entry NTSYSCALLAPI
 NTSTATUS
 NTAPI
@@ -1886,6 +2031,13 @@ ZwOpenFile(
     _In_ ULONG OpenOptions
 );
 
+/**
+ * The NtDeleteFile routine deletes the specified file.
+ *
+ * \param[in] ObjectAttributes Pointer to an OBJECT_ATTRIBUTES structure that contains the file's attributes, including file name.
+ * \return NTSTATUS Successful or errant status.
+ * \sa https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntifs/nf-ntifs-zwdeletefile
+ */
 __kernel_entry NTSYSCALLAPI
 NTSTATUS
 NTAPI
@@ -1901,6 +2053,14 @@ ZwDeleteFile(
     _In_ POBJECT_ATTRIBUTES ObjectAttributes
 );
 
+/**
+ * The NtFlushBuffersFile routine sends a flush request for the specified file to the file system.
+ *
+ * \param[in] FileHandle A handle to the file whose buffers will be flushed.
+ * \param[out] IoStatusBlock Pointer to an IO_STATUS_BLOCK structure that receives the final completion status and information about the operation.
+ * \return NTSTATUS Successful or errant status.
+ * \sa https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntifs/nf-ntifs-zwflushbuffersfile
+ */
 __kernel_entry NTSYSCALLAPI
 NTSTATUS
 NTAPI
@@ -2011,6 +2171,17 @@ ZwFlushBuffersFileEx(
 );
 #endif
 
+/**
+ * The NtQueryInformationFile routine returns various kinds of information about a file object.
+ *
+ * \param FileHandle A handle to the file object representing the file or directory.
+ * \param IoStatusBlock A pointer to an IO_STATUS_BLOCK structure that receives the final completion status, and the number of bytes written to the buffer pointed to by FileInformation.
+ * \param FileInformation Pointer to a caller-allocated buffer into which the routine writes the requested information about the file object.
+ * \param Length The size, in bytes, of the buffer pointed to by FileInformation.
+ * \param FileInformationClass Specifies the type of information to be returned about the file, in the buffer that FileInformation points to.
+ * \return NTSTATUS Successful or errant status.
+ * \sa https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntifs/nf-ntifs-ntqueryinformationfile
+ */
 __kernel_entry NTSYSCALLAPI
 NTSTATUS
 NTAPI
@@ -2035,6 +2206,19 @@ ZwQueryInformationFile(
 );
 
 #if (NTDDI_VERSION >= NTDDI_WIN10_RS2)
+/**
+ * The NtQueryInformationByName routine returns various kinds of information about a file object by file name.
+ *
+ * \param ObjectAttributes Pointer to an OBJECT_ATTRIBUTES structure that contains the file's attributes, including file name.
+ * \param IoStatusBlock A pointer to an IO_STATUS_BLOCK structure that receives the final completion status, and the number of bytes written to the buffer pointed to by FileInformation.
+ * \param FileInformation Pointer to a caller-allocated buffer into which the routine writes the requested information about the file object.
+ * \param Length The size, in bytes, of the buffer pointed to by FileInformation.
+ * \param FileInformationClass Specifies the type of information to be returned about the file, in the buffer that FileInformation points to.
+ * \return NTSTATUS Successful or errant status.
+ * \sa https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntifs/nf-ntifs-ntqueryinformationbyname
+ * \remarks NtQueryInformationByName queries and returns the requested information without opening the actual file,
+ * making it more efficient than NtQueryInformationFile, which requires a file open and subsequent file close.
+ */
 __kernel_entry NTSYSCALLAPI
 NTSTATUS
 NTAPI
@@ -2059,6 +2243,17 @@ ZwQueryInformationByName(
 );
 #endif // NTDDI_VERSION >= NTDDI_WIN10_RS2
 
+/**
+ * The NtSetInformationFile routine changes various kinds of information about a file object.
+ *
+ * \param FileHandle A handle to the file object representing the file or directory.
+ * \param IoStatusBlock A pointer to an IO_STATUS_BLOCK structure that receives the final completion status, and the number of bytes written to the buffer pointed to by FileInformation.
+ * \param FileInformation Pointer to a buffer that contains the information to set for the file.
+ * \param Length The size, in bytes, of the buffer pointed to by FileInformation.
+ * \param FileInformationClass The type of information, supplied in the buffer pointed to by FileInformation, to set for the file.
+ * \return NTSTATUS Successful or errant status.
+ * \sa https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntifs/nf-ntifs-ntsetinformationfile
+ */
 __kernel_entry NTSYSCALLAPI
 NTSTATUS
 NTAPI
@@ -2082,6 +2277,23 @@ ZwSetInformationFile(
     _In_ FILE_INFORMATION_CLASS FileInformationClass
 );
 
+/**
+ * The NtQueryDirectoryFile routine returns various kinds of information about files in the directory specified by a given file handle.
+ *
+ * \param[in] FileHandle A handle for the file object that represents the directory for which information is being requested.
+ * \param[in] Event An optional handle for a caller-created event. The event is set to the Signaled state the requested operation is completed.
+ * \param[in] ApcRoutine An address of an optional, caller-supplied APC routine to be called when the requested operation completes.
+ * \param[in] ApcContext An address of an optional, caller-supplied APC or I/O completion object associated with the file object.
+ * \param[out] IoStatusBlock A pointer to an IO_STATUS_BLOCK structure that receives the final completion status, and the number of bytes written to the buffer pointed to by FileInformation.
+ * \param[out] FileInformation A pointer to a buffer that receives the desired information about the file.
+ * \param[in] Length The size, in bytes, of the buffer pointed to by FileInformation.
+ * \param[in] FileInformationClass The type of information to be returned about files in the directory.
+ * \param[in] ReturnSingleEntry Set to TRUE if only a single entry should be returned, FALSE otherwise.
+ * \param[in] FileName An optional pointer to a Unicode string search expression containing the name of a file (or multiple files, if wildcards are used) within the directory.
+ * \param[in] RestartScan Set to TRUE if the scan is to start at the first entry in the directory. Set to FALSE if resuming the scan from a previous call.
+ * \return NTSTATUS Successful or errant status.
+ * \sa https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntifs/nf-ntifs-ntquerydirectoryfile
+ */
 __kernel_entry NTSYSCALLAPI
 NTSTATUS
 NTAPI
@@ -2266,6 +2478,17 @@ ZwSetQuotaInformationFile(
     _In_ ULONG Length
 );
 
+/**
+ * The NtQueryVolumeInformationFile routine retrieves information about the volume associated with a given file, directory, storage device, or volume.
+ *
+ * \param[in] FileHandle A handle to the file, directory, storage device, or volume for which volume information is being requested.
+ * \param[out] IoStatusBlock A pointer to an IO_STATUS_BLOCK structure that receives the final completion status, and the number of bytes written to the buffer pointed to by FsInformation.
+ * \param[out] FsInformation A pointer to a caller-allocated buffer that receives the desired information about the volume.
+ * \param[in] Length The size, in bytes, of the buffer pointed to by FsInformation.
+ * \param[in] FsInformationClass The type of information to be returned about the volume.
+ * \return NTSTATUS Successful or errant status.
+ * \sa https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntifs/nf-ntifs-ntqueryvolumeinformationfile
+ */
 __kernel_entry NTSYSCALLAPI
 NTSTATUS
 NTAPI
@@ -2289,6 +2512,17 @@ ZwQueryVolumeInformationFile(
     _In_ FS_INFORMATION_CLASS FsInformationClass
 );
 
+/**
+ * The NtSetVolumeInformationFile routine modifies information about the volume associated with a given file, directory, storage device, or volume.
+ *
+ * \param[in] FileHandle A handle to the file, directory, storage device, or volume for which volume information is being requested.
+ * \param[out] IoStatusBlock A pointer to an IO_STATUS_BLOCK structure that receives the final completion status, and the number of bytes written to the buffer pointed to by FsInformation.
+ * \param[in] FsInformation A pointer to a caller-allocated buffer containing the volume information to be modified.
+ * \param[in] Length The size, in bytes, of the buffer pointed to by FsInformation.
+ * \param[in] FsInformationClass The type of information to set about the volume.
+ * \return NTSTATUS Successful or errant status.
+ * \sa https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntifs/nf-ntifs-zwsetvolumeinformationfile
+ */
 __kernel_entry NTSYSCALLAPI
 NTSTATUS
 NTAPI
@@ -2367,6 +2601,22 @@ ZwCancelSynchronousIoFile(
     _Out_ PIO_STATUS_BLOCK IoStatusBlock
 );
 
+/**
+ * The NtDeviceIoControlFile function sends a control code directly to a specified device driver, causing the corresponding driver to perform the specified operation.
+ *
+ * \param[in] FileHandle A handle to the file object representing the file or directory on which the specified action is to be performed.
+ * \param[in] Event A handle for a caller-created event. This parameter is optional and can be NULL. It must be NULL if the caller will wait for the FileHandle to be set to the Signaled state.
+ * \param[in] ApcRoutine Address of a caller-supplied APC routine to be called when the requested operation completes. This parameter is optional and can be NULL.
+ * \param[in] ApcContext Pointer to a caller-determined context area. This parameter value is used as the APC context if the caller supplies an APC, or is used as the completion context if an I/O completion object has been associated with the file object.
+ * \param[out] IoStatusBlock Pointer to an IO_STATUS_BLOCK structure that receives the final completion status and information about the operation.
+ * \param[in] IoControlCode IOCTL_XXX code that indicates which device I/O control operation is to be carried out on, usually by the underlying device driver.
+ * \param[in] InputBuffer Pointer to a caller-allocated input buffer that contains device-specific information to be given to the target driver.
+ * \param[in] InputBufferLength Size, in bytes, of the buffer at InputBuffer. This value is ignored if InputBuffer is NULL.
+ * \param[out] OutputBuffer Pointer to a caller-allocated output buffer in which information is returned from the target driver.
+ * \param[in] OutputBufferLength Size, in bytes, of the buffer at OutputBuffer. This value is ignored if OutputBuffer is NULL.
+ * \return NTSTATUS Successful or errant status.
+ * \sa https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntifs/nf-ntifs-zwdeviceiocontrolfile
+ */
 __kernel_entry NTSYSCALLAPI
 NTSTATUS
 NTAPI
@@ -2400,6 +2650,22 @@ ZwDeviceIoControlFile(
     _In_ ULONG OutputBufferLength
 );
 
+/**
+ * The NtFsControlFile function sends a control code directly to a file system or filter driver, causing the corresponding driver to perform the specified action.
+ *
+ * \param[in] FileHandle A handle to the file object representing the file or directory on which the specified action is to be performed.
+ * \param[in] Event A handle for a caller-created event. This parameter is optional and can be NULL. It must be NULL if the caller will wait for the FileHandle to be set to the Signaled state.
+ * \param[in] ApcRoutine Address of a caller-supplied APC routine to be called when the requested operation completes. This parameter is optional and can be NULL.
+ * \param[in] ApcContext Pointer to a caller-determined context area. This parameter value is used as the APC context if the caller supplies an APC, or is used as the completion context if an I/O completion object has been associated with the file object.
+ * \param[out] IoStatusBlock Pointer to an IO_STATUS_BLOCK structure that receives the final completion status and information about the operation.
+ * \param[in] FsControlCode FSCTL_XXX code that indicates which file system control operation is to be carried out.
+ * \param[in] InputBuffer Pointer to a caller-allocated input buffer that contains device-specific information to be given to the target driver.
+ * \param[in] InputBufferLength Size, in bytes, of the buffer at InputBuffer. This value is ignored if InputBuffer is NULL.
+ * \param[out] OutputBuffer Pointer to a caller-allocated output buffer in which information is returned from the target driver.
+ * \param[in] OutputBufferLength Size, in bytes, of the buffer at OutputBuffer. This value is ignored if OutputBuffer is NULL.
+ * \return NTSTATUS Successful or errant status.
+ * \sa https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntifs/nf-ntifs-zwfscontrolfile
+ */
 __kernel_entry NTSYSCALLAPI
 NTSTATUS
 NTAPI
@@ -2433,6 +2699,21 @@ ZwFsControlFile(
     _In_ ULONG OutputBufferLength
 );
 
+/**
+ * The NtReadFile function reads data from an open file.
+ *
+ * \param[in] FileHandle A handle to the file object representing the file or directory on which the specified action is to be performed.
+ * \param[in] Event A handle for a caller-created event. This parameter is optional and can be NULL. It must be NULL if the caller will wait for the FileHandle to be set to the Signaled state.
+ * \param[in] ApcRoutine Address of a caller-supplied APC routine to be called when the requested operation completes. This parameter is optional and can be NULL.
+ * \param[in] ApcContext Pointer to a caller-determined context area. This parameter value is used as the APC context if the caller supplies an APC, or is used as the completion context if an I/O completion object has been associated with the file object.
+ * \param[out] IoStatusBlock Pointer to an IO_STATUS_BLOCK structure that receives the final completion status and information about the operation.
+ * \param[out] Buffer Pointer to a caller-allocated buffer that receives the data read from the file.
+ * \param[in] Length The size, in bytes, of the buffer pointed to by Buffer.
+ * \param[in] ByteOffset Pointer to a variable that specifies the starting byte offset in the file where the read operation will begin.
+ * \param[in] Key Device and intermediate drivers should set this pointer to NULL.
+ * \return NTSTATUS Successful or errant status.
+ * \sa https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/wdm/nf-wdm-zwreadfile
+ */
 __kernel_entry NTSYSCALLAPI
 NTSTATUS
 NTAPI
@@ -2464,6 +2745,21 @@ ZwReadFile(
     _In_opt_ PULONG Key
 );
 
+/**
+ * The NtWriteFile function writes data to an open file.
+ *
+ * \param[in] FileHandle A handle to the file object representing the file or directory on which the specified action is to be performed.
+ * \param[in] Event A handle for a caller-created event. This parameter is optional and can be NULL. It must be NULL if the caller will wait for the FileHandle to be set to the Signaled state.
+ * \param[in] ApcRoutine Address of a caller-supplied APC routine to be called when the requested operation completes. This parameter is optional and can be NULL.
+ * \param[in] ApcContext Pointer to a caller-determined context area. This parameter value is used as the APC context if the caller supplies an APC, or is used as the completion context if an I/O completion object has been associated with the file object.
+ * \param[out] IoStatusBlock Pointer to an IO_STATUS_BLOCK structure that receives the final completion status and information about the operation.
+ * \param[in] Buffer Pointer to a caller-allocated buffer that contains the data to write to the file.
+ * \param[in] Length The size, in bytes, of the buffer pointed to by Buffer.
+ * \param[in] ByteOffset Pointer to a variable that specifies the starting byte offset in the file for beginning the write operation.
+ * \param[in] Key Device and intermediate drivers should set this pointer to NULL.
+ * \return NTSTATUS Successful or errant status.
+ * \sa https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/wdm/nf-wdm-zwwritefile
+ */
 __kernel_entry NTSYSCALLAPI
 NTSTATUS
 NTAPI
@@ -2659,6 +2955,14 @@ ZwUnlockFile(
     _In_ ULONG Key
 );
 
+/**
+ * The NtQueryAttributesFile function retrieves basic attributes for the specified file.
+ *
+ * \param ObjectAttributes A pointer to an OBJECT_ATTRIBUTES structure that supplies the attributes to be used for the file object.
+ * \param FileInformation A pointer to a FILE_BASIC_INFORMATION structure to receive the returned file attribute information.
+ * \return NTSTATUS Successful or errant status.
+ * \sa https://learn.microsoft.com/en-us/windows/win32/devnotes/ntqueryattributesfile
+ */
 __kernel_entry NTSYSCALLAPI
 NTSTATUS
 NTAPI
@@ -2676,6 +2980,14 @@ ZwQueryAttributesFile(
     _Out_ PFILE_BASIC_INFORMATION FileInformation
 );
 
+/**
+ * The NtQueryFullAttributesFile function retrieves network open information for the specified file.
+ *
+ * \param ObjectAttributes A pointer to an OBJECT_ATTRIBUTES structure that supplies the attributes to be used for the file object.
+ * \param FileInformation A pointer to a FILE_NETWORK_OPEN_INFORMATION structure that receives the returned file attributes information.
+ * \return NTSTATUS Successful or errant status.
+ * \sa https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/wdm/nf-wdm-zwqueryfullattributesfile
+ */
 __kernel_entry NTSYSCALLAPI
 NTSTATUS
 NTAPI
@@ -2871,15 +3183,10 @@ ZwNotifyChangeDirectoryFileEx(
 #endif // NTDDI_VERSION >= NTDDI_WIN10_RS3
 
 /**
- * @brief The NtLoadDriver function loads a driver specified by the DriverServiceName parameter.
- * @param DriverServiceName A pointer to a UNICODE_STRING structure that specifies the name of the driver service to load.
- * @return NTSTATUS The status code returned by the function. Possible values include, but are not limited to:
- * - STATUS_SUCCESS: The driver was successfully loaded.
- * - STATUS_INVALID_PARAMETER: The DriverServiceName parameter is invalid.
- * - STATUS_INSUFFICIENT_RESOURCES: There are insufficient resources to load the driver.
- * - STATUS_OBJECT_NAME_NOT_FOUND: The specified driver service name was not found.
- * - STATUS_OBJECT_PATH_NOT_FOUND: The path to the driver service was not found.
- * - STATUS_OBJECT_NAME_COLLISION: A driver with the same name already exists.
+ * The NtLoadDriver function loads a driver specified by the DriverServiceName parameter.
+ *
+ * \param DriverServiceName A pointer to a UNICODE_STRING structure that specifies the name of the driver service to load.
+ * \return NTSTATUS Successful or errant status.
  */
 __kernel_entry NTSYSCALLAPI
 NTSTATUS
@@ -2897,14 +3204,10 @@ ZwLoadDriver(
 );
 
 /**
- * @brief The NtUnloadDriver function unloads a driver specified by the DriverServiceName parameter.
- * @param DriverServiceName A pointer to a UNICODE_STRING structure that specifies the name of the driver service to unload.
- * @return NTSTATUS The status code returned by the function. Possible values include, but are not limited to:
- * - STATUS_SUCCESS: The driver was successfully unloaded.
- * - STATUS_INVALID_PARAMETER: The DriverServiceName parameter is invalid.
- * - STATUS_OBJECT_NAME_NOT_FOUND: The specified driver service name was not found.
- * - STATUS_OBJECT_PATH_NOT_FOUND: The path to the driver service was not found.
- * - STATUS_OBJECT_NAME_COLLISION: A driver with the same name already exists.
+ * The NtUnloadDriver function unloads a driver specified by the DriverServiceName parameter.
+ *
+ * \param DriverServiceName A pointer to a UNICODE_STRING structure that specifies the name of the driver service to unload.
+ * \return NTSTATUS Successful or errant status.
  */
 __kernel_entry NTSYSCALLAPI
 NTSTATUS

@@ -5,6 +5,9 @@
       <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
       <Extensions>h;hpp;hxx;hm;inl;inc;xsd;cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
     </Filter>
+    <Filter Include="Veil">
+      <UniqueIdentifier>{980ecd1d-8e54-4efa-b93f-8327fb201aa4}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Veil.Test.Main.cpp">
@@ -20,6 +23,105 @@
   <ItemGroup>
     <ClInclude Include="Universal.h">
       <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Veil\Veil.C.stdint.h">
+      <Filter>Veil</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Veil\Veil.System.ALPC.h">
+      <Filter>Veil</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Veil\Veil.System.ConfigurationManager.h">
+      <Filter>Veil</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Veil\Veil.System.Debug.h">
+      <Filter>Veil</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Veil\Veil.System.Define.h">
+      <Filter>Veil</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Veil\Veil.System.Device.Afd.h">
+      <Filter>Veil</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Veil\Veil.System.Device.h">
+      <Filter>Veil</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Veil\Veil.System.Device.Xusb.h">
+      <Filter>Veil</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Veil\Veil.System.Etw.h">
+      <Filter>Veil</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Veil\Veil.System.Executive.h">
+      <Filter>Veil</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Veil\Veil.System.IOManager.h">
+      <Filter>Veil</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Veil\Veil.System.KernelCore.h">
+      <Filter>Veil</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Veil\Veil.System.Loader.h">
+      <Filter>Veil</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Veil\Veil.System.MemoryManager.h">
+      <Filter>Veil</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Veil\Veil.System.MinCrypt.h">
+      <Filter>Veil</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Veil\Veil.System.Nls.h">
+      <Filter>Veil</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Veil\Veil.System.ObjectManager.h">
+      <Filter>Veil</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Veil\Veil.System.PNP.h">
+      <Filter>Veil</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Veil\Veil.System.PowerManager.h">
+      <Filter>Veil</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Veil\Veil.System.Prefetcher.h">
+      <Filter>Veil</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Veil\Veil.System.Process.h">
+      <Filter>Veil</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Veil\Veil.System.RuntimeLibrary.h">
+      <Filter>Veil</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Veil\Veil.System.Security.h">
+      <Filter>Veil</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Veil\Veil.System.SMBios.h">
+      <Filter>Veil</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Veil\Veil.System.SxS.h">
+      <Filter>Veil</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Veil\Veil.System.TransactionManager.h">
+      <Filter>Veil</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Veil\Veil.System.UserManagerService.h">
+      <Filter>Veil</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Veil\Veil.System.VDM.h">
+      <Filter>Veil</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Veil\Veil.System.VersionResource.h">
+      <Filter>Veil</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Veil\Veil.System.VirtualDesktop.h">
+      <Filter>Veil</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Veil\Veil.System.Win32.h">
+      <Filter>Veil</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Veil\Veil.System.WindowStation.h">
+      <Filter>Veil</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Veil\Veil.System.WinNT.h">
+      <Filter>Veil</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

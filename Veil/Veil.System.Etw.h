@@ -543,16 +543,16 @@ typedef struct _WMI_BUFFER_HEADER
 } WMI_BUFFER_HEADER, * PWMI_BUFFER_HEADER;
 
 static_assert(sizeof(WMI_BUFFER_HEADER) == 0x48, "WMI_BUFFER_HEADER must equal 0x48");
-C_ASSERT(FIELD_OFFSET(WMI_BUFFER_HEADER, BufferSize) == 0x0);
-C_ASSERT(FIELD_OFFSET(WMI_BUFFER_HEADER, SavedOffset) == 0x4);
-C_ASSERT(FIELD_OFFSET(WMI_BUFFER_HEADER, CurrentOffset) == 0x8);
-C_ASSERT(FIELD_OFFSET(WMI_BUFFER_HEADER, TimeStamp) == 0x10);
-C_ASSERT(FIELD_OFFSET(WMI_BUFFER_HEADER, SlistEntry) == 0x20);
-C_ASSERT(FIELD_OFFSET(WMI_BUFFER_HEADER, ClientContext) == 0x28);
-C_ASSERT(FIELD_OFFSET(WMI_BUFFER_HEADER, State) == 0x2c); // Compression
-C_ASSERT(FIELD_OFFSET(WMI_BUFFER_HEADER, Offset) == 0x30);
-C_ASSERT(FIELD_OFFSET(WMI_BUFFER_HEADER, BufferFlag) == 0x34);
-C_ASSERT(FIELD_OFFSET(WMI_BUFFER_HEADER, BufferType) == 0x36);
+STATIC_ASSERT(FIELD_OFFSET(WMI_BUFFER_HEADER, BufferSize) == 0x0);
+STATIC_ASSERT(FIELD_OFFSET(WMI_BUFFER_HEADER, SavedOffset) == 0x4);
+STATIC_ASSERT(FIELD_OFFSET(WMI_BUFFER_HEADER, CurrentOffset) == 0x8);
+STATIC_ASSERT(FIELD_OFFSET(WMI_BUFFER_HEADER, TimeStamp) == 0x10);
+STATIC_ASSERT(FIELD_OFFSET(WMI_BUFFER_HEADER, SlistEntry) == 0x20);
+STATIC_ASSERT(FIELD_OFFSET(WMI_BUFFER_HEADER, ClientContext) == 0x28);
+STATIC_ASSERT(FIELD_OFFSET(WMI_BUFFER_HEADER, State) == 0x2c); // Compression
+STATIC_ASSERT(FIELD_OFFSET(WMI_BUFFER_HEADER, Offset) == 0x30);
+STATIC_ASSERT(FIELD_OFFSET(WMI_BUFFER_HEADER, BufferFlag) == 0x34);
+STATIC_ASSERT(FIELD_OFFSET(WMI_BUFFER_HEADER, BufferType) == 0x36);
 
 typedef struct _TRACE_ENABLE_FLAG_EXTENSION
 {
@@ -622,6 +622,8 @@ typedef struct _PERFINFO_GROUPMASK
 
 #define PERF_GET_MASK_INDEX(GM) (((GM) & PERF_MASK_INDEX) >> 29)
 #define PERF_GET_MASK_GROUP(GM) ((GM) & PERF_MASK_GROUP)
+// rev
+#define PERF_GET_EVENT_TYPE(x) ((x) & 0xFF)
 
 #define PERFINFO_CLEAR_GROUPMASK(GroupMask) RtlZeroMemory((GroupMask), sizeof(PERFINFO_GROUPMASK))
 #define PERFINFO_OR_GROUP_WITH_GROUPMASK(Group, GroupMask) (GroupMask)->Masks[PERF_GET_MASK_INDEX(Group)] |= PERF_GET_MASK_GROUP(Group)
@@ -2704,6 +2706,7 @@ typedef struct _ETW_OBJECT_HANDLE_EVENT
     ULONG ProcessId;
     ULONG Handle;
     USHORT ObjectType;
+    WCHAR ObjectName[1];
 } ETW_OBJECT_HANDLE_EVENT, * PETW_OBJECT_HANDLE_EVENT;
 
 typedef struct _ETW_REFDEREF_OBJECT_EVENT
@@ -4615,7 +4618,7 @@ typedef enum _PERFINFO_KERNELMEMORY_USAGE_TYPE
     PerfInfoMemUsageMax
 } PERFINFO_KERNELMEMORY_USAGE_TYPE, * PPERFINFO_KERNELMEMORY_USAGE_TYPE;
 
-C_ASSERT(PerfInfoMemUsageMax <= (1 << PERFINFO_MM_KERNELMEMORY_USAGE_TYPE_BITS));
+STATIC_ASSERT(PerfInfoMemUsageMax <= (1 << PERFINFO_MM_KERNELMEMORY_USAGE_TYPE_BITS));
 
 typedef struct _PERFINFO_KERNELMEMORY_RANGE_USAGE
 {
@@ -4635,7 +4638,7 @@ typedef enum _PERFINFO_MM_STAT
     PerfInfoMMStatMax
 } PERFINFO_MM_STAT, * PPERFINFO_MM_STAT;
 
-C_ASSERT(PerfInfoMMStatMax <= (1 << PERFINFO_MM_STAT_TYPE_BITS));
+STATIC_ASSERT(PerfInfoMMStatMax <= (1 << PERFINFO_MM_STAT_TYPE_BITS));
 
 //
 // This is logged as part of the end rundown.
@@ -5152,17 +5155,17 @@ typedef struct _PERFINFO_DEBUG_EVENT
 //
 
 #define PERFINFO_CCSWAP_BIT_FULL_TS     30
-C_ASSERT(PERFINFO_CCSWAP_BIT_FULL_TS == (32 - PERFINFO_CCSWAP_BIT_TYPE));
+STATIC_ASSERT(PERFINFO_CCSWAP_BIT_FULL_TS == (32 - PERFINFO_CCSWAP_BIT_TYPE));
 
 #define PERFINFO_CCSWAP_BIT_SHORT_TS    14
-C_ASSERT(PERFINFO_CCSWAP_BIT_SHORT_TS == (16 - PERFINFO_CCSWAP_BIT_TYPE));
+STATIC_ASSERT(PERFINFO_CCSWAP_BIT_SHORT_TS == (16 - PERFINFO_CCSWAP_BIT_TYPE));
 
 #define PERFINFO_CCSWAP_BIT_SMALL_TS    17
-C_ASSERT(PERFINFO_CCSWAP_BIT_SMALL_TS ==
+STATIC_ASSERT(PERFINFO_CCSWAP_BIT_SMALL_TS ==
     (32 - PERFINFO_CCSWAP_BIT_TYPE - PERFINFO_CCSWAP_BIT_TID - PERFINFO_CCSWAP_BIT_PRI_INC - PERFINFO_CCSWAP_BIT_STATE_WR));
 
 #define PERFINFO_CCSWAP_BIT_WAIT_TIME   17
-C_ASSERT(PERFINFO_CCSWAP_BIT_WAIT_TIME ==
+STATIC_ASSERT(PERFINFO_CCSWAP_BIT_WAIT_TIME ==
     (32 - PERFINFO_CCSWAP_BIT_TID - PERFINFO_CCSWAP_BIT_STATE_WR - PERFINFO_CCSWAP_BIT_PRIORITY));
 
 //
@@ -5372,7 +5375,7 @@ typedef struct _PERFINFO_IO_TIMER
 #define TLG_KERNEL_PSPROV_KEYWORD_UTC       0x00000002
 
 //
-// Logger configuration and running statistics. This structure is used
+// Logger configuration and statistics.
 //
 
 typedef struct _WMI_LOGGER_INFORMATION
@@ -5385,66 +5388,86 @@ typedef struct _WMI_LOGGER_INFORMATION
     ULONG LogFileMode;                  // sequential, circular
     ULONG FlushTimer;                   // buffer flush timer, in seconds
     ULONG EnableFlags;                  // trace enable flags
+
     union
     {
-        LONG  AgeLimit;                 // aging decay time, in minutes
+        LONG AgeLimit;                  // aging decay time, in minutes
         LONG FlushThreshold;            // Number of buffers to fill before flushing
     } DUMMYUNIONNAME;
-    ULONG Wow;                          // TRUE if the logger started under WOW64
+
     union
     {
-        HANDLE  LogFileHandle;          // handle to logfile
-        ULONG64 LogFileHandle64;
+        struct
+        {
+            ULONG Wow : 1;              // TRUE if the logger started under WOW64
+            ULONG QpcDeltaTracking : 1;
+            ULONG LargeMdlPages : 1;
+            ULONG ExcludeKernelStack : 1;
+        };
+        ULONG64 V2Options;
     } DUMMYUNIONNAME2;
+
+    union
+    {
+        HANDLE  LogFileHandle;          // Handle to logfile
+        ULONG64 LogFileHandle64;
+    } DUMMYUNIONNAME3;
+
     union
     {
         ULONG NumberOfBuffers;          // no of buffers in use
         ULONG InstanceCount;            // Number of Provider Instances
-    } DUMMYUNIONNAME3;
+    } DUMMYUNIONNAME4;
+
     union
     {
         ULONG FreeBuffers;              // no of buffers free
         ULONG InstanceId;               // Current Provider's Id for UmLogger
-    } DUMMYUNIONNAME4;
+    } DUMMYUNIONNAME5;
+
     union
     {
         ULONG EventsLost;               // event records lost
         ULONG NumberOfProcessors;       // Passed on to UmLogger
-    } DUMMYUNIONNAME5;
+    } DUMMYUNIONNAME6;
+
     ULONG BuffersWritten;               // no of buffers written to file
+
     union
     {
         ULONG LogBuffersLost;           // no of logfile write failures
         ULONG Flags;                    // internal flags
-    } DUMMYUNIONNAME6;
+    } DUMMYUNIONNAME7;
 
     ULONG RealTimeBuffersLost;          // no of rt delivery failures
+
     union
     {
         HANDLE  LoggerThreadId;         // thread id of Logger
         ULONG64 LoggerThreadId64;       // thread is of Logger
-    } DUMMYUNIONNAME7;
+    } DUMMYUNIONNAME8;
+
     union
     {
         UNICODE_STRING LogFileName;     // used only in WIN64
         UNICODE_STRING64 LogFileName64; // Logfile name: only in WIN32
-    } DUMMYUNIONNAME8;
+    } DUMMYUNIONNAME9;
 
-    // mandatory data provided by caller
     union
     {
         UNICODE_STRING LoggerName;      // Logger instance name in WIN64
         UNICODE_STRING64 LoggerName64;  // Logger Instance name in WIN32
-    } DUMMYUNIONNAME9;
+    };
 
     ULONG RealTimeConsumerCount;        // Number of rt consumers
-    ULONG SpareUlong;
+
+    ULONG SequenceNumber;
 
     union
     {
         PVOID   LoggerExtension;
         ULONG64 LoggerExtension64;
-    } DUMMYUNIONNAME10;
+    };
 } WMI_LOGGER_INFORMATION, * PWMI_LOGGER_INFORMATION;
 
 #define ETW_SYSTEM_EVENT_VERSION_MASK        0x000000FF
@@ -6052,7 +6075,7 @@ ZwTraceEvent(
 // private
 typedef struct _TELEMETRY_COVERAGE_POINT
 {
-    PWSTR Name;
+    PSTR  Name;
     ULONG Hash;
     ULONG LastCoveredRound;
     ULONG Flags;

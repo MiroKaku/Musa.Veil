@@ -266,6 +266,7 @@ struct IUnknown;
 #define  UMDF_USING_NTSTATUS
 
 #include <stdint.h>
+#include <winsock2.h>
 #include <windows.h>
 #include <winioctl.h>
 #include <ntstatus.h>
@@ -332,6 +333,7 @@ struct IUnknown;
 #include "Veil/Veil.System.VirtualDesktop.h"
 #include "Veil/Veil.System.Win32.h"
 #include "Veil/Veil.System.Device.h"
+#include "Veil/Veil.System.Device.Afd.h"
 #include "Veil/Veil.System.PNP.h"
 #include "Veil/Veil.System.TransactionManager.h"
 #include "Veil/Veil.System.VDM.h"

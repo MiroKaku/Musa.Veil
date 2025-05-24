@@ -1,0 +1,25 @@
+<Solution>
+  <Configurations>
+    <Platform Name="ARM64" />
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Folder Name="/ReadMe/">
+    <File Path="../COPYRIGHT.md" />
+    <File Path="../LICENSE" />
+    <File Path="../README.md" />
+    <File Path="../README.Zh-CN.md" />
+  </Folder>
+  <Project Path="Veil.Test.Kernel.C.vcxproj" Id="eefda379-054b-4d7b-8e48-71522f01665e">
+    <Build Solution="*|x86" Project="false" />
+    <Deploy Solution="*|ARM64" />
+    <Deploy Solution="*|x64" />
+  </Project>
+  <Project Path="Veil.Test.Kernel.vcxproj" Id="d4c32b71-563d-41b9-906d-d9ba4df46c7c">
+    <Build Solution="*|x86" Project="false" />
+    <Deploy Solution="*|ARM64" />
+    <Deploy Solution="*|x64" />
+  </Project>
+  <Project Path="Veil.Test.UserMode.C.vcxproj" Id="4e5df292-45b9-44b4-b475-dc0168b63056" />
+  <Project Path="Veil.Test.UserMode.vcxproj" Id="5e94fd3f-3f19-4c3e-b7de-43cb0877224f" />
+</Solution>
