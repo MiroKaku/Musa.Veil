@@ -7777,9 +7777,26 @@ RtlProtectHeap(
     _In_ BOOLEAN MakeReadOnly
 );
 
-#ifndef _KERNEL_MODE
-#define RtlProcessHeap() (NtCurrentPeb()->ProcessHeap)
-#endif
+NTSYSAPI
+PVOID
+NTAPI
+RtlProcessHeap(VOID);
+
+#if !defined(_KERNEL_MODE)
+inline
+PVOID
+NTAPI
+_VEIL_IMPL_RtlProcessHeap(VOID)
+{
+    return NtCurrentPeb()->ProcessHeap;
+}
+
+#if defined _M_IX86
+_VEIL_DEFINE_IAT_RAW_SYMBOL(RtlProcessHeap@0, _VEIL_IMPL_RtlProcessHeap);
+#elif defined _M_X64 || defined _M_ARM || defined _M_ARM64
+_VEIL_DEFINE_IAT_SYMBOL(RtlProcessHeap, _VEIL_IMPL_RtlProcessHeap);
+#endif // defined _M_X64 || defined _M_ARM || defined _M_ARM64
+#endif // !defined(_KERNEL_MODE)
 
 NTSYSAPI
 BOOLEAN

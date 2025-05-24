@@ -111,12 +111,12 @@
 #ifdef __cplusplus
 #define _VEIL_DEFINE_IAT_SYMBOL(sym, fun) \
     extern "C" __declspec(selectany) void const* const _VEIL_DEFINE_IAT_SYMBOL_MAKE_NAME(sym) \
-        = reinterpret_cast<void const*>(fun);
+        = reinterpret_cast<void const*>(fun)
 
 #define _VEIL_DEFINE_IAT_RAW_SYMBOL(sym, fun) \
     __pragma(warning(suppress:4483)) \
     extern "C" __declspec(selectany) void const* const __identifier(_VEIL_STRINGIZE(_VEIL_DEFINE_IAT_SYMBOL_MAKE_NAME(sym))) \
-        = reinterpret_cast<void const*>(fun);
+        = reinterpret_cast<void const*>(fun)
 
 #else
 #define _VEIL_DEFINE_IAT_SYMBOL(sym, fun) \
@@ -298,6 +298,7 @@ struct IUnknown;
 #pragma warning(push)
 #pragma warning(disable:4324) // structure was padded due to __declspec(align())
 #include <fltKernel.h>
+#include <wdm.h>
 #include <ntimage.h>
 #pragma warning(pop)
 
