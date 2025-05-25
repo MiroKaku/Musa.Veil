@@ -4671,7 +4671,7 @@ NtChangeThreadState(
     _In_ THREAD_STATE_CHANGE_TYPE StateChangeType,
     _In_opt_ PVOID ExtendedInformation,
     _In_opt_ SIZE_T ExtendedInformationLength,
-    _In_opt_ ULONG64 Reserved
+    _In_opt_ _Reserved_ ULONG Reserved
 );
 
 _IRQL_requires_max_(PASSIVE_LEVEL)
@@ -4684,7 +4684,7 @@ ZwChangeThreadState(
     _In_ THREAD_STATE_CHANGE_TYPE StateChangeType,
     _In_opt_ PVOID ExtendedInformation,
     _In_opt_ SIZE_T ExtendedInformationLength,
-    _In_opt_ ULONG64 Reserved
+    _In_opt_ _Reserved_ ULONG Reserved
 );
 #endif
 
