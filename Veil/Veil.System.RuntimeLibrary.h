@@ -9474,6 +9474,33 @@ RtlSetTimeZoneInformation(
     _In_ PRTL_TIME_ZONE_INFORMATION TimeZoneInformation
 );
 
+typedef struct _RTL_TIME_DYNAMIC_ZONE_INFORMATION
+{
+    LONG Bias;
+    WCHAR StandardName[32];
+    TIME_FIELDS StandardDate;
+    LONG StandardBias;
+    WCHAR DaylightName[32];
+    TIME_FIELDS DaylightDate;
+    LONG DaylightBias;
+    WCHAR TimeZoneKeyName[128];
+    BOOLEAN DynamicDaylightTimeDisabled;
+} RTL_DYNAMIC_TIME_ZONE_INFORMATION, * PRTL_DYNAMIC_TIME_ZONE_INFORMATION;
+
+NTSYSAPI
+NTSTATUS
+NTAPI
+RtlQueryDynamicTimeZoneInformation(
+    _Out_ PRTL_DYNAMIC_TIME_ZONE_INFORMATION DynamicTimeZoneInformation
+);
+
+NTSYSAPI
+NTSTATUS
+NTAPI
+RtlSetDynamicTimeZoneInformation(
+    _In_ PRTL_DYNAMIC_TIME_ZONE_INFORMATION DynamicTimeZoneInformation
+);
+
 //
 // Interlocked bit manipulation interfaces
 //
