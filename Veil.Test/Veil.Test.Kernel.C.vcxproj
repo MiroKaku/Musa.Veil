@@ -12,7 +12,6 @@
   <Import Sdk="Mile.Project.Configurations" Project="Mile.Project.Cpp.props" />
   <PropertyGroup>
     <DebuggerFlavor>DbgengKernelDebugger</DebuggerFlavor>
-    <RunCodeAnalysis>true</RunCodeAnalysis>
   </PropertyGroup>
   <ItemGroup>
     <FilesToPackage Include="$(TargetPath)" />

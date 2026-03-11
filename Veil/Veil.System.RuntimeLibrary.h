@@ -2680,41 +2680,44 @@ RtlWakeAddressSingleNoFence(
 // \remarks RCU synchronization is not for general-purpose synchronization.
 // Teb->Rcu is used to store the RCU state.
 
+typedef struct _RTL_RCU_STATE RTL_RCU_STATE, *PRTL_RCU_STATE;
+typedef ULONG_PTR RTL_RCU_COOKIE, *PRTL_RCU_COOKIE;
+
 NTSYSAPI
-PVOID
+PRTL_RCU_STATE
 NTAPI
 RtlRcuAllocate(
-    _In_ SIZE_T Size
+    _In_ ULONG Flags
 );
 
 NTSYSAPI
 LOGICAL
 NTAPI
 RtlRcuFree(
-    _In_ PULONG Rcu
+    _In_ PRTL_RCU_STATE State
 );
 
 NTSYSAPI
 VOID
 NTAPI
 RtlRcuReadLock(
-    _Inout_ PRTL_SRWLOCK SRWLock,
-    _Out_ PULONG Rcu
+    _Inout_ PRTL_RCU_STATE State,
+    _Out_ PRTL_RCU_COOKIE Cookie
 );
 
 NTSYSAPI
 VOID
 NTAPI
 RtlRcuReadUnlock(
-    _Inout_ PRTL_SRWLOCK SRWLock,
-    _Inout_ PULONG* Rcu
+    _Inout_ PRTL_RCU_STATE State,
+    _Inout_ PRTL_RCU_COOKIE Cookie
 );
 
 NTSYSAPI
 LONG
 NTAPI
 RtlRcuSynchronize(
-    _Inout_ PRTL_SRWLOCK SRWLock
+    _Inout_ PRTL_RCU_STATE State
 );
 #endif // (NTDDI_VERSION >= NTDDI_WIN11)
 #endif // !_KERNEL_MODE
@@ -4960,14 +4963,14 @@ typedef struct _RTL_USER_PROCESS_PARAMETERS
 
     PVOID PackageDependencyData;
     ULONG ProcessGroupId;
-    ULONG LoaderThreads;
+    ULONG LoaderThreads; // THRESHOLD
 
-    UNICODE_STRING RedirectionDllName; // REDSTONE4
+    UNICODE_STRING RedirectionDllName; // REDSTONE5
     UNICODE_STRING HeapPartitionName; // 19H1
     PULONGLONG DefaultThreadpoolCpuSetMasks;
     ULONG DefaultThreadpoolCpuSetMaskCount;
-    ULONG DefaultThreadpoolThreadMaximum;
-    ULONG HeapMemoryTypeMask; // WIN11
+    ULONG DefaultThreadpoolThreadMaximum; // 20H1
+    ULONG HeapMemoryTypeMask; // WIN11 22H2
 } RTL_USER_PROCESS_PARAMETERS, * PRTL_USER_PROCESS_PARAMETERS;
 
 STATIC_ASSERT(sizeof(RTL_USER_PROCESS_PARAMETERS) == (sizeof(void*) == sizeof(__int32) ? 708 : 1096));
@@ -11827,6 +11830,7 @@ RtlNewSecurityGrantedAccess(
 // begin_private
 
 // rev
+#define BOUNDARY_DESCRIPTOR_FLAG_NONE 0x0
 #define BOUNDARY_DESCRIPTOR_ADD_APPCONTAINER_SID 0x0001
 
 NTSYSAPI

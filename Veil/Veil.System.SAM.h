@@ -236,19 +236,20 @@ SamShutdownSamServer(
 
 typedef enum _DOMAIN_INFORMATION_CLASS
 {
-    DomainPasswordInformation = 1, // q; s: DOMAIN_PASSWORD_INFORMATION
-    DomainGeneralInformation,      // q: DOMAIN_GENERAL_INFORMATION
-    DomainLogoffInformation,       // q; s: DOMAIN_LOGOFF_INFORMATION
-    DomainOemInformation,          // q; s: DOMAIN_OEM_INFORMATION
-    DomainNameInformation,         // q: DOMAIN_NAME_INFORMATION
-    DomainReplicationInformation,  // q; s: DOMAIN_REPLICATION_INFORMATION
-    DomainServerRoleInformation,   // q; s: DOMAIN_SERVER_ROLE_INFORMATION
-    DomainModifiedInformation,     // q: DOMAIN_MODIFIED_INFORMATION
-    DomainStateInformation,        // q; s: DOMAIN_STATE_INFORMATION
-    DomainUasInformation,          // q; s: DOMAIN_UAS_INFORMATION
-    DomainGeneralInformation2,     // q: DOMAIN_GENERAL_INFORMATION2
-    DomainLockoutInformation,      // q; s: DOMAIN_LOCKOUT_INFORMATION
-    DomainModifiedInformation2     // q: DOMAIN_MODIFIED_INFORMATION2
+    DomainPasswordInformation = 1,      // qs: DOMAIN_PASSWORD_INFORMATION
+    DomainGeneralInformation,           // q: DOMAIN_GENERAL_INFORMATION
+    DomainLogoffInformation,            // qs: DOMAIN_LOGOFF_INFORMATION
+    DomainOemInformation,               // qs: DOMAIN_OEM_INFORMATION
+    DomainNameInformation,              // q: DOMAIN_NAME_INFORMATION
+    DomainReplicationInformation,       // qs: DOMAIN_REPLICATION_INFORMATION
+    DomainServerRoleInformation,        // qs: DOMAIN_SERVER_ROLE_INFORMATION
+    DomainModifiedInformation,          // q: DOMAIN_MODIFIED_INFORMATION
+    DomainStateInformation,             // qs: DOMAIN_STATE_INFORMATION
+    DomainUasInformation,               // qs: DOMAIN_UAS_INFORMATION
+    DomainGeneralInformation2,          // q: DOMAIN_GENERAL_INFORMATION2
+    DomainLockoutInformation,           // qs: DOMAIN_LOCKOUT_INFORMATION
+    DomainModifiedInformation2,         // q: DOMAIN_MODIFIED_INFORMATION2
+    DomainMaxInformation
 } DOMAIN_INFORMATION_CLASS;
 
 typedef enum _DOMAIN_SERVER_ENABLE_STATE
@@ -375,12 +376,13 @@ typedef struct _DOMAIN_LOCKOUT_INFORMATION
 
 typedef enum _DOMAIN_DISPLAY_INFORMATION
 {
-    DomainDisplayUser = 1, // DOMAIN_DISPLAY_USER
-    DomainDisplayMachine, // DOMAIN_DISPLAY_MACHINE
-    DomainDisplayGroup, // DOMAIN_DISPLAY_GROUP
-    DomainDisplayOemUser, // DOMAIN_DISPLAY_OEM_USER
-    DomainDisplayOemGroup, // DOMAIN_DISPLAY_OEM_GROUP
-    DomainDisplayServer
+    DomainDisplayUser = 1,      // DOMAIN_DISPLAY_USER
+    DomainDisplayMachine,       // DOMAIN_DISPLAY_MACHINE
+    DomainDisplayGroup,         // DOMAIN_DISPLAY_GROUP
+    DomainDisplayOemUser,       // DOMAIN_DISPLAY_OEM_USER
+    DomainDisplayOemGroup,      // DOMAIN_DISPLAY_OEM_GROUP
+    DomainDisplayServer,        // DOMAIN_DISPLAY_MACHINE
+    DomainDisplayMax
 } DOMAIN_DISPLAY_INFORMATION, * PDOMAIN_DISPLAY_INFORMATION;
 
 typedef struct _DOMAIN_DISPLAY_USER
@@ -591,11 +593,12 @@ typedef struct _GROUP_MEMBERSHIP
 
 typedef enum _GROUP_INFORMATION_CLASS
 {
-    GroupGeneralInformation = 1, // q: GROUP_GENERAL_INFORMATION
-    GroupNameInformation, // q; s: GROUP_NAME_INFORMATION
-    GroupAttributeInformation, // q; s: GROUP_ATTRIBUTE_INFORMATION
-    GroupAdminCommentInformation, // q; s: GROUP_ADM_COMMENT_INFORMATION
-    GroupReplicationInformation
+    GroupGeneralInformation = 1,        // q: GROUP_GENERAL_INFORMATION
+    GroupNameInformation,               // qs: GROUP_NAME_INFORMATION
+    GroupAttributeInformation,          // qs: GROUP_ATTRIBUTE_INFORMATION
+    GroupAdminCommentInformation,       // qs: GROUP_ADM_COMMENT_INFORMATION
+    GroupReplicationInformation,        // q: GROUP_REPLICATION_INFORMATION
+    GroupMaxInformation
 } GROUP_INFORMATION_CLASS;
 
 typedef struct _GROUP_GENERAL_INFORMATION
@@ -620,6 +623,11 @@ typedef struct _GROUP_ADM_COMMENT_INFORMATION
 {
     UNICODE_STRING AdminComment;
 } GROUP_ADM_COMMENT_INFORMATION, * PGROUP_ADM_COMMENT_INFORMATION;
+
+typedef struct _GROUP_REPLICATION_INFORMATION
+{
+    LARGE_INTEGER LastWriteTime;
+} GROUP_REPLICATION_INFORMATION, *PGROUP_REPLICATION_INFORMATION;
 
 //
 // Functions
@@ -750,11 +758,12 @@ SamSetMemberAttributesOfGroup(
 
 typedef enum _ALIAS_INFORMATION_CLASS
 {
-    AliasGeneralInformation = 1, // q: ALIAS_GENERAL_INFORMATION
-    AliasNameInformation, // q; s: ALIAS_NAME_INFORMATION
-    AliasAdminCommentInformation, // q; s: ALIAS_ADM_COMMENT_INFORMATION
-    AliasReplicationInformation,
-    AliasExtendedInformation,
+    AliasGeneralInformation = 1,        // q: ALIAS_GENERAL_INFORMATION
+    AliasNameInformation,               // qs: ALIAS_NAME_INFORMATION
+    AliasAdminCommentInformation,       // qs: ALIAS_ADM_COMMENT_INFORMATION
+    AliasReplicationInformation,        // q: ALIAS_REPLICATION_INFORMATION
+    AliasExtendedInformation,           // q: ALIAS_EXTENDED_INFORMATION
+    AliasMaxInformation
 } ALIAS_INFORMATION_CLASS;
 
 typedef struct _ALIAS_GENERAL_INFORMATION
@@ -773,6 +782,11 @@ typedef struct _ALIAS_ADM_COMMENT_INFORMATION
 {
     UNICODE_STRING AdminComment;
 } ALIAS_ADM_COMMENT_INFORMATION, * PALIAS_ADM_COMMENT_INFORMATION;
+
+typedef struct _ALIAS_REPLICATION_INFORMATION
+{
+    LARGE_INTEGER LastWriteTime;
+} ALIAS_REPLICATION_INFORMATION, *PALIAS_REPLICATION_INFORMATION;
 
 #define ALIAS_ALL_NAME (0x00000001L)
 #define ALIAS_ALL_MEMBER_COUNT (0x00000002L)

@@ -6924,14 +6924,14 @@ typedef enum _JOBOBJECTINFOCLASS
 #define JobObjectExtendedAccountingInformation      ((_JOBOBJECTINFOCLASS)19) // qs: JOBOBJECT_EXTENDED_ACCOUNTING_INFORMATION
 #define JobObjectWakeInformation                    ((_JOBOBJECTINFOCLASS)20) // qs: JOBOBJECT_WAKE_INFORMATION
 #define JobObjectBackgroundInformation              ((_JOBOBJECTINFOCLASS)21) // s: BOOLEAN
-#define JobObjectSchedulingRankBiasInformation      ((_JOBOBJECTINFOCLASS)22) //
-#define JobObjectTimerVirtualizationInformation     ((_JOBOBJECTINFOCLASS)23) //
-#define JobObjectCycleTimeNotification              ((_JOBOBJECTINFOCLASS)24) //
-#define JobObjectClearEvent                         ((_JOBOBJECTINFOCLASS)25) //
+#define JobObjectSchedulingRankBiasInformation      ((_JOBOBJECTINFOCLASS)22) // s: JOBOBJECT_SCHEDULING_RANK_BIAS_INFORMATION
+#define JobObjectTimerVirtualizationInformation     ((_JOBOBJECTINFOCLASS)23) // s: JOBOBJECT_TIMER_VIRTUALIZATION_INFORMATION
+#define JobObjectCycleTimeNotification              ((_JOBOBJECTINFOCLASS)24) // s: JOBOBJECT_CYCLE_TIME_NOTIFICATION
+#define JobObjectClearEvent                         ((_JOBOBJECTINFOCLASS)25) // s: HANDLE
 #define JobObjectInterferenceInformation            ((_JOBOBJECTINFOCLASS)26) // q: JOBOBJECT_INTERFERENCE_INFORMATION
-#define JobObjectClearPeakJobMemoryUsed             ((_JOBOBJECTINFOCLASS)27) //
+#define JobObjectClearPeakJobMemoryUsed             ((_JOBOBJECTINFOCLASS)27) // s: NULL
 #define JobObjectMemoryUsageInformation             ((_JOBOBJECTINFOCLASS)28) // q: JOBOBJECT_MEMORY_USAGE_INFORMATION // JOBOBJECT_MEMORY_USAGE_INFORMATION_V2
-#define JobObjectSharedCommit                       ((_JOBOBJECTINFOCLASS)29) //
+#define JobObjectSharedCommit                       ((_JOBOBJECTINFOCLASS)29) // q: JOBOBJECT_SHARED_COMMIT
 #define JobObjectContainerId                        ((_JOBOBJECTINFOCLASS)30) // q: JOBOBJECT_CONTAINER_IDENTIFIER_V2
 #define JobObjectIoRateControlInformation           ((_JOBOBJECTINFOCLASS)31) // qs: JOBOBJECT_IO_RATE_CONTROL_INFORMATION_NATIVE, JOBOBJECT_IO_RATE_CONTROL_INFORMATION_NATIVE_V2, JOBOBJECT_IO_RATE_CONTROL_INFORMATION_NATIVE_V3
 #define JobObjectNetRateControlInformation          ((_JOBOBJECTINFOCLASS)32) // qs: JOBOBJECT_NET_RATE_CONTROL_INFORMATION
@@ -6943,18 +6943,18 @@ typedef enum _JOBOBJECTINFOCLASS
 #define JobObjectServerSiloBasicInformation         ((_JOBOBJECTINFOCLASS)38) // q: SERVERSILO_BASIC_INFORMATION
 #define JobObjectServerSiloUserSharedData           ((_JOBOBJECTINFOCLASS)39) // q: SILO_USER_SHARED_DATA // NtQueryInformationJobObject(NULL, 39, Buffer, sizeof(SILO_USER_SHARED_DATA), 0);
 #define JobObjectServerSiloInitialize               ((_JOBOBJECTINFOCLASS)40) // qs: SERVERSILO_INIT_INFORMATION
-#define JobObjectServerSiloRunningState             ((_JOBOBJECTINFOCLASS)41) //
+#define JobObjectServerSiloRunningState             ((_JOBOBJECTINFOCLASS)41) // s: BOOLEAN
 #define JobObjectIoAttribution                      ((_JOBOBJECTINFOCLASS)42) // q: JOBOBJECT_IO_ATTRIBUTION_INFORMATION
-#define JobObjectMemoryPartitionInformation         ((_JOBOBJECTINFOCLASS)43) //
+#define JobObjectMemoryPartitionInformation         ((_JOBOBJECTINFOCLASS)43) // qs: JOBOBJECT_MEMORY_PARTITION_INFORMATION
 #define JobObjectContainerTelemetryId               ((_JOBOBJECTINFOCLASS)44) // s: GUID // NtSetInformationJobObject(_In_ PGUID, 44, _In_ PGUID, sizeof(GUID)); // daxexec
 #define JobObjectSiloSystemRoot                     ((_JOBOBJECTINFOCLASS)45) // s: UNICODE_STRING
 #define JobObjectEnergyTrackingState                ((_JOBOBJECTINFOCLASS)46) // q: JOBOBJECT_ENERGY_TRACKING_STATE
-#define JobObjectThreadImpersonationInformation     ((_JOBOBJECTINFOCLASS)47) // q; s: BOOLEAN
+#define JobObjectThreadImpersonationInformation     ((_JOBOBJECTINFOCLASS)47) // qs: BOOLEAN
 #define JobObjectIoPriorityLimit                    ((_JOBOBJECTINFOCLASS)48) // qs: JOBOBJECT_IO_PRIORITY_LIMIT
 #define JobObjectPagePriorityLimit                  ((_JOBOBJECTINFOCLASS)49) // qs: JOBOBJECT_PAGE_PRIORITY_LIMIT
 #define JobObjectServerSiloDiagnosticInformation    ((_JOBOBJECTINFOCLASS)50) // q: SERVERSILO_DIAGNOSTIC_INFORMATION // since 24H2
 #define JobObjectNetworkAccountingInformation       ((_JOBOBJECTINFOCLASS)51) // q: JOBOBJECT_NETWORK_ACCOUNTING_INFORMATION
-#define JobObjectCpuPartition                       ((_JOBOBJECTINFOCLASS)52) // since 25H2
+#define JobObjectCpuPartition                       ((_JOBOBJECTINFOCLASS)52) // qs: JOBOBJECT_CPU_PARTITION_INFORMATION // since 25H2
 #define MaxJobObjectInfoClass                       ((_JOBOBJECTINFOCLASS)53)
 #endif // _KERNEL_MODE
 
@@ -7013,6 +7013,43 @@ typedef struct _JOBOBJECT_EXTENDED_LIMIT_INFORMATION_V2
     SIZE_T PeakJobMemoryUsed;
     SIZE_T JobTotalMemoryLimit;
 } JOBOBJECT_EXTENDED_LIMIT_INFORMATION_V2, * PJOBOBJECT_EXTENDED_LIMIT_INFORMATION_V2;
+
+// private
+typedef struct _JOBOBJECT_SCHEDULING_RANK_BIAS_INFORMATION
+{
+    ULONG SchedulingRankBias;
+} JOBOBJECT_SCHEDULING_RANK_BIAS_INFORMATION, * PJOBOBJECT_SCHEDULING_RANK_BIAS_INFORMATION;
+
+// private
+typedef struct _JOBOBJECT_TIMER_VIRTUALIZATION_INFORMATION
+{
+    ULONG TimerVirtualizationEnabled;
+} JOBOBJECT_TIMER_VIRTUALIZATION_INFORMATION, * PJOBOBJECT_TIMER_VIRTUALIZATION_INFORMATION;
+
+// private
+typedef struct _JOBOBJECT_CYCLE_TIME_NOTIFICATION
+{
+    HANDLE NotificationChannel;
+    ULONG64 CycleTime;
+} JOBOBJECT_CYCLE_TIME_NOTIFICATION, * PJOBOBJECT_CYCLE_TIME_NOTIFICATION;
+
+// private
+typedef struct _JOBOBJECT_SHARED_COMMIT
+{
+    ULONG64 SharedCommit;
+} JOBOBJECT_SHARED_COMMIT, * PJOBOBJECT_SHARED_COMMIT;
+
+// private
+typedef struct _JOBOBJECT_MEMORY_PARTITION_INFORMATION
+{
+    ULONG_PTR PartitionId;
+} JOBOBJECT_MEMORY_PARTITION_INFORMATION, * PJOBOBJECT_MEMORY_PARTITION_INFORMATION;
+
+// private
+typedef struct _JOBOBJECT_CPU_PARTITION_INFORMATION
+{
+    ULONG_PTR PartitionId;
+} JOBOBJECT_CPU_PARTITION_INFORMATION, * PJOBOBJECT_CPU_PARTITION_INFORMATION;
 
 // private
 typedef struct _JOBOBJECT_EXTENDED_ACCOUNTING_INFORMATION
@@ -7149,11 +7186,13 @@ typedef struct _JOBOBJECT_ENERGY_TRACKING_STATE
 } JOBOBJECT_ENERGY_TRACKING_STATE, * PJOBOBJECT_ENERGY_TRACKING_STATE;
 
 // private
+_Enum_is_bitflag_
 typedef enum _JOBOBJECT_IO_PRIORITY_LIMIT_FLAGS
 {
     JOBOBJECT_IO_PRIORITY_LIMIT_ENABLE = 0x1,
     JOBOBJECT_IO_PRIORITY_LIMIT_VALID_FLAGS = 0x1,
 } JOBOBJECT_IO_PRIORITY_LIMIT_FLAGS;
+DEFINE_ENUM_FLAG_OPERATORS(JOBOBJECT_IO_PRIORITY_LIMIT_FLAGS);
 
 // private
 typedef struct _JOBOBJECT_IO_PRIORITY_LIMIT
@@ -7163,11 +7202,13 @@ typedef struct _JOBOBJECT_IO_PRIORITY_LIMIT
 } JOBOBJECT_IO_PRIORITY_LIMIT, * PJOBOBJECT_IO_PRIORITY_LIMIT;
 
 // private
+_Enum_is_bitflag_
 typedef enum _JOBOBJECT_PAGE_PRIORITY_LIMIT_FLAGS
 {
     JOBOBJECT_PAGE_PRIORITY_LIMIT_ENABLE = 0x1,
     JOBOBJECT_PAGE_PRIORITY_LIMIT_VALID_FLAGS = 0x1,
 } JOBOBJECT_PAGE_PRIORITY_LIMIT_FLAGS;
+DEFINE_ENUM_FLAG_OPERATORS(JOBOBJECT_PAGE_PRIORITY_LIMIT_FLAGS);
 
 // private
 typedef struct _JOBOBJECT_PAGE_PRIORITY_LIMIT

@@ -350,5 +350,6 @@ struct IUnknown;
 #include "Veil/Veil.System.D3DKMT.h"
 #include "Veil/Veil.System.SAM.h"
 #include "Veil/Veil.System.SMSS.h"
+#include "Veil/Veil.System.AppPackage.h"
 
 #endif // _VEIL_

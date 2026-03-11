@@ -26,6 +26,7 @@
 #endif
 
 #include <ws2def.h>
+#include <mswsockdef.h>
 #include <tdi.h>
 #include <qos.h>
 
@@ -1098,6 +1099,15 @@ typedef enum _AFD_RIO_NOTIFICATION_COMPLETION_TYPE
 } AFD_RIO_NOTIFICATION_COMPLETION_TYPE, *PAFD_RIO_NOTIFICATION_COMPLETION_TYPE;
 
 // private
+typedef struct _AFD_RIO_COMPLETION_QUEUE
+{
+    ULONG QHead;
+    ULONG QTail;
+    BOOLEAN Corrupted;
+    RIORESULT QEntry[ANYSIZE_ARRAY];
+} AFD_RIO_COMPLETION_QUEUE, *PAFD_RIO_COMPLETION_QUEUE;
+
+// private
 typedef struct _AFD_RIO_COMMAND_CREATE_CQ
 {
     AFD_RIO_COMMAND_HEADER               Header;
@@ -1107,7 +1117,7 @@ typedef struct _AFD_RIO_COMMAND_CREATE_CQ
     ULONGLONG                            NotificationContext;
     ULONGLONG                            NotificationContext2;
     ULONG                                BufferSize;
-    ULONGLONG                            Buffer;
+    ULONGLONG                            Buffer; // PAFD_RIO_COMPLETION_QUEUE
 } AFD_RIO_COMMAND_CREATE_CQ, *PAFD_RIO_COMMAND_CREATE_CQ;
 
 // private
@@ -1131,6 +1141,35 @@ typedef struct _AFD_RIO_COMMAND_NOTIFY_CQ
 } AFD_RIO_COMMAND_NOTIFY_CQ, *PAFD_RIO_COMMAND_NOTIFY_CQ;
 
 // private
+typedef struct _AFD_RIO_BUF
+{
+    ULONG BufferId;
+    ULONG Offset;
+    ULONG Length;
+} AFD_RIO_BUF, *PAFD_RIO_BUF;
+
+// private
+typedef struct _AFD_RIO_REQUEST_QUEUE_ENTRY
+{
+    AFD_RIO_BUF Data;
+    AFD_RIO_BUF SourceAddress;
+    AFD_RIO_BUF DestinationAddress;
+    AFD_RIO_BUF Control;
+    AFD_RIO_BUF FlagsBuffer;
+    ULONG Flags;
+    ULONGLONG Context;
+} AFD_RIO_REQUEST_QUEUE_ENTRY, *PAFD_RIO_REQUEST_QUEUE_ENTRY;
+
+// private
+typedef struct _AFD_RIO_REQUEST_QUEUE
+{
+    ULONG Start;
+    ULONG End;
+    BOOLEAN PokeRequired;
+    AFD_RIO_REQUEST_QUEUE_ENTRY Entries[ANYSIZE_ARRAY];
+} AFD_RIO_REQUEST_QUEUE, *PAFD_RIO_REQUEST_QUEUE;
+
+// private
 typedef struct _AFD_RIO_COMMAND_CREATE_RQ_PAIR
 {
     AFD_RIO_COMMAND_HEADER Header;
@@ -1138,10 +1177,10 @@ typedef struct _AFD_RIO_COMMAND_CREATE_RQ_PAIR
     ULONG                  ReceiveCompletionQueue;
     ULONG                  SendQueueEntryCount;
     ULONG                  SendQueueBufferSize;
-    ULONGLONG              SendQueueBuffer;
+    ULONGLONG              SendQueueBuffer; // PAFD_RIO_REQUEST_QUEUE
     ULONG                  ReceiveQueueEntryCount;
     ULONG                  ReceiveQueueBufferSize;
-    ULONGLONG              ReceiveQueueBuffer;
+    ULONGLONG              ReceiveQueueBuffer; // PAFD_RIO_REQUEST_QUEUE
     ULONGLONG              EndpointHandle;
     ULONGLONG              SocketContext;
 } AFD_RIO_COMMAND_CREATE_RQ_PAIR, *PAFD_RIO_COMMAND_CREATE_RQ_PAIR;

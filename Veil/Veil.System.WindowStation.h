@@ -230,7 +230,9 @@ typedef enum _CALLBACKCLASS
     Callback_Fixed
 } CALLBACKCLASS;
 
-// The SHADOWCLASS enumeration is used to indicate the shadow-related settings for a session running on a terminal server.
+/**
+ * The SHADOWCLASS enumeration is used to indicate the shadow-related settings for a session running on a terminal server.
+ */
 typedef enum _SHADOWCLASS
 {
     Shadow_Disable, // Shadowing is disabled.
@@ -240,8 +242,11 @@ typedef enum _SHADOWCLASS
     Shadow_EnableNoInputNoNotify // Permission is not asked first from the session being shadowed. The shadower is not permitted keyboard and mouse input and MUST observe the shadowed session.
 } SHADOWCLASS;
 
-// For a specific terminal server session, the USERCONFIG structure indicates the user and session configuration.
-// https://msdn.microsoft.com/en-us/library/cc248610.aspx
+/**
+ * The USERCONFIG structure indicates the user and session configuration for a specific terminal server session.
+ *
+ * \sa https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-tsts/dba750b8-cb35-4e88-9811-e2a1f8a10701
+ */
 typedef struct _USERCONFIG
 {
     ULONG fInheritAutoLogon : 1;

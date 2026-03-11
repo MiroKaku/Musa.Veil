@@ -44,6 +44,9 @@ DbgBreakPoint(
 #endif
 
 #ifndef _KERNEL_MODE
+/**
+ * Causes a user-mode breakpoint to occur.
+ */
 NTSYSAPI
 VOID
 NTAPI
@@ -62,6 +65,13 @@ DbgUserBreakPoint(
 #define DBG_STATUS_DEBUG_CONTROL    6
 #define DBG_STATUS_WORKER           7
 
+/**
+ * Sends a message to the kernel debugger.
+ *
+ * \param Format A pointer to a printf-style format string.
+ * \param ... Arguments for the format string.
+ * \return ULONG The number of characters printed.
+ */
 ULONG
 __cdecl
 DbgPrint(
@@ -69,6 +79,15 @@ DbgPrint(
     ...
 );
 
+/**
+ * Sends a message to the kernel debugger with a component ID and level.
+ *
+ * \param ComponentId The ID of the component that is sending the message.
+ * \param Level The importance level of the message.
+ * \param Format A pointer to a printf-style format string.
+ * \param ... Arguments for the format string.
+ * \return ULONG The number of characters printed.
+ */
 NTSYSAPI
 ULONG
 __cdecl
@@ -79,6 +98,15 @@ DbgPrintEx(
     ...
 );
 
+/**
+ * Sends a message to the kernel debugger with a component ID and level (va_list version).
+ *
+ * \param ComponentId The ID of the component that is sending the message.
+ * \param Level The importance level of the message.
+ * \param Format A pointer to a printf-style format string.
+ * \param arglist A list of arguments for the format string.
+ * \return ULONG The number of characters printed.
+ */
 NTSYSAPI
 ULONG
 NTAPI
@@ -89,6 +117,16 @@ vDbgPrintEx(
     _In_ va_list arglist
 );
 
+/**
+ * Sends a message to the kernel debugger with a prefix, component ID, and level.
+ *
+ * \param Prefix A pointer to a string to be prefixed to the message.
+ * \param ComponentId The ID of the component that is sending the message.
+ * \param Level The importance level of the message.
+ * \param Format A pointer to a printf-style format string.
+ * \param arglist A list of arguments for the format string.
+ * \return ULONG The number of characters printed.
+ */
 NTSYSAPI
 ULONG
 NTAPI
@@ -100,6 +138,13 @@ vDbgPrintExWithPrefix(
     _In_ va_list arglist
 );
 
+/**
+ * Sends a message to the kernel debugger and returns Control-C status.
+ *
+ * \param Format A pointer to a printf-style format string.
+ * \param ... Arguments for the format string.
+ * \return ULONG The number of characters printed.
+ */
 NTSYSAPI
 ULONG
 __cdecl
@@ -108,6 +153,13 @@ DbgPrintReturnControlC(
     ...
 );
 
+/**
+ * Queries the debug filter state for a component.
+ *
+ * \param ComponentId The ID of the component.
+ * \param Level The importance level.
+ * \return NTSTATUS Successful or errant status.
+ */
 NTSYSAPI
 NTSTATUS
 NTAPI
@@ -116,6 +168,14 @@ DbgQueryDebugFilterState(
     _In_ ULONG Level
 );
 
+/**
+ * Sets the debug filter state for a component.
+ *
+ * \param ComponentId The ID of the component.
+ * \param Level The importance level.
+ * \param State The new state for the filter.
+ * \return NTSTATUS Successful or errant status.
+ */
 NTSYSAPI
 NTSTATUS
 NTAPI
@@ -125,6 +185,14 @@ DbgSetDebugFilterState(
     _In_ BOOLEAN State
 );
 
+/**
+ * Prompts the user for input through the kernel debugger.
+ *
+ * \param Prompt A pointer to a string to be displayed as the prompt.
+ * \param Response A pointer to a buffer that receives the user's response.
+ * \param Length The size of the response buffer, in bytes.
+ * \return ULONG The number of characters read.
+ */
 NTSYSAPI
 ULONG
 NTAPI
