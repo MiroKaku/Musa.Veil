@@ -112,12 +112,14 @@ The update process synchronizes changes from the **phnt** repository to the **Ve
 
 ### Step-by-Step Procedure
 
-1. **Compare Differences**
-   - Compare files in `phnt/phnt-old` and `phnt/phnt-new`.
-   - Save each file's diff to the `diff` directory.
+1. **Prepare Sources**
+   - Read the current upstream commit hash from the `VERSION` file (root of the repository).
+   - Sparse-clone the [systeminformer](https://github.com/winsiderss/systeminformer) repository into `.cache/systeminformer/` to obtain the latest `phnt/include/` headers.
+   - Use `git diff <old-commit> <new-commit> -- phnt/include/` to generate per-file diffs. Save each diff to `.cache/diffs/`.
+   - Skip `nttypesafe.h` (no Veil mapping).
 
 2. **Apply Changes**
-   - Apply diff content to the corresponding Veil header files.
+   - Apply diff content to the corresponding Veil header files (see [File Mapping Reference](#file-mapping-reference)).
    - Skip files without a mapping relationship.
 
 3. **Macro Conversion**
@@ -170,13 +172,20 @@ The update process synchronizes changes from the **phnt** repository to the **Ve
    );
    ```
 
-6. **Validation**
+6. **Additional Conventions**
+   - Replace `static_assert` with `STATIC_ASSERT` (Veil convention).
+   - Sync Zw function parameter annotation fixes from upstream when applicable.
+
+7. **Validation**
    - **After each file update, run `BuildAllTargets.cmd` to verify compilation.**
+   - Kill zombie MSBuild processes before each build: `taskkill /f /im MSBuild.exe`.
    - Check for compilation errors before proceeding to the next file.
    - Verify definition order and dependencies.
 
-7. **Special Handling**
+8. **Finalize**
+   - Update the `VERSION` file with the new upstream commit hash (hash only, no URL or date).
    - Report changes from `ntmisc.h` separately to the user.
+   - Clean up `.cache/` directory after completion.
 
 ---
 
