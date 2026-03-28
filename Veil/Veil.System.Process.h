@@ -168,12 +168,15 @@ typedef struct _INITIAL_TEB
 
 typedef struct _RTL_USER_PROCESS_PARAMETERS* PRTL_USER_PROCESS_PARAMETERS;
 typedef struct _RTL_CRITICAL_SECTION* PRTL_CRITICAL_SECTION;
+typedef struct _SHIM_PROCESS_CONTEXT SHIM_PROCESS_CONTEXT, *PSHIM_PROCESS_CONTEXT;
+typedef struct _HEAP HEAP, *PHEAP;
 
 // private
 #define KACF_OLDGETSHORTPATHNAME                        0x0000000000000001
 #define KACF_VERSIONLIE_NOT_USED                        0x0000000000000002
 #define KACF_GETTEMPPATH_NOT_USED                       0x0000000000000004
 #define KACF_GETDISKFREESPACE                           0x0000000000000008
+#define KACF_APPCOMPATFLAG_BIT4                         0x0000000000000010
 #define KACF_FTMFROMCURRENTAPT                          0x0000000000000020
 #define KACF_DISALLOWORBINDINGCHANGES                   0x0000000000000040
 #define KACF_OLE32VALIDATEPTRS                          0x0000000000000080
@@ -188,6 +191,7 @@ typedef struct _RTL_CRITICAL_SECTION* PRTL_CRITICAL_SECTION;
 #define KACF_OLE32DOCFILEUSELEGACYNTFSFLAGS             0x0000000000010000
 #define KACF_RPCDISABLENDRCONSTIIDCHECK                 0x0000000000020000
 #define KACF_USERDISABLEFORWARDERPATCH                  0x0000000000040000
+#define KACF_APPCOMPATFLAG_BIT19                        0x0000000000080000
 #define KACF_OLE32DISABLENEW_WMPAINT_DISPATCH           0x0000000000100000
 #define KACF_ADDRESTRICTEDSIDINCOINITIALIZESECURITY     0x0000000000200000
 #define KACF_ALLOCDEBUGINFOFORCRITSECTIONS              0x0000000000400000
@@ -656,7 +660,7 @@ typedef struct _PEB
     //
     // Pointer to the process default heap.
     //
-    PVOID ProcessHeap;
+    PHEAP ProcessHeap;
 
     //
     // Pointer to a critical section used to synchronize access to the PEB.
@@ -957,7 +961,7 @@ typedef struct _PEB
     //
     // Pointer to the Application SwitchBack Compatibility Engine.
     //
-    PVOID pShimData;
+    PSHIM_PROCESS_CONTEXT pShimData;
 
     //
     // Pointer to the Application Compatibility Engine.
@@ -2719,7 +2723,7 @@ typedef enum _PROCESSINFOCLASS
     ProcessConsoleHostProcess,                      // qs: ULONG_PTR // ProcessOwnerInformation
     ProcessWindowInformation,                       // q: PROCESS_WINDOW_INFORMATION // 50
     ProcessHandleInformation,                       // q: PROCESS_HANDLE_SNAPSHOT_INFORMATION // since WIN8
-    ProcessMitigationPolicy,                        // s: PROCESS_MITIGATION_POLICY_INFORMATION
+    ProcessMitigationPolicy,                        // qs: PROCESS_MITIGATION_POLICY_INFORMATION
     ProcessDynamicFunctionTableInformation,         // s: PROCESS_DYNAMIC_FUNCTION_TABLE_INFORMATION
     ProcessHandleCheckingMode,                      // qs: ULONG; s: 0 disables, otherwise enables
     ProcessKeepAliveCount,                          // q: PROCESS_KEEPALIVE_COUNT_INFORMATION

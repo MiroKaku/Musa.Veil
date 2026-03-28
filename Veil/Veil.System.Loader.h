@@ -1277,9 +1277,9 @@ LdrNameOrIdFromResourceEntry(
     _In_ PIMAGE_RESOURCE_DIRECTORY_ENTRY Entry)
 {
     if (Entry->NameIsString)
-        return (ULONG_PTR)((ULONG_PTR)ResourceDirectory + (ULONG_PTR)Entry->NameOffset);
+        return (ULONG_PTR)((PUCHAR)(ResourceDirectory) + (ULONG_PTR)(Entry->NameOffset));
     else
-        return (ULONG_PTR)Entry->Id;
+        return (ULONG_PTR)(Entry->Id);
 }
 
 /**

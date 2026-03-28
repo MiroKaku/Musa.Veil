@@ -100,12 +100,12 @@ VEIL_BEGIN()
 
 #ifndef ALIGN_DOWN_POINTER_BY
 #define ALIGN_DOWN_POINTER_BY(address, alignment) \
-    ((PVOID)((ULONG_PTR)(address) & ~((ULONG_PTR)(alignment) - 1)))
+    ((PVOID)ALIGN_DOWN_BY(address, alignment))
 #endif
 
 #ifndef ALIGN_UP_POINTER_BY
 #define ALIGN_UP_POINTER_BY(address, alignment) \
-    (ALIGN_DOWN_POINTER_BY(((ULONG_PTR)(address) + (alignment) - 1), alignment))
+    ((PVOID)ALIGN_UP_BY(address, alignment))
 #endif
 
 #ifndef ALIGN_DOWN
@@ -928,6 +928,11 @@ typedef enum _SUITE_TYPE
 } SUITE_TYPE;
 
 #endif // _NTDEF
+
+#ifndef __PCSID_DEFINED__
+#define __PCSID_DEFINED__
+typedef const struct _SID* PCSID;
+#endif
 
 #if defined(_KERNEL_MODE) && (WDK_NTDDI_VERSION <= NTDDI_WIN10_19H1)
 typedef STRING  UTF8_STRING;
