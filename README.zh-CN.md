@@ -1,10 +1,10 @@
-# [面纱 (Musa.Veil)](https://github.com/MiroKaku/Veil)
+# [面纱 (Musa.Veil)](https://github.com/MiroKaku/Musa.Veil)
 
-[![Actions Status](https://github.com/MiroKaku/Veil/workflows/Build/badge.svg)](https://github.com/MiroKaku/Veil/actions)
-[![LICENSE](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/MiroKaku/Veil/blob/main/LICENSE)
+[![Actions Status](https://github.com/MiroKaku/Musa.Veil/workflows/CI/badge.svg)](https://github.com/MiroKaku/Musa.Veil/actions)
+[![LICENSE](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/MiroKaku/Musa.Veil/blob/main/LICENSE)
 [![Downloads](https://img.shields.io/nuget/dt/Musa.Veil?logo=NuGet&logoColor=blue)](https://www.nuget.org/packages/Musa.Veil/)
 
-* [English](https://github.com/MiroKaku/Veil/blob/main/README.md)
+* [English](https://github.com/MiroKaku/Musa.Veil/blob/main/README.md)
 
 `Musa.Veil` 是 Windows 的原生 API 定义集合。采用 `Veil` 这个名字，寓意为揭开 Windows 的面纱，窥探隐藏在背后的面貌。
 

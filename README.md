@@ -1,10 +1,10 @@
-# [Musa.Veil](https://github.com/MiroKaku/Veil)
+# [Musa.Veil](https://github.com/MiroKaku/Musa.Veil)
 
-[![Actions Status](https://github.com/MiroKaku/Veil/workflows/Build/badge.svg)](https://github.com/MiroKaku/Veil/actions)
-[![LICENSE](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/MiroKaku/Veil/blob/main/LICENSE)
+[![Actions Status](https://github.com/MiroKaku/Musa.Veil/workflows/CI/badge.svg)](https://github.com/MiroKaku/Musa.Veil/actions)
+[![LICENSE](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/MiroKaku/Musa.Veil/blob/main/LICENSE)
 [![Downloads](https://img.shields.io/nuget/dt/Musa.Veil?logo=NuGet&logoColor=blue)](https://www.nuget.org/packages/Musa.Veil/)
 
-* [简体中文](https://github.com/MiroKaku/Veil/blob/main/README.zh-CN.md)
+* [简体中文](https://github.com/MiroKaku/Musa.Veil/blob/main/README.zh-CN.md)
 
 `Musa.Veil` is a collection of Native API definitions for Windows. The name "Veil" signifies lifting the veil of Windows to reveal what lies beneath.
 
