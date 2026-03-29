@@ -6,16 +6,16 @@
 
 * [简体中文](https://github.com/MiroKaku/Veil/blob/main/README.zh-CN.md)
 
-`Musa.Veil` is a collection of Native API definitions for Windows. Take the name `Veil`, which means to lift the veil of Windows and spy on the face hidden behind.
+`Musa.Veil` is a collection of Native API definitions for Windows. The name "Veil" signifies lifting the veil of Windows to reveal what lies beneath.
 
 This project contains the definitions for the Windows internal undocumented API from `ntoskrnl.exe`, `ntdll.dll`, `kernelbase.dll`.
 
-This project is based on the [systeminformer/phnt](https://github.com/winsiderss/systeminformer/tree/master/phnt) and [Chuyu-Team/MINT](https://github.com/Chuyu-Team/MINT) fork modifications, combining the advantages of the two projects.
+This project is a fork based on [systeminformer/phnt](https://github.com/winsiderss/systeminformer/tree/master/phnt) and [Chuyu-Team/MINT](https://github.com/Chuyu-Team/MINT), combining the strengths of both.
 
-* Both user-mode and kernel-mode are supported.
-* Compiling using the /W4 /WX option is supported.
-* Optimized for the Windows SDK.
-* The API is managed by Windows SDK version macros.
+- Both user-mode and kernel-mode are supported.
+- Compiling using the `/W4` `/WX` option is supported.
+- Optimized for the Windows SDK.
+- The API is managed by Windows SDK version macros.
 
 ## How to use
 
@@ -39,12 +39,12 @@ If your project template uses [Mile.Project.Windows](https://github.com/ProjectM
 
 ### Method 2
 
-First make sure that your program is using the latest Windows SDK.
-Then clone and include it.
+First, make sure that your program is using the latest Windows SDK.
+Then clone this repository and add the include path to your project.
 
 ### Method 3 (CMake FetchContent)
 
-```
+```cmake
 include(FetchContent)
 
 FetchContent_Declare(
@@ -57,21 +57,17 @@ FetchContent_MakeAvailable(Musa.Veil)
 
 add_library(Musa.Veil INTERFACE)
 target_include_directories(Musa.Veil INTERFACE "${musa.veil_SOURCE_DIR}")
+
+# Link to your target
+target_link_libraries(YourTarget PRIVATE Musa.Veil)
 ```
 
-## Other
+## Advanced Usage
 
 ```C
-// If you wonder to use separate namespace, please define the following macro.
+// If you want to use a separate namespace, define the following macro.
 #define VEIL_USE_SEPARATE_NAMESPACE
 
-// First inclusion order
+// Include Veil.h before any other headers
 #include "Veil.h"
 ```
-
-## Acknowledgements
-
-Thanks to [JetBrains](https://www.jetbrains.com/?from=meesong) for providing free licenses such as [Resharper C++](https://www.jetbrains.com/resharper-cpp/?from=meesong) for my open-source projects.
-
-[<img src="https://resources.jetbrains.com/storage/products/company/brand/logos/ReSharperCPP_icon.png" alt="ReSharper C++ logo." width=200>](https://www.jetbrains.com/?from=meesong)
-
