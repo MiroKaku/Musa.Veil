@@ -5956,7 +5956,7 @@ RtlAssert(
 #ifndef _ERRHANDLING_H_
 typedef LONG(WINAPI* PTOP_LEVEL_EXCEPTION_FILTER)(
     _In_ struct _EXCEPTION_POINTERS* ExceptionInfo
-    );
+);
 typedef PTOP_LEVEL_EXCEPTION_FILTER LPTOP_LEVEL_EXCEPTION_FILTER;
 #endif
 
@@ -6429,14 +6429,14 @@ LONG
 (*PEXCEPTION_FILTER) (
     struct _EXCEPTION_POINTERS* ExceptionPointers,
     DWORD EstablisherFrame
-    );
+);
 
 typedef
 VOID
 (*PTERMINATION_HANDLER) (
     BOOLEAN AbnormalTermination,
     DWORD EstablisherFrame
-    );
+);
 
 //
 // Define dynamic function table entry.
@@ -6591,14 +6591,14 @@ LONG
 (*PEXCEPTION_FILTER) (
     struct _EXCEPTION_POINTERS* ExceptionPointers,
     PVOID EstablisherFrame
-    );
+);
 
 typedef
 VOID
 (*PTERMINATION_HANDLER) (
     BOOLEAN AbnormalTermination,
     PVOID EstablisherFrame
-    );
+);
 
 //
 // Nonvolatile context pointer record.
@@ -6725,14 +6725,14 @@ LONG
 (*PEXCEPTION_FILTER) (
     struct _EXCEPTION_POINTERS* ExceptionPointers,
     DWORD64 EstablisherFrame
-    );
+);
 
 typedef
 VOID
 (*PTERMINATION_HANDLER) (
     BOOLEAN AbnormalTermination,
     DWORD64 EstablisherFrame
-    );
+);
 
 //
 // Define dynamic function table entry.
@@ -8313,7 +8313,7 @@ _Function_class_(RTL_ENUM_HEAPS_ROUTINE)
 NTSTATUS NTAPI RTL_ENUM_HEAPS_ROUTINE(
     _In_ PVOID HeapHandle,
     _In_ PVOID Parameter
-    );
+);
 typedef RTL_ENUM_HEAPS_ROUTINE* PRTL_ENUM_HEAPS_ROUTINE;
 
 NTSYSAPI
@@ -8496,7 +8496,7 @@ _Function_class_(RTL_HEAP_EXTENDED_ENUMERATION_ROUTINE)
 NTSTATUS NTAPI RTL_HEAP_EXTENDED_ENUMERATION_ROUTINE(
     _In_ PHEAP_INFORMATION_ITEM Information,
     _In_opt_ PVOID Context
-    );
+);
 typedef RTL_HEAP_EXTENDED_ENUMERATION_ROUTINE* PRTL_HEAP_EXTENDED_ENUMERATION_ROUTINE;
 
 // HEAP_EXTENDED_INFORMATION Level
@@ -8595,7 +8595,7 @@ RTL_HEAP_DEBUGGING_INTERCEPTOR_ROUTINE(
     _In_ ULONG Action,
     _In_ ULONG StackFramesToCapture,
     _In_ PVOID* StackTrace
-    );
+);
 typedef RTL_HEAP_DEBUGGING_INTERCEPTOR_ROUTINE *PRTL_HEAP_DEBUGGING_INTERCEPTOR_ROUTINE;
 
 // rev
@@ -8610,7 +8610,7 @@ RTL_HEAP_LEAK_ENUMERATION_ROUTINE(
     _In_ SIZE_T BlockSize,
     _In_ ULONG StackTraceDepth,
     _In_ PVOID* StackTrace
-    );
+);
 typedef RTL_HEAP_LEAK_ENUMERATION_ROUTINE* PRTL_HEAP_LEAK_ENUMERATION_ROUTINE;
 
 // symbols
@@ -12104,14 +12104,14 @@ NTSTATUS NTAPI RTL_START_POOL_THREAD(
     _In_ PTHREAD_START_ROUTINE Function,
     _In_ PVOID Parameter,
     _Out_ PHANDLE ThreadHandle
-    );
+);
 typedef RTL_START_POOL_THREAD* PRTL_START_POOL_THREAD;
 
 typedef
 _Function_class_(RTL_EXIT_POOL_THREAD)
 NTSTATUS NTAPI RTL_EXIT_POOL_THREAD(
     _In_ NTSTATUS ExitStatus
-    );
+);
 typedef RTL_EXIT_POOL_THREAD* PRTL_EXIT_POOL_THREAD;
 
 NTSYSAPI
@@ -14163,9 +14163,9 @@ RtlFindClosestEncodableLength(
 typedef
 _Function_class_(RTL_SECURE_MEMORY_CACHE_CALLBACK)
 NTSTATUS NTAPI RTL_SECURE_MEMORY_CACHE_CALLBACK(
-        _In_ PVOID Address,
-        _In_ SIZE_T Length
-        );
+    _In_ PVOID Address,
+    _In_ SIZE_T Length
+);
 typedef RTL_SECURE_MEMORY_CACHE_CALLBACK* PRTL_SECURE_MEMORY_CACHE_CALLBACK;
 
 // ros
@@ -14446,7 +14446,7 @@ typedef struct _SYSTEM_FEATURE_USAGE_SUBSCRIPTION_UPDATE_ENTRY
 _Function_class_(RTL_FEATURE_CONFIGURATION_CHANGE_CALLBACK)
 typedef VOID(NTAPI RTL_FEATURE_CONFIGURATION_CHANGE_CALLBACK)(
     _In_opt_ PVOID Context
-    );
+);
 typedef RTL_FEATURE_CONFIGURATION_CHANGE_CALLBACK* PRTL_FEATURE_CONFIGURATION_CHANGE_CALLBACK;
 
 // private

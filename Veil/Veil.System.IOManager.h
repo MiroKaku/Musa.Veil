@@ -2216,7 +2216,7 @@ NtFlushBuffersFileEx (
     _In_reads_bytes_(ParametersSize) PVOID Parameters,
     _In_ ULONG ParametersSize,
     _Out_ PIO_STATUS_BLOCK IoStatusBlock
-    );
+);
 
 _IRQL_requires_max_(PASSIVE_LEVEL)
 NTSYSAPI

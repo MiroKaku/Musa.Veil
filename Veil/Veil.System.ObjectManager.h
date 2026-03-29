@@ -950,7 +950,7 @@ typedef struct _OBJECT_DUMP_CONTROL {
 typedef VOID(NTAPI * OB_DUMP_METHOD)(
     _In_ PVOID Object,
     _In_opt_ POB_DUMP_CONTROL Control
-    );
+);
 
 typedef enum _OB_OPEN_REASON
 {
@@ -968,25 +968,25 @@ typedef NTSTATUS(NTAPI * OB_OPEN_METHOD)(
     _In_ PVOID Object,
     _In_ ACCESS_MASK GrantedAccess,
     _In_ ULONG HandleCount
-    );
+);
 
 typedef BOOLEAN(NTAPI * OB_OKAYTOCLOSE_METHOD)(
     _In_opt_ PEPROCESS Process,
     _In_ PVOID Object,
     _In_ HANDLE Handle,
     _In_ KPROCESSOR_MODE PreviousMode
-    );
+);
 
 typedef VOID(NTAPI *OB_CLOSE_METHOD)(
     _In_opt_ PEPROCESS Process,
     _In_ PVOID Object,
     _In_ ULONG_PTR ProcessHandleCount,
     _In_ ULONG_PTR SystemHandleCount
-    );
+);
 
 typedef VOID(NTAPI*OB_DELETE_METHOD)(
     _In_  PVOID Object
-    );
+);
 
 typedef NTSTATUS(NTAPI*OB_PARSE_METHOD)(
     _In_ PVOID ParseObject,
@@ -999,7 +999,7 @@ typedef NTSTATUS(NTAPI*OB_PARSE_METHOD)(
     _Inout_opt_ PVOID Context,
     _In_opt_ PSECURITY_QUALITY_OF_SERVICE SecurityQos,
     _Out_ PVOID* Object
-    );
+);
 
 typedef struct _OB_EXTENDED_PARSE_PARAMETERS
 {
@@ -1020,7 +1020,7 @@ typedef NTSTATUS(NTAPI* OB_PARSE_EX_METHOD)(
     _In_opt_ PSECURITY_QUALITY_OF_SERVICE SecurityQos,
     POB_EXTENDED_PARSE_PARAMETERS ExtendedParameters,
     _Out_ PVOID* Object
-    );
+);
 
 typedef NTSTATUS(NTAPI*OB_SECURITY_METHOD)(
     _In_ PVOID Object,
@@ -1032,7 +1032,7 @@ typedef NTSTATUS(NTAPI*OB_SECURITY_METHOD)(
     _In_ POOL_TYPE PoolType,
     _In_ PGENERIC_MAPPING GenericMapping,
     _In_ KPROCESSOR_MODE AccessMode
-    );
+);
 
 typedef NTSTATUS(NTAPI*OB_QUERYNAME_METHOD)(
     _In_ PVOID Object,
@@ -1041,7 +1041,7 @@ typedef NTSTATUS(NTAPI*OB_QUERYNAME_METHOD)(
     _In_ ULONG Length,
     _Out_ PULONG ReturnLength,
     _In_ KPROCESSOR_MODE Mode
-    );
+);
 
 typedef struct _OBJECT_TYPE_INITIALIZER
 {

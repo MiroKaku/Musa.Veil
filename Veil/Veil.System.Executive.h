@@ -1618,7 +1618,7 @@ VOID NTAPI TIMER_APC_ROUTINE(
     _In_ PVOID TimerContext,
     _In_ ULONG TimerLowValue,
     _In_ LONG TimerHighValue
-    );
+);
 typedef TIMER_APC_ROUTINE* PTIMER_APC_ROUTINE;
 
 typedef enum _TIMER_SET_INFORMATION_CLASS

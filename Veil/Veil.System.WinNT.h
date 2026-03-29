@@ -116,7 +116,7 @@ typedef struct _RTL_BARRIER
 
 typedef LONG(NTAPI* PVECTORED_EXCEPTION_HANDLER)(
     struct _EXCEPTION_POINTERS* ExceptionInfo
-    );
+);
 
 //
 // FLS (Fiber Local Storage)
@@ -130,7 +130,7 @@ VOID
 NTAPI
 FLS_CALLBACK_FUNCTION (
     _In_ PVOID lpFlsData
-    );
+);
 
 typedef FLS_CALLBACK_FUNCTION* PFLS_CALLBACK_FUNCTION;
 #endif
@@ -143,7 +143,7 @@ typedef
 VOID
 (NTAPI* PAPCFUNC)(
     _In_ ULONG_PTR Parameter
-    );
+);
 
 //
 // Heap
@@ -521,7 +521,7 @@ typedef struct _TP_CALLBACK_INSTANCE TP_CALLBACK_INSTANCE, * PTP_CALLBACK_INSTAN
 typedef VOID(NTAPI* PTP_SIMPLE_CALLBACK)(
     _Inout_     PTP_CALLBACK_INSTANCE Instance,
     _Inout_opt_ PVOID                 Context
-    );
+);
 
 typedef struct _TP_POOL TP_POOL, * PTP_POOL;
 
@@ -545,7 +545,7 @@ typedef struct _TP_CLEANUP_GROUP TP_CLEANUP_GROUP, * PTP_CLEANUP_GROUP;
 typedef VOID(NTAPI* PTP_CLEANUP_GROUP_CANCEL_CALLBACK)(
     _Inout_opt_ PVOID ObjectContext,
     _Inout_opt_ PVOID CleanupContext
-    );
+);
 
 //
 // Do not manipulate this structure directly!  Allocate space for it
@@ -760,7 +760,7 @@ typedef VOID(NTAPI* PTP_WORK_CALLBACK)(
     _Inout_     PTP_CALLBACK_INSTANCE Instance,
     _Inout_opt_ PVOID                 Context,
     _Inout_     PTP_WORK              Work
-    );
+);
 
 typedef struct _TP_TIMER TP_TIMER, * PTP_TIMER;
 
@@ -768,7 +768,7 @@ typedef VOID(NTAPI* PTP_TIMER_CALLBACK)(
     _Inout_     PTP_CALLBACK_INSTANCE Instance,
     _Inout_opt_ PVOID                 Context,
     _Inout_     PTP_TIMER             Timer
-    );
+);
 
 typedef DWORD    TP_WAIT_RESULT;
 
@@ -779,7 +779,7 @@ typedef VOID(NTAPI* PTP_WAIT_CALLBACK)(
     _Inout_opt_ PVOID                 Context,
     _Inout_     PTP_WAIT              Wait,
     _In_        TP_WAIT_RESULT        WaitResult
-    );
+);
 
 typedef struct _TP_IO TP_IO, * PTP_IO;
 
@@ -939,7 +939,7 @@ BOOLEAN
 (NTAPI* PSECURE_MEMORY_CACHE_CALLBACK) (
     _In_reads_bytes_(Range) PVOID Addr,
     _In_ SIZE_T Range
-    );
+);
 
 //
 // Thread Profiling

@@ -593,7 +593,7 @@ typedef VOID(NTAPI* PIO_APC_ROUTINE)(
     _In_ PVOID ApcContext,
     _In_ PIO_STATUS_BLOCK IoStatusBlock,
     _In_ ULONG Reserved
-    );
+);
 #else
 typedef int BOOL;
 #endif // !_KERNEL_MODE

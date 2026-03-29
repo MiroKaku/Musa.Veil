@@ -242,7 +242,7 @@ typedef VOID (*PKNORMAL_ROUTINE) (
     _In_ PVOID NormalContext,
     _In_ PVOID SystemArgument1,
     _In_ PVOID SystemArgument2
-    );
+);
 
 typedef VOID (*PKKERNEL_ROUTINE) (
     _In_ struct _KAPC* Apc,
@@ -250,11 +250,11 @@ typedef VOID (*PKKERNEL_ROUTINE) (
     _Inout_ PVOID* NormalContext,
     _Inout_ PVOID* SystemArgument1,
     _Inout_ PVOID* SystemArgument2
-    );
+);
 
 typedef VOID (*PKRUNDOWN_ROUTINE) (
     _In_ struct _KAPC* Apc
-    );
+);
 
 typedef BOOLEAN (*PKTRANSFER_ROUTINE)(VOID);
 

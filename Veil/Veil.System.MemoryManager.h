@@ -2680,7 +2680,7 @@ ZwTerminateEnclave(
 #ifdef _KERNEL_MODE
 typedef PVOID(NTAPI* PENCLAVE_ROUTINE)(
     PVOID lpThreadParameter
-    );
+);
 typedef PENCLAVE_ROUTINE LPENCLAVE_ROUTINE;
 #endif // _KERNEL_MODE
 
