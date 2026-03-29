@@ -12132,7 +12132,7 @@ RtlUserThreadStart(
 
 // Thread execution
 
-NTSYSCALLAPI
+NTSYSAPI
 NTSTATUS
 NTAPI
 RtlDelayExecution(
@@ -13636,7 +13636,7 @@ RtlTlsSetValue(
     _In_ ULONG TlsIndex,
     _In_opt_ PVOID TlsData
 );
-#endif // PHNT_VERSION >= PHNT_WINDOWS_11
+#endif // NTDDI_VERSION >= NTDDI_WIN11
 
 //
 // File System

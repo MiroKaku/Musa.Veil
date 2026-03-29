@@ -724,7 +724,7 @@ typedef struct _VR_UNLOAD_DIFFERENCING_HIVE_FOR_HOST
  * \param[out, optional] Disposition A pointer to a variable that receives the disposition value.
  * \return NTSTATUS Successful or errant status.
  */
-__kernel_entry __kernel_entry NTSYSCALLAPI
+__kernel_entry NTSYSCALLAPI
 NTSTATUS
 NTAPI
 NtCreateKey(

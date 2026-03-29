@@ -967,10 +967,19 @@ ZwSetEvent(
  * \param Lock A pointer to an RTL_SRWLOCK structure that specifies the lock to acquire.
  * \return NTSTATUS Successful or errant status.
  */
-NTSYSCALLAPI
+__kernel_entry NTSYSCALLAPI
 NTSTATUS
 NTAPI
 NtSetEventEx(
+    _In_ HANDLE ThreadId,
+    _In_opt_ PRTL_SRWLOCK Lock
+);
+
+_IRQL_requires_max_(PASSIVE_LEVEL)
+NTSYSAPI
+NTSTATUS
+NTAPI
+ZwSetEventEx(
     _In_ HANDLE ThreadId,
     _In_opt_ PRTL_SRWLOCK Lock
 );

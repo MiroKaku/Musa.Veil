@@ -2218,7 +2218,7 @@ LdrSetDllManifestProber(
     _In_ PVOID Routine
 );
 
-#if (PHNT_VERSION >= PHNT_THRESHOLD)
+#if (NTDDI_VERSION >= NTDDI_WIN10)
 NTSYSAPI BOOLEAN LdrpChildNtdll; // DATA export
 #endif
 
