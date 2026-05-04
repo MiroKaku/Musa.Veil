@@ -299,6 +299,7 @@ struct IUnknown;
 
 #pragma warning(push)
 #pragma warning(disable:4324) // structure was padded due to __declspec(align())
+#include <ctype.h>
 #include <fltKernel.h>
 #include <wdm.h>
 #include <ntimage.h>

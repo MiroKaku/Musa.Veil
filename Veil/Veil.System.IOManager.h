@@ -1,4 +1,4 @@
-/*
+﻿/*
  * PROJECT:   Veil
  * FILE:      Veil.System.IOManager.h
  * PURPOSE:   This file is part of Veil.
@@ -2028,6 +2028,7 @@ NtCreateNamedPipeFile(
 );
 
 _IRQL_requires_max_(PASSIVE_LEVEL)
+NTSYSAPI
 NTSTATUS
 NTAPI
 ZwCreateNamedPipeFile(
@@ -2062,6 +2063,7 @@ NtCreateMailslotFile(
 );
 
 _IRQL_requires_max_(PASSIVE_LEVEL)
+NTSYSAPI
 NTSTATUS
 NTAPI
 ZwCreateMailslotFile(
