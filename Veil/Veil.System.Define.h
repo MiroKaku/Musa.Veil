@@ -1103,13 +1103,29 @@ typedef struct DECLSPEC_ALIGN(MEMORY_ALLOCATION_ALIGNMENT) _QUAD_PTR
 
 typedef struct _LARGE_INTEGER_128
 {
-    LONGLONG QuadPart[2];
-} LARGE_INTEGER_128, * PLARGE_INTEGER_128;
+    union
+    {
+        LONGLONG QuadPart[2];
+        struct
+        {
+            ULARGE_INTEGER LowPart;
+            LARGE_INTEGER HighPart;
+        };
+    };
+} LARGE_INTEGER_128, *PLARGE_INTEGER_128;
 
 typedef struct _ULARGE_INTEGER_128
 {
-    ULONGLONG QuadPart[2];
-} ULARGE_INTEGER_128, * PULARGE_INTEGER_128;
+    union
+    {
+        ULONGLONG QuadPart[2];
+        struct
+        {
+            ULARGE_INTEGER LowPart;
+            ULARGE_INTEGER HighPart;
+        };
+    };
+} ULARGE_INTEGER_128, *PULARGE_INTEGER_128;
 
 
 VEIL_END()

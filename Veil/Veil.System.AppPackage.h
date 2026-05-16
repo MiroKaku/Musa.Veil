@@ -1,4 +1,4 @@
-/*
+﻿/*
  * PROJECT:   Veil
  * FILE:      Veil.System.AppPackage.h
  * PURPOSE:   This file is part of Veil.
@@ -452,6 +452,32 @@ GetPackageGlobalizationProperty(
 );
 
 #endif // NTDDI_VERSION >= NTDDI_WIN10_20H1
+
+
+// private
+typedef _Enum_is_bitflag_ enum _MTA_HOST_USAGE_FLAGS
+{
+    MTA_HOST_USAGE_NONE = 0x0,
+    MTA_HOST_USAGE_MTAINITIALIZED = 0x1,
+    MTA_HOST_USAGE_ACTIVATORINITIALIZED = 0x2,
+    MTA_HOST_USAGE_UNLOADCALLED = 0x4,
+} MTA_HOST_USAGE_FLAGS, *PMTA_HOST_USAGE_FLAGS;
+DEFINE_ENUM_FLAG_OPERATORS(MTA_HOST_USAGE_FLAGS);
+
+// private
+typedef struct _MTA_USAGE_GLOBALS
+{
+    _Reserved_ ULONG StackCapture;
+    PULONG MTAInits;
+    PULONG MTAIncInits;
+    PULONG MTAWaiters;
+    PULONG MTAIncrementorSize;
+    ULONG CompletionTimeOut;
+    _Reserved_ PLIST_ENTRY ListEntryHeadMTAUsageIncrementor;
+    _Reserved_ PULONG MTAIncrementorCompleted;
+    _Reserved_ PVOID* MTAUsageCompletedIncrementorHead;
+    PMTA_HOST_USAGE_FLAGS MTAHostUsageFlags; // since THRESHOLD
+} MTA_USAGE_GLOBALS, *PMTA_USAGE_GLOBALS;
 
 #endif // !_KERNEL_MODE
 

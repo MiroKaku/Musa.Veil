@@ -1,4 +1,4 @@
-/*
+﻿/*
  * PROJECT:   Veil
  * FILE:      Veil.System.PowerManager.h
  * PURPOSE:   This file is part of Veil.
@@ -126,6 +126,54 @@ VEIL_BEGIN()
 //#define BlackBoxRecorderDirectAccessBuffer ((POWER_INFORMATION_LEVEL)97)  // in: POWER_INFORMATION_BBR_DIRECT_ACCESS_REQUEST_INPUT, out: POWER_INFORMATION_BBR_DIRECT_ACCESS_REQUEST_OUTPUT // since WIN11
 //#define SystemPowerSourceState          ((POWER_INFORMATION_LEVEL)98)     // in: since 25H2
 //#define PowerInformationLevelMaximum    ((POWER_INFORMATION_LEVEL)99)
+
+
+
+#ifndef _KERNEL_MODE
+/**
+ * The SYSTEM_POWER_POLICY structure contains information about the current system power policy.
+ */
+typedef struct _SYSTEM_POWER_POLICY_ACDC // SYSTEM_POWER_POLICY
+{
+    ULONG Revision;
+    // Events
+    POWER_ACTION_POLICY PowerButton;
+    POWER_ACTION_POLICY SleepButton;
+    POWER_ACTION_POLICY LidClose;
+    SYSTEM_POWER_STATE LidOpenWake;
+    ULONG Reserved;
+    // System idle detection
+    POWER_ACTION_POLICY Idle;
+    ULONG IdleTimeout;
+    UCHAR IdleSensitivity;
+    UCHAR DynamicThrottle;
+    UCHAR Spare2[2];
+    // Meaning of power action "sleep"
+    SYSTEM_POWER_STATE MinSleep;
+    SYSTEM_POWER_STATE MaxSleep;
+    SYSTEM_POWER_STATE ReducedLatencySleep;
+    ULONG WinLogonFlags;
+    ULONG Spare3;
+    // Parameters for dozing
+    ULONG DozeS4Timeout;
+    // Battery policies
+    ULONG BroadcastCapacityResolution;
+    SYSTEM_POWER_LEVEL DischargePolicy[NUM_DISCHARGE_POLICIES];
+    // Video policies
+    ULONG VideoTimeout;
+    BOOLEAN VideoDimDisplay;
+    ULONG VideoReserved[3];
+    // Hard disk policies
+    ULONG SpindownTimeout;
+    // Processor policies
+    BOOLEAN OptimizeForPower;
+    UCHAR FanThrottleTolerance;
+    UCHAR ForcedThrottle;
+    UCHAR MinThrottle;
+    POWER_ACTION_POLICY OverThrottled;
+} SYSTEM_POWER_POLICY_ACDC, *PSYSTEM_POWER_POLICY_ACDC;
+
+#endif // !_KERNEL_MODE
 
 /**
  * The PROCESSOR_POWER_INFORMATION structure contains information about the power characteristics of a processor.
@@ -1626,6 +1674,16 @@ typedef struct _POWER_INTERNAL_SESSION_CONNECTION_CHANGE_V2_INPUT
 
 STATIC_ASSERT(sizeof(POWER_INTERNAL_SESSION_CONNECTION_CHANGE_V2_INPUT) == 0x30);
 
+
+// rev
+// POWER_INFORMATION_ENERGY_TRACKER_CREATE_INPUT Flags values
+#define POWER_INFORMATION_ENERGY_TRACKER_CREATE_VERSION_MIN             0x00000001ul
+#define POWER_INFORMATION_ENERGY_TRACKER_CREATE_VERSION_MAX             0x00040000ul
+#define POWER_INFORMATION_ENERGY_TRACKER_CREATE_FLAGS_NONE              0x00000000ul
+#define POWER_INFORMATION_ENERGY_TRACKER_CREATE_FLAGS_MODE_PID          0x00000001ul
+#define POWER_INFORMATION_ENERGY_TRACKER_CREATE_FLAGS_MODE_UNKNOWN      0x10000000ul
+#define POWER_INFORMATION_ENERGY_TRACKER_CREATE_FLAGS_MODE_MASK         0xF0000000ul
+
 // rev
 typedef struct _POWER_INFORMATION_ENERGY_TRACKER_CREATE_INPUT
 {
@@ -1647,13 +1705,61 @@ typedef struct _POWER_INFORMATION_ENERGY_TRACKER_QUERY_INPUT
 } POWER_INFORMATION_ENERGY_TRACKER_QUERY_INPUT, * PPOWER_INFORMATION_ENERGY_TRACKER_QUERY_INPUT;
 
 // rev
+// rev
+#define POWER_INFORMATION_ENERGY_TRACKER_SIGNATURE 0x00200013
+
+// rev
 typedef struct _POWER_INFORMATION_ENERGY_TRACKER_QUERY_OUTPUT
 {
-    ULONG Version;
-    ULONG DataType;
-    ULONG DataSize;
-    // BYTE Data[...];  // optional payload follows
-} POWER_INFORMATION_ENERGY_TRACKER_QUERY_OUTPUT, * PPOWER_INFORMATION_ENERGY_TRACKER_QUERY_OUTPUT;
+    ULONG Signature;
+    ULONG HeaderSize;
+    ULONG TotalSize;
+    ULONG Sequence;
+    ULONG DeltaPerformanceTime; // Elapsed Ticks
+    ULONG DeltaInterruptTime;   // Elapsed Ms
+    ULONG CurrentPerformanceTime;
+    ULONG CurrentTimelineTime;
+    ULONG CurrentTimelineBitmapTime;
+    ULONG SectionRecordOffset;
+    ULONG SectionRecordCount;
+    ULONG EnergyDeltaOffset;
+    ULONG EnergyCumulativeOffset;
+    ULONG AggregateHeaderOffset;
+    ULONG AggregateType;
+    USHORT AggregateSize;
+    USHORT Reserved;
+    ULONG CurrentSystemTimeLow;
+    ULONG CurrentSystemTimeHigh;
+    // UCHAR Data[1];
+} POWER_INFORMATION_ENERGY_TRACKER_QUERY_OUTPUT, *PPOWER_INFORMATION_ENERGY_TRACKER_QUERY_OUTPUT;
+
+// rev
+typedef struct _POWER_INFORMATION_ENERGY_TRACKER_ENTRY
+{
+    ULONGLONG ProcessKey;       // requires POWER_INFORMATION_ENERGY_TRACKER_CREATE_FLAGS_MODE_PID
+    ULONG ProcessId;
+    ULONG EntryStateLow16;
+    ULONG FileNameOffset;
+    ULONG MetricA0;
+    ULONG MetricA1;
+    ULONG PackageNameOffset;
+    ULONG InstallLocationOffset;
+    ULONG SubProcessTagOffset;
+    ULONG NameOffset;
+    ULONG MetricA3;
+    ULONG MetricA4;
+    USHORT FileNameCount;
+    USHORT PackageNameCount;
+    USHORT InstallLocationCount;
+    USHORT SubProcessTagCount;
+    USHORT BaseNameLength;
+    USHORT Reserved;
+    ULONG DetailBlobOffset;
+    ULONG DetailBlobSize;
+    ULONG TailStat0;
+    ULONG TailStat1;
+    UCHAR ExtraTelemetry[24];
+} POWER_INFORMATION_ENERGY_TRACKER_ENTRY, *PPOWER_INFORMATION_ENERGY_TRACKER_ENTRY;
 
 // rev
 DEFINE_GUID(PopBlackBoxScmGuid, 0x45F9D5A3, 0xE1D0, 0x8891, 0x07, 0x26, 0xFB, 0x1D, 0x71, 0xAD, 0x11, 0xB8);
@@ -1729,7 +1835,7 @@ typedef struct _POWER_INFORMATION_BBR_UPDATE_REQUEST_INPUT
 } POWER_INFORMATION_BBR_UPDATE_REQUEST_INPUT, * PPOWER_INFORMATION_BBR_UPDATE_REQUEST_INPUT;
 
 // rev
-#define POWER_INFORMATION_BBR_DIRECT_ACCESS_REQUEST_MAX_CATEGORY RTL_NUMBER_OF(BlackBoxCategories)
+#define POWER_INFORMATION_BBR_DIRECT_ACCESS_REQUEST_MAX_CATEGORY 24
 #define POWER_INFORMATION_BBR_DIRECT_ACCESS_REQUEST_CATEGORY_SHIFT 0
 #define POWER_INFORMATION_BBR_DIRECT_ACCESS_REQUEST_CATEGORY_MASK_RAW  0x0000FFFF
 #define POWER_INFORMATION_BBR_DIRECT_ACCESS_REQUEST_CATEGORY_MASK_DIRECT 0x0000001F

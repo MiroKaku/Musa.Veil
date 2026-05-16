@@ -587,7 +587,7 @@ STATIC_ASSERT(sizeof(ACTIVATION_CONTEXT_STACK32) == 24);
 #define _AHCACHE_H_
 
 
-typedef enum _AHC_INFO_CLASS
+typedef _Enum_is_bitflag_ enum _AHC_INFO_CLASS
 {
     AhcInfoClassSdbQueryResult = 0x00000001,
     AhcInfoClassSdbSxsOverrideManifest = 0x00000002,

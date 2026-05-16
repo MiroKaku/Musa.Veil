@@ -1,4 +1,4 @@
-/*
+﻿/*
  * PROJECT:   Veil
  * FILE:      Veil.System.Loader.h
  * PURPOSE:   This file is part of Veil.
@@ -538,7 +538,7 @@ LdrGetDllHandleByName(
 #if (NTDDI_VERSION >= NTDDI_WIN8)
 // rev
 NTSYSAPI
-NTSTATUS
+VOID
 NTAPI
 LdrGetDllFullName(
     _In_opt_ PVOID DllHandle,
@@ -796,7 +796,7 @@ NTSTATUS
 NTAPI
 LdrQueryModuleServiceTags(
     _In_ PVOID DllHandle,
-    _Out_writes_(*BufferSize) PULONG ServiceTagBuffer,
+    _Out_writes_to_(*BufferSize, *BufferSize) PULONG ServiceTagBuffer,
     _Inout_ PULONG BufferSize
 );
 
@@ -1220,6 +1220,49 @@ LdrAccessResource(
     _Out_opt_ ULONG* ResourceLength
 );
 
+
+// Flags for LdrFindResourceEx_U (LdrpSearchResourceSection_U) and (Win8+) LdrResFindResource/LdrResSearchResource
+typedef enum _LDR_RESOURCE_QUERY_FLAGS
+{
+    LDR_RES_SEARCH_PATH_ALT_TYPE             = 0x00000001u,  // Enables 4-key path mode (requires Count==4)
+    LDR_RES_SEARCH_PATH_ALLOW_SHORT          = 0x00000002u,  // Permit PathCount < 3 (else PathCount must be 3 or 4)
+    LDR_RES_SEARCH_SKIP_MUI                  = 0x00000004u,  // Skip language fallback chain; only match the exact requested language
+    LDR_RES_SEARCH_SKIP_CONFIG               = 0x00000008u,  // Bypass type-based MUI detection fast-path
+    LDR_RES_SEARCH_MUI_CONFIG_CHECKED        = 0x00000010u,  // MUI configuration already checked (internal)
+    LDR_RES_SEARCH_MUI_RECURSIVE             = 0x00000020u,  // Recursive MUI alternate-module search in progress (internal)
+    LDR_RES_SEARCH_MUI_STRINGS               = 0x00000040u,  // Enables 4-key path mode for MUI message strings (requires Count==4)
+    LDR_RES_SEARCH_FORCE_MUI                 = 0x00000080u,  // Reserved
+    LDR_RES_INTERNAL_ALT_RETRY               = 0x01000000u,  // Internal-only (callers must not set)
+
+    // Group masks (base flags)
+    LDR_RES_SEARCH_PATH_MASK                 = (LDR_RES_SEARCH_PATH_ALT_TYPE | LDR_RES_SEARCH_PATH_ALLOW_SHORT | LDR_RES_SEARCH_MUI_STRINGS), // 0x00000043
+    LDR_RES_SEARCH_KEY4_MASK                 = (LDR_RES_SEARCH_PATH_ALT_TYPE | LDR_RES_SEARCH_MUI_STRINGS),
+
+    // Win8+ extended flags
+    LDR_RES_SEARCH_LOAD_IMAGE                = 0x00000100u,  // DllHandle is a normal loaded image (default)
+    LDR_RES_SEARCH_LOAD_DATAFILE             = 0x00000200u,  // DllHandle is a memory-mapped datafile
+    LDR_RES_SEARCH_LOAD_MAPPED               = 0x00000400u,  // DllHandle is a file path to be raw-mapped
+    LDR_RES_SEARCH_LOAD_VIEW                 = 0x00000800u,  // DllHandle is an NT file handle to be mapped
+
+    // Mapping behavior flags
+    LDR_RES_SEARCH_STRICT                    = 0x00001000u,  // Strict PE header validation
+    LDR_RES_SEARCH_LENIENT                   = 0x00002000u,  // Suppress automatic STRICT
+    LDR_RES_SEARCH_ALT_FALLBACK              = 0x00004000u,  // Reserved
+
+    // Optimization/Dependency flags
+    LDR_RES_SEARCH_MUI_DEPENDENCY            = 0x00008000u,  // Only valid with LDR_RES_SEARCH_LOAD_VIEW
+
+    // Size override flags
+    LDR_RES_SEARCH_USE_INPUT_SIZE_MAPPED     = 0x00020000u,  // Use *ResourceLength as mapping size; requires LDR_RES_SEARCH_LOAD_MAPPED
+    LDR_RES_SEARCH_USE_INPUT_SIZE            = 0x00080000u,  // Use *ResourceLength as mapping size; requires IMAGE or DATAFILE mode
+
+    // Group masks (Win8+ extended flags)
+    LDR_RES_SEARCH_LOAD_MODE_MASK            = (LDR_RES_SEARCH_LOAD_IMAGE | LDR_RES_SEARCH_LOAD_DATAFILE | LDR_RES_SEARCH_LOAD_MAPPED | LDR_RES_SEARCH_LOAD_VIEW), // 0x00000F00
+    LDR_RES_SEARCH_BEHAVIOR_MASK             = (LDR_RES_SEARCH_STRICT | LDR_RES_SEARCH_LENIENT), // 0x00003000
+    LDR_RES_SEARCH_SIZE_OVERRIDE_MASK        = (LDR_RES_SEARCH_USE_INPUT_SIZE_MAPPED | LDR_RES_SEARCH_USE_INPUT_SIZE), // 0x000A0000
+    LDR_RES_SEARCH_PUBLIC_MASK               = 0x000FFFFFu
+} LDR_RESOURCE_QUERY_FLAGS;
+
 /**
  * The LdrFindResource_U function determines the location of a resource in a DLL.
  *
@@ -1255,7 +1298,7 @@ NTSYSAPI
 NTSTATUS
 NTAPI
 LdrFindResourceEx_U(
-    _In_ ULONG Flags,
+    _In_ LDR_RESOURCE_QUERY_FLAGS Flags,
     _In_ PVOID DllHandle,
     _In_reads_(Count) PULONG_PTR ResourcePath,
     _In_ ULONG Count,
@@ -1420,6 +1463,7 @@ LdrUnloadDataFile(
 
 #endif // if _KERNEL_MODE
 
+
 #if (NTDDI_VERSION >= NTDDI_WIN8)
 // rev // Flags for LdrResFindResource, LdrpResGetResourceDirectory, LdrResSearchResource
 #define LDR_RES_REQUIRE_FOUR_KEYS_A      0x00000001u  // Enables 4-key mode (variant A) (requires Count==4)
@@ -1489,7 +1533,7 @@ LdrResFindResource(
     _Out_opt_ PSIZE_T ResourceLength,
     _Out_writes_bytes_opt_(CultureNameLength) PVOID CultureName, // WCHAR buffer[6]
     _Out_opt_ PULONG CultureNameLength,
-    _In_opt_ ULONG Flags
+    _In_opt_ LDR_RESOURCE_QUERY_FLAGS Flags
 );
 
 // rev
@@ -1515,7 +1559,7 @@ LdrResFindResourceDirectory(
     _Out_opt_ PIMAGE_RESOURCE_DIRECTORY* ResourceDirectory,
     _Out_writes_bytes_opt_(CultureNameLength) PVOID CultureName, // WCHAR buffer[6]
     _Out_opt_ PULONG CultureNameLength,
-    _In_opt_ ULONG Flags
+    _In_opt_ LDR_RESOURCE_QUERY_FLAGS Flags
 );
 
 // rev
@@ -1535,7 +1579,7 @@ NTAPI
 LdrpResGetResourceDirectory(
     _In_ PVOID DllHandle,
     _In_ SIZE_T Size,
-    _In_ ULONG Flags,
+    _In_ LDR_RESOURCE_QUERY_FLAGS Flags,
     _Out_opt_ PIMAGE_RESOURCE_DIRECTORY* ResourceDirectory,
     _Out_ PIMAGE_NT_HEADERS* OutHeaders
 );
@@ -1561,7 +1605,7 @@ LdrResSearchResource(
     _In_ PVOID DllHandle,
     _In_ PULONG_PTR ResourcePath,
     _In_ ULONG ResourcePathCount,
-    _In_ ULONG Flags,
+    _In_ LDR_RESOURCE_QUERY_FLAGS Flags,
     _Out_opt_ PVOID* ResourceBuffer,
     _Out_opt_ PSIZE_T ResourceLength,
     _Out_writes_bytes_opt_(*CultureNameLength) PWSTR CultureName, // WCHAR buffer[6]

@@ -1,4 +1,4 @@
-/*
+﻿/*
  * PROJECT:   Veil
  * FILE:      Veil.System.Process.h
  * PURPOSE:   This file is part of Veil.
@@ -1109,7 +1109,7 @@ typedef struct _PEB
     //
     // Pointer to the thread pool worker list lock.
     //
-    PRTL_CRITICAL_SECTION TppWorkerpListLock;
+    PRTL_SRWLOCK TppWorkerpListLock;
 
     //
     // Pointer to the thread pool worker list.
@@ -1343,7 +1343,7 @@ typedef struct _PEB32
         };
     };
     ULONGLONG CsrServerReadOnlySharedMemoryBase;
-    struct _RTL_CRITICAL_SECTION32* POINTER_32 TppWorkerpListLock;
+    struct _RTL_SRWLOCK32* POINTER_32 TppWorkerpListLock;
     LIST_ENTRY32 TppWorkerpList;
     PVOID32 WaitOnAddressHashTable[128];
     struct _PTELEMETRY_COVERAGE_HEADER* POINTER_32 TelemetryCoverageHeader; // REDSTONE3
@@ -7354,8 +7354,7 @@ typedef struct _JOBOBJECT_ENERGY_TRACKING_STATE
 
 
 // private
-_Enum_is_bitflag_
-typedef enum _JOBOBJECT_IO_PRIORITY_LIMIT_FLAGS
+typedef _Enum_is_bitflag_ enum _JOBOBJECT_IO_PRIORITY_LIMIT_FLAGS
 {
     JOBOBJECT_IO_PRIORITY_LIMIT_ENABLE = 0x1,
     JOBOBJECT_IO_PRIORITY_LIMIT_VALID_FLAGS = 0x1,
@@ -7370,8 +7369,7 @@ typedef struct _JOBOBJECT_IO_PRIORITY_LIMIT
 } JOBOBJECT_IO_PRIORITY_LIMIT, * PJOBOBJECT_IO_PRIORITY_LIMIT;
 
 // private
-_Enum_is_bitflag_
-typedef enum _JOBOBJECT_PAGE_PRIORITY_LIMIT_FLAGS
+typedef _Enum_is_bitflag_ enum _JOBOBJECT_PAGE_PRIORITY_LIMIT_FLAGS
 {
     JOBOBJECT_PAGE_PRIORITY_LIMIT_ENABLE = 0x1,
     JOBOBJECT_PAGE_PRIORITY_LIMIT_VALID_FLAGS = 0x1,
@@ -7677,7 +7675,7 @@ ZwAllocateReserveObject(
 #ifndef _KERNEL_MODE
 
 // Capture/creation flags.
-typedef enum _PSSNT_CAPTURE_FLAGS
+typedef _Enum_is_bitflag_ enum _PSSNT_CAPTURE_FLAGS
 {
     PSSNT_CAPTURE_NONE = 0x00000000,
     PSSNT_CAPTURE_VA_CLONE = 0x00000001,
@@ -7705,7 +7703,7 @@ typedef enum _PSSNT_CAPTURE_FLAGS
 } PSSNT_CAPTURE_FLAGS;
 DEFINE_ENUM_FLAG_OPERATORS(PSSNT_CAPTURE_FLAGS);
 
-typedef enum _PSSNT_DUPLICATE_FLAGS
+typedef _Enum_is_bitflag_ enum _PSSNT_DUPLICATE_FLAGS
 {
     PSSNT_DUPLICATE_NONE = 0x00,
     PSSNT_DUPLICATE_CLOSE_SOURCE = 0x01

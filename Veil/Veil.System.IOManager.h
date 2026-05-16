@@ -3521,6 +3521,20 @@ typedef struct _FILE_IO_COMPLETION_INFORMATION {
 } FILE_IO_COMPLETION_INFORMATION, * PFILE_IO_COMPLETION_INFORMATION;
 #endif
 
+
+/**
+ * The NtRemoveIoCompletionEx routine removes multiple entries from an I/O completion port.
+ *
+ * \param[in] IoCompletionHandle Handle to the I/O completion port.
+ * \param[out] IoCompletionInformation Pointer to an array of FILE_IO_COMPLETION_INFORMATION structures.
+ * \param[in] Count The number of entries to remove.
+ * \param[out] NumEntriesRemoved Pointer to a variable that receives the number of entries removed.
+ * \param[in, optional] Timeout Optional pointer to a timeout value.
+ * \param[in] Alertable Whether the wait is alertable.
+ * \return NTSTATUS Successful or errant status.
+ * \remarks If Count > 16, allocates temp kernel buffer (ExAllocatePool2) and caps fallback behavior if allocation fails.
+ * \sa https://learn.microsoft.com/en-us/windows/win32/api/ioapiset/nf-ioapiet-getqueuedcompletionstatusex
+ */
 __kernel_entry NTSYSCALLAPI
 NTSTATUS
 NTAPI
@@ -3551,6 +3565,15 @@ ZwRemoveIoCompletionEx(
 //
 
 #if (NTDDI_VERSION >= NTDDI_WIN8)
+
+#ifndef WAIT_COMPLETION_PACKET_SET_STATE
+#define WAIT_COMPLETION_PACKET_SET_STATE 0x0001
+#endif
+
+#ifndef WAIT_COMPLETION_PACKET_ALL_ACCESS
+#define WAIT_COMPLETION_PACKET_ALL_ACCESS (WAIT_COMPLETION_PACKET_SET_STATE | STANDARD_RIGHTS_REQUIRED)
+#endif
+
 /**
  * The NtCreateWaitCompletionPacket routine creates a wait completion packet object.
  *

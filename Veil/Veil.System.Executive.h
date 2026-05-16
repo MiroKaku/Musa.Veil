@@ -2476,7 +2476,7 @@ typedef enum _WNF_STATE_NAME_LIFETIME
 typedef enum _WNF_STATE_NAME_INFORMATION
 {
     WnfInfoStateNameExist,
-    WnfInfoSubscribersPresent,
+    WnfInfoSubscribersPresent,     // ULONG
     WnfInfoIsQuiescent
 } WNF_STATE_NAME_INFORMATION;
 
@@ -2846,22 +2846,22 @@ ZwSetWnfProcessNotificationEvent(
 
 typedef enum _WORKERFACTORYINFOCLASS
 {
-    WorkerFactoryTimeout, // LARGE_INTEGER
-    WorkerFactoryRetryTimeout, // LARGE_INTEGER
-    WorkerFactoryIdleTimeout, // s: LARGE_INTEGER
-    WorkerFactoryBindingCount, // s: ULONG
-    WorkerFactoryThreadMinimum, // s: ULONG
-    WorkerFactoryThreadMaximum, // s: ULONG
-    WorkerFactoryPaused, // ULONG or BOOLEAN
-    WorkerFactoryBasicInformation, // q: WORKER_FACTORY_BASIC_INFORMATION
-    WorkerFactoryAdjustThreadGoal,
-    WorkerFactoryCallbackType,
-    WorkerFactoryStackInformation, // 10
-    WorkerFactoryThreadBasePriority, // s: ULONG
-    WorkerFactoryTimeoutWaiters, // s: ULONG, since THRESHOLD
-    WorkerFactoryFlags, // s: ULONG
-    WorkerFactoryThreadSoftMaximum, // s: ULONG
-    WorkerFactoryThreadCpuSets, // since REDSTONE5
+    WorkerFactoryTimeout,               // qs: LARGE_INTEGER
+    WorkerFactoryRetryTimeout,          // qs: LARGE_INTEGER
+    WorkerFactoryIdleTimeout,           // qs: LARGE_INTEGER
+    WorkerFactoryBindingCount,          // qs: ULONG
+    WorkerFactoryThreadMinimum,         // qs: ULONG
+    WorkerFactoryThreadMaximum,         // qs: ULONG
+    WorkerFactoryPaused,                // qs: ULONG or BOOLEAN
+    WorkerFactoryBasicInformation,      // q: WORKER_FACTORY_BASIC_INFORMATION
+    WorkerFactoryAdjustThreadGoal,      // s: ULONG
+    WorkerFactoryCallbackType,          // qs: ULONG
+    WorkerFactoryStackInformation,      // qs: ULONG/ULONG_PTR // 10
+    WorkerFactoryThreadBasePriority,    // qs: ULONG
+    WorkerFactoryTimeoutWaiters,        // qs: ULONG // since THRESHOLD
+    WorkerFactoryFlags,                 // qs: ULONG
+    WorkerFactoryThreadSoftMaximum,     // qs: ULONG
+    WorkerFactoryThreadCpuSets,         // qs: ULONG[] // since REDSTONE5
     MaxWorkerFactoryInfoClass
 } WORKERFACTORYINFOCLASS, * PWORKERFACTORYINFOCLASS;
 
@@ -3593,6 +3593,7 @@ typedef enum _SYSTEM_INFORMATION_CLASS
     SystemHandleCountInformation,                           // q: SYSTEM_HANDLECOUNT_INFORMATION
     SystemRuntimeAttestationReport,                         // q: SYSTEM_RUNTIME_REPORT_INPUT
     SystemPoolTagInformation2,                              // q: SYSTEM_POOLTAG_INFORMATION2 // since 26H1
+    SystemCodeIntegrityEndpointSecurityInformation,         // q: SYSTEM_CODE_INTEGRITY_ENDPOINT_SECURITY_INFORMATION
     MaxSystemInfoClass
 } SYSTEM_INFORMATION_CLASS;
 
@@ -8210,6 +8211,31 @@ typedef struct _SYSTEM_POOLTAG_INFORMATION2
     ULONG Count;
     _Field_size_(Count) SYSTEM_POOLTAG2 TagInfo[1];
 } SYSTEM_POOLTAG_INFORMATION2, * PSYSTEM_POOLTAG_INFORMATION2;
+
+/**
+ * The CI_ENDPOINT_SECURITY_OPERATION enumeration defines operations for code integrity endpoint security.
+ */
+typedef enum _CI_ENDPOINT_SECURITY_OPERATION
+{
+    CI_ENDPOINT_SECURITY_OPERATION_SET = 0,
+    CI_ENDPOINT_SECURITY_OPERATION_REMOVE = 1,
+    CI_ENDPOINT_SECURITY_OPERATION_MAX = 2
+} CI_ENDPOINT_SECURITY_OPERATION;
+
+/**
+ * The SYSTEM_CODE_INTEGRITY_ENDPOINT_SECURITY_INFORMATION structure contains code integrity endpoint security information.
+ */
+typedef struct _SYSTEM_CODE_INTEGRITY_ENDPOINT_SECURITY_INFORMATION
+{
+    USHORT Version;
+    CI_ENDPOINT_SECURITY_OPERATION Operation;
+    USHORT PolicyPathOffset;
+    USHORT PolicyPathNumBytes;
+    USHORT TssIdOffset;
+    USHORT TssIdNumBytes;
+    UCHAR Data[1];
+} SYSTEM_CODE_INTEGRITY_ENDPOINT_SECURITY_INFORMATION, *PSYSTEM_CODE_INTEGRITY_ENDPOINT_SECURITY_INFORMATION;
+
 
 /**
  * The NtQuerySystemInformation routine queries information about the system.
