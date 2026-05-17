@@ -538,7 +538,7 @@ LdrGetDllHandleByName(
 #if (NTDDI_VERSION >= NTDDI_WIN8)
 // rev
 NTSYSAPI
-VOID
+NTSTATUS
 NTAPI
 LdrGetDllFullName(
     _In_opt_ PVOID DllHandle,
