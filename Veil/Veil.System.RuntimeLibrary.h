@@ -1,4 +1,4 @@
-/*
+﻿/*
  * PROJECT:   Veil
  * FILE:      Veil.System.RuntimeLibrary.h
  * PURPOSE:   This file is part of Veil.
@@ -4826,8 +4826,6 @@ RtlGetLocaleFileMappingAddress(
 // PEB
 //
 
-#ifndef _KERNEL_MODE
-
 NTSYSAPI
 PPEB
 NTAPI
@@ -4872,8 +4870,6 @@ RtlFreeToPeb(
     _In_ PVOID Block,
     _In_ ULONG Size
 );
-
-#endif // !_KERNEL_MODE
 
 //
 // Processes
@@ -5048,7 +5044,6 @@ STATIC_ASSERT(sizeof(RTL_USER_PROCESS_PARAMETERS32) == 708);
 #define RTL_USER_PROC_PROTECTED_PROCESS                 0x00400000
 #define RTL_USER_PROC_SECURE_PROCESS                    0x80000000
 
-#ifndef _KERNEL_MODE
 NTSYSAPI
 NTSTATUS
 NTAPI
@@ -5473,8 +5468,6 @@ CreateProcessInternalW(
     _Out_opt_ PHANDLE hNewToken
 );
 
-#endif // !_KERNEL_MODE
-
 //
 // Threads
 //
@@ -5494,7 +5487,6 @@ RtlExitUserThread(
     _In_ NTSTATUS ExitStatus
 );
 
-#ifndef _KERNEL_MODE
 /**
  * The RtlCreateUserThread routine creates a thread in the specified process.
  *
@@ -5578,13 +5570,10 @@ RtlFreeUserStack(
     _In_ PVOID AllocationBase
 );
 
-#endif // !_KERNEL_MODE
 
 //
 // Extended thread context
 //
-
-#ifndef _KERNEL_MODE
 
 typedef struct _CONTEXT_CHUNK
 {
@@ -5790,7 +5779,6 @@ RtlRemoteCall(
     _In_ BOOLEAN AlreadySuspended
 );
 
-#endif // !_KERNEL_MODE
 
 //
 // Vectored exception handlers
@@ -5977,7 +5965,6 @@ RtlUnhandledExceptionFilter(
 
 // _KERNEL_MODE end
 
-#ifndef _KERNEL_MODE
 
 // rev
 NTSYSAPI
@@ -6025,9 +6012,33 @@ RtlRaiseNoncontinuableException(
 );
 #endif // (NTDDI_VERSION >= NTDDI_WIN10_VB)
 
-#endif // _KERNEL_MODE
 
-#ifndef _KERNEL_MODE
+//
+// Define dynamic function table entry.
+//
+
+typedef
+_Function_class_(GET_RUNTIME_FUNCTION_CALLBACK)
+PIMAGE_RUNTIME_FUNCTION_ENTRY
+GET_RUNTIME_FUNCTION_CALLBACK(
+    _In_ DWORD64 ControlPc,
+    _In_opt_ PVOID Context
+);
+typedef GET_RUNTIME_FUNCTION_CALLBACK* PGET_RUNTIME_FUNCTION_CALLBACK;
+
+typedef
+_Function_class_(OUT_OF_PROCESS_FUNCTION_TABLE_CALLBACK)
+DWORD
+OUT_OF_PROCESS_FUNCTION_TABLE_CALLBACK(
+    _In_ HANDLE Process,
+    _In_ PVOID TableAddress,
+    _Out_ PDWORD Entries,
+    _Out_ PIMAGE_RUNTIME_FUNCTION_ENTRY* Functions
+);
+typedef OUT_OF_PROCESS_FUNCTION_TABLE_CALLBACK* POUT_OF_PROCESS_FUNCTION_TABLE_CALLBACK;
+
+#define OUT_OF_PROCESS_FUNCTION_TABLE_CALLBACK_EXPORT_NAME \
+    "OutOfProcessFunctionTableCallback"
 
 #ifdef _WIN64
 // private
@@ -6177,14 +6188,30 @@ RtlQueryActivationContextApplicationSettings(
     _Out_opt_ PSIZE_T RequiredLength
 );
 
-// ACTIVATION_CONTEXT_INFO_CLASS
-//   ActivationContextBasicInformation                      // q: ACTIVATION_CONTEXT_BASIC_INFORMATION
-//   ActivationContextDetailedInformation                   // q: ACTIVATION_CONTEXT_DETAILED_INFORMATION
-//   AssemblyDetailedInformationInActivationContext         // q: ACTIVATION_CONTEXT_ASSEMBLY_DETAILED_INFORMATION
-//   FileInformationInAssemblyOfAssemblyInActivationContext // q: ASSEMBLY_FILE_DETAILED_INFORMATION
-//   RunlevelInformationInActivationContext                 // q: ACTIVATION_CONTEXT_RUN_LEVEL_INFORMATION
-//   CompatibilityInformationInActivationContext            // q: ACTIVATION_CONTEXT_COMPATIBILITY_INFORMATION[_LEGACY]
-//   ActivationContextManifestResourceName                  // q: ULONG
+#ifdef _KERNEL_MODE
+typedef enum _ACTIVATION_CONTEXT_INFO_CLASS {
+    ActivationContextBasicInformation                       = 1, // q: ACTIVATION_CONTEXT_BASIC_INFORMATION
+    ActivationContextDetailedInformation                    = 2, // q: ACTIVATION_CONTEXT_DETAILED_INFORMATION
+    AssemblyDetailedInformationInActivationContext          = 3, // q: ACTIVATION_CONTEXT_ASSEMBLY_DETAILED_INFORMATION
+    FileInformationInAssemblyOfAssemblyInActivationContext  = 4, // q: ASSEMBLY_FILE_DETAILED_INFORMATION
+    RunlevelInformationInActivationContext                  = 5, // q: ACTIVATION_CONTEXT_RUN_LEVEL_INFORMATION
+    CompatibilityInformationInActivationContext             = 6, // q: ACTIVATION_CONTEXT_COMPATIBILITY_INFORMATION[_LEGACY]
+    ActivationContextManifestResourceName                   = 7, // q: ULONG
+    MaxActivationContextInfoClass,
+
+    //
+    // compatibility with old names
+    //
+    AssemblyDetailedInformationInActivationContxt = 3,
+    FileInformationInAssemblyOfAssemblyInActivationContxt = 4
+} ACTIVATION_CONTEXT_INFO_CLASS;
+#define ACTIVATIONCONTEXTINFOCLASS ACTIVATION_CONTEXT_INFO_CLASS
+
+typedef struct _ACTIVATION_CONTEXT_QUERY_INDEX {
+    DWORD ulAssemblyIndex;
+    DWORD ulFileIndexInAssembly;
+} ACTIVATION_CONTEXT_QUERY_INDEX, * PACTIVATION_CONTEXT_QUERY_INDEX;
+#endif // _KERNEL_MODE
 
 #define RTL_QUERY_INFORMATION_ACTIVATION_CONTEXT_FLAG_USE_ACTIVE_ACTIVATION_CONTEXT 0x00000001
 #define RTL_QUERY_INFORMATION_ACTIVATION_CONTEXT_FLAG_ACTIVATION_CONTEXT_IS_MODULE 0x00000002
@@ -6215,8 +6242,6 @@ RtlQueryInformationActiveActivationContext(
     _In_ SIZE_T ActivationContextInformationLength,
     _Out_opt_ PSIZE_T ReturnLength
 );
-
-#endif // !_KERNEL_MODE
 
 //
 // Images
@@ -6305,7 +6330,6 @@ RtlFindExportedRoutineByName(
 );
 #endif
 
-#ifdef _KERNEL_MODE
 NTSYSAPI
 NTSTATUS
 NTAPI
@@ -6321,7 +6345,6 @@ RtlPcToFilePath(
     _In_ PVOID PcValue,
     _Out_ PUNICODE_STRING FilePath
 );
-#endif
 
 /**
  * The RtlPcToFileHeader routine retrieves the base address of the image that contains the specified PC value.
@@ -6338,8 +6361,6 @@ RtlPcToFileHeader(
     _In_ PVOID PcValue,
     _Out_ PVOID* BaseOfImage
 );
-
-#ifndef _KERNEL_MODE
 
 #if (NTDDI_VERSION >= NTDDI_WIN10_RS1)
 // rev
@@ -6362,8 +6383,6 @@ RtlValidateUserCallTarget(
     _Out_ PULONG Flags
 );
 #endif
-
-#endif // !_KERNEL_MODE
 
 #ifdef _KERNEL_MODE
 
@@ -6536,33 +6555,6 @@ typedef struct _UNWIND_HISTORY_TABLE
 
 } UNWIND_HISTORY_TABLE, * PUNWIND_HISTORY_TABLE;
 
-
-//
-// Define dynamic function table entry.
-//
-
-typedef
-_Function_class_(GET_RUNTIME_FUNCTION_CALLBACK)
-PIMAGE_RUNTIME_FUNCTION_ENTRY
-GET_RUNTIME_FUNCTION_CALLBACK(
-    _In_ DWORD64 ControlPc,
-    _In_opt_ PVOID Context
-);
-typedef GET_RUNTIME_FUNCTION_CALLBACK* PGET_RUNTIME_FUNCTION_CALLBACK;
-
-typedef
-_Function_class_(OUT_OF_PROCESS_FUNCTION_TABLE_CALLBACK)
-DWORD
-OUT_OF_PROCESS_FUNCTION_TABLE_CALLBACK(
-    _In_ HANDLE Process,
-    _In_ PVOID TableAddress,
-    _Out_ PDWORD Entries,
-    _Out_ PIMAGE_RUNTIME_FUNCTION_ENTRY* Functions
-);
-typedef OUT_OF_PROCESS_FUNCTION_TABLE_CALLBACK* POUT_OF_PROCESS_FUNCTION_TABLE_CALLBACK;
-
-#define OUT_OF_PROCESS_FUNCTION_TABLE_CALLBACK_EXPORT_NAME \
-    "OutOfProcessFunctionTableCallback"
 
 //
 // Define exception dispatch context structure.
@@ -6855,7 +6847,6 @@ RtlVirtualUnwind(
 
 #endif // _KERNEL_MODE
 
-#ifndef _KERNEL_MODE
 #if defined(_M_AMD64) && defined(_M_ARM64EC)
 NTSYSAPI
 BOOLEAN
@@ -6914,7 +6905,6 @@ RtlDeleteGrowableFunctionTable(
 );
 #endif // NTDDI_VERSION >= NTDDI_WIN8
 #endif // _M_AMD64 && _M_ARM64EC
-#endif
 
 typedef struct _RTL_MODULE_BASIC_INFO {
     PVOID ImageBase;
@@ -6950,7 +6940,6 @@ RtlCompareMemoryUlong(
     _In_ ULONG Pattern
 );
 
-#ifndef _KERNEL_MODE
 
 NTSYSAPI
 NTSTATUS
@@ -6960,6 +6949,8 @@ RtlCopyMappedMemory(
     _In_reads_bytes_(Length) PVOID Source,
     _In_ SIZE_T Length
 );
+
+#ifndef _KERNEL_MODE
 
 #if defined(_M_AMD64) || defined(_M_ARM64)
 NTSYSAPI
@@ -7717,7 +7708,7 @@ typedef struct _IMAGE_FILE_MACHINES {
 #endif
     } DUMMYUNIONNAME;
 } IMAGE_FILE_MACHINES;
-#endif
+#endif // defined(_KERNEL_MODE) || (NTDDI_VERSION < NTDDI_WIN11_BR)
 
 DWORD
 RtlGetImageFileMachines(
@@ -7748,7 +7739,6 @@ RtlAreLongPathsEnabled(
 // Ldr
 //
 
-#ifndef _KERNEL_MODE
 NTSYSAPI
 BOOLEAN
 NTAPI
@@ -7762,13 +7752,10 @@ NTAPI
 RtlDllShutdownInProgress(
     VOID
 );
-#endif
 
 //
 // Heaps
 //
-
-#ifndef _KERNEL_MODE
 
 typedef struct _RTL_HEAP_ENTRY
 {
@@ -7864,7 +7851,7 @@ typedef struct _RTL_PROCESS_HEAPS_V2
 } RTL_PROCESS_HEAPS_V2, * PRTL_PROCESS_HEAPS_V2;
 
 // Heap parameters.
-
+#ifndef _KERNEL_MODE
 typedef
 _Function_class_(RTL_HEAP_COMMIT_ROUTINE)
 _IRQL_requires_same_
@@ -8006,6 +7993,7 @@ typedef struct _RTL_HEAP_MEMORY_LIMIT_INFO
     ULONG Version;
     RTL_HEAP_MEMORY_LIMIT_DATA Data;
 } RTL_HEAP_MEMORY_LIMIT_INFO, * PRTL_HEAP_MEMORY_LIMIT_INFO;
+
 
 #define HEAP_SETTABLE_USER_VALUE 0x00000100
 #define HEAP_SETTABLE_USER_FLAG1 0x00000200
@@ -8687,8 +8675,6 @@ RtlFlushHeaps(
 // Memory zones
 //
 
-#ifndef _KERNEL_MODE
-
 // begin_private
 typedef struct _RTL_MEMORY_ZONE_SEGMENT
 {
@@ -8751,8 +8737,6 @@ NTAPI
 RtlUnlockMemoryZone(
     _In_ PVOID MemoryZone
 );
-
-#endif // !_KERNEL_MODE
 
 //
 // Memory block lookaside lists
@@ -8829,8 +8813,6 @@ RtlUnlockMemoryBlockLookaside(
 // Transactions
 //
 
-#ifndef _KERNEL_MODE
-
 // private
 NTSYSAPI
 HANDLE
@@ -8847,8 +8829,6 @@ NTAPI
 RtlSetCurrentTransaction(
     _In_opt_ HANDLE TransactionHandle
 );
-
-#endif // _KERNEL_MODE
 
 //
 // LUIDs
@@ -9244,8 +9224,6 @@ RtlFormatMessageEx(
     _Out_opt_ PPARSE_MESSAGE_CONTEXT ParseContext
 );
 
-#ifndef _KERNEL_MODE
-
 NTSYSAPI
 NTSTATUS
 NTAPI
@@ -9258,8 +9236,6 @@ RtlGetFileMUIPath(
     _Inout_ PULONG FileMUIPathLength,
     _Inout_ PULONGLONG Enumerator
 );
-
-#endif // !_KERNEL_MODE
 
 // private
 NTSYSAPI
@@ -9416,7 +9392,6 @@ RtlSetThreadErrorMode(
 // Windows Error Reporting
 //
 
-#ifndef _KERNEL_MODE
 
 // private
 NTSYSAPI
@@ -9460,8 +9435,6 @@ RtlReportSilentProcessExit(
     _In_ HANDLE ProcessHandle,
     _In_ NTSTATUS ExitStatus
 );
-
-#endif // !_KERNEL_MODE
 
 //
 // Random
@@ -10914,8 +10887,6 @@ RtlCopySidAndAttributesArray(
     _Out_ PULONG RemainingSidAreaSize
 );
 
-#ifndef _KERNEL_MODE
-
 // private
 NTSYSAPI
 NTSTATUS
@@ -10957,8 +10928,6 @@ RtlSidIsHigherLevel(
     _In_ PSID Sid2,
     _Out_ PBOOLEAN HigherLevel
 );
-
-#endif // !_KERNEL_MODE
 
 _IRQL_requires_max_(APC_LEVEL)
 NTSYSAPI
@@ -11519,7 +11488,7 @@ typedef struct _ACL_SIZE_INFORMATION {
 } ACL_SIZE_INFORMATION;
 typedef ACL_SIZE_INFORMATION* PACL_SIZE_INFORMATION;
 
-#endif // !_KERNEL_MODE
+#endif // defined(_KERNEL_MODE) && !defined(_WINDOWS_)
 
 _IRQL_requires_max_(APC_LEVEL)
 NTSYSAPI
@@ -11801,8 +11770,6 @@ RtlDefaultNpAcl(
 // Security objects
 //
 
-#ifndef _KERNEL_MODE
-
 NTSYSAPI
 NTSTATUS
 NTAPI
@@ -11955,8 +11922,6 @@ RtlCreateAndSetSD(
     _Out_ PSECURITY_DESCRIPTOR* NewSecurityDescriptor
 );
 
-#endif // !_KERNEL_MODE
-
 //
 // Misc. security
 //
@@ -11976,8 +11941,6 @@ RtlRunDecodeUnicodeString(
     _In_ UCHAR Seed,
     _Inout_ PUNICODE_STRING String
 );
-
-#ifndef _KERNEL_MODE
 
 NTSYSAPI
 NTSTATUS
@@ -12036,8 +11999,6 @@ RtlRemovePrivileges(
     _In_ ULONG PrivilegeCount
 );
 
-#endif // !_KERNEL_MODE
-
 #if (NTDDI_VERSION >= NTDDI_WIN8)
 NTSYSAPI
 NTSTATUS
@@ -12071,8 +12032,6 @@ RtlNewSecurityGrantedAccess(
 //
 // Private namespaces
 //
-
-#ifndef _KERNEL_MODE
 
 // begin_private
 
@@ -12113,8 +12072,6 @@ RtlAddIntegrityLabelToBoundaryDescriptor(
 );
 
 // end_private
-
-#endif // !_KERNEL_MODE
 
 //
 // Version
@@ -12422,7 +12379,6 @@ RtlDelayExecution(
 // Timer support
 //
 
-#ifndef _KERNEL_MODE
 /**
  * Creates a queue for timers.
  *
@@ -12513,8 +12469,6 @@ RtlDeleteTimerQueueEx(
     _In_ HANDLE TimerQueueHandle,
     _In_opt_ HANDLE Event
 );
-
-#endif // !_KERNEL_MODE
 
 //
 // Registry access
@@ -12731,8 +12685,6 @@ RtlDeleteRegistryValue(
 // Thread profiling
 //
 
-#ifndef _KERNEL_MODE
-
 // rev
 /**
  * The RtlEnableThreadProfiling routine enables thread profiling on the specified thread.
@@ -12805,13 +12757,9 @@ RtlReadThreadProfilingData(
     _Out_ PPERFORMANCE_DATA PerformanceData
 );
 
-#endif // !_KERNEL_MODE
-
 //
 // WOW64
 //
-
-#ifndef _KERNEL_MODE
 
 NTSYSAPI
 NTSTATUS
@@ -12864,8 +12812,6 @@ RtlWow64EnableFsRedirectionEx(
     _In_ PVOID Wow64FsEnableRedirection,
     _Out_ PVOID* OldFsRedirectionLevel
 );
-
-#endif // !_KERNEL_MODE
 
 //
 // Misc
@@ -13048,8 +12994,6 @@ RtlGetCurrentProcessorNumberEx(
 // Stack support
 //
 
-#ifndef _KERNEL_MODE
-
 NTSYSAPI
 VOID
 NTAPI
@@ -13070,8 +13014,6 @@ NTAPI
 RtlGetFrame(
     VOID
 );
-
-#endif // !_KERNEL_MODE
 
 #define RTL_WALK_USER_MODE_STACK    0x00000001
 #define RTL_WALK_KERNEL_STACK       0x00000002
@@ -13098,9 +13040,7 @@ RtlWalkFrameChain(
 #define RtlGetCallersAddress(CallersAddress, CallersCaller) \
     *CallersAddress = (PVOID)_ReturnAddress(); \
     *CallersCaller = NULL;
-
 #else
-
 DECLSPEC_DEPRECATED
 NTSYSAPI
 VOID
@@ -13109,7 +13049,6 @@ RtlGetCallersAddress( // Use the intrinsic _ReturnAddress instead.
     _Out_ PVOID* CallersAddress,
     _Out_ PVOID* CallersCaller
 );
-
 #endif
 #endif  // !_KERNEL_MODE
 
@@ -13380,8 +13319,6 @@ RtlQueryPerformanceFrequency(
 // Image Mitigation
 //
 
-#ifndef _KERNEL_MODE
-
 // rev
 typedef enum _IMAGE_MITIGATION_POLICY
 {
@@ -13587,8 +13524,6 @@ RtlSetImageMitigationPolicy(
 );
 #endif
 
-#endif // !_KERNEL_MODE
-
 //
 // session 
 //
@@ -13787,8 +13722,6 @@ RtlCheckTokenMembershipEx(
 );
 #endif
 
-#ifndef _KERNEL_MODE
-
 #if (NTDDI_VERSION >= NTDDI_WIN10_RS4)
 // rev
 NTSYSAPI
@@ -13812,11 +13745,13 @@ RtlIsParentOfChildAppContainer(
 #endif
 
 #if (NTDDI_VERSION >= NTDDI_WIN11)
+_IRQL_requires_max_(PASSIVE_LEVEL)
+_Must_inspect_result_
 NTSYSAPI
 NTSTATUS
 NTAPI
 RtlIsApiSetImplemented(
-    _In_z_ PCSTR ApiSetName
+    _In_ PCSTR apiSetName
 );
 #endif
 
@@ -13847,8 +13782,6 @@ RtlIsValidProcessTrustLabelSid(
     _In_ PSID Sid
 );
 #endif
-
-#endif // !_KERNEL_MODE
 
 typedef enum _APPCONTAINER_SID_TYPE
 {
@@ -13955,7 +13888,6 @@ RtlTlsSetValue(
     _In_opt_ PVOID TlsData
 );
 #endif // NTDDI_VERSION >= NTDDI_WIN11
-
 
 NTSYSAPI
 NTSTATUS
@@ -14274,8 +14206,6 @@ RtlSetProcessPlaceholderCompatibilityMode(
 //
 
 #if (NTDDI_VERSION >= NTDDI_WINBLUE)
-#ifndef _KERNEL_MODE
-
 // rev
 NTSYSAPI
 NTSTATUS
@@ -14294,6 +14224,7 @@ RtlSetProtectedPolicy(
     _In_ ULONG_PTR PolicyValue,
     _Out_ PULONG_PTR OldPolicyValue
 );
+#endif // (NTDDI_VERSION >= NTDDI_WINBLUE)
 
 #if (NTDDI_VERSION >= NTDDI_WIN10_RS1)
 // rev
@@ -14303,10 +14234,7 @@ NTAPI
 RtlIsEnclaveFeaturePresent(
     _In_ ULONG FeatureMask
 );
-#endif
-
-#endif // !_KERNEL_MODE
-#endif
+#endif // (NTDDI_VERSION >= NTDDI_WIN10_RS1)
 
 //
 // Boot Status Data
@@ -14439,7 +14367,6 @@ RtlGetSetBootStatusData(
     _Out_opt_ PULONG ReturnLength
 );
 
-#ifndef _KERNEL_MODE
 #if (NTDDI_VERSION >= NTDDI_WIN10_RS1)
 // rev
 NTSYSAPI
@@ -14456,7 +14383,7 @@ NTAPI
 RtlRestoreBootStatusDefaults(
     _In_ HANDLE FileHandle
 );
-#endif
+#endif // NTDDI_VERSION >= NTDDI_WIN10_RS1
 
 #if (NTDDI_VERSION >= NTDDI_WIN10_RS3)
 // rev
@@ -14466,8 +14393,7 @@ NTAPI
 RtlRestoreSystemBootStatusDefaults(
     VOID
 );
-#endif
-#endif // !_KERNEL_MODE
+#endif // NTDDI_VERSION >= NTDDI_WIN10_RS3
 
 #if (NTDDI_VERSION >= NTDDI_WIN10_RS3)
 // rev
@@ -14493,7 +14419,7 @@ RtlSetSystemBootStatus(
 );
 #endif
 
-#if (NTDDI_VERSION >= NTDDI_WIN18)
+#if (NTDDI_VERSION >= NTDDI_WIN8)
 // rev
 NTSYSAPI
 NTSTATUS
@@ -14531,8 +14457,6 @@ RtlFindClosestEncodableLength(
 // Memory cache
 //
 
-#ifndef _KERNEL_MODE
-
 typedef
 _Function_class_(RTL_SECURE_MEMORY_CACHE_CALLBACK)
 NTSTATUS NTAPI RTL_SECURE_MEMORY_CACHE_CALLBACK(
@@ -14564,8 +14488,6 @@ RtlFlushSecureMemoryCache(
     _In_ PVOID MemoryCache,
     _In_opt_ SIZE_T MemoryLength
 );
-
-#endif // !_KERNEL_MODE
 
 //
 // Feature configuration
@@ -14943,7 +14865,6 @@ RtlQueryFeatureConfigurationChangeStamp(
     VOID
 );
 
-#ifndef _KERNEL_MODE
 // private
 NTSYSAPI
 NTSTATUS
@@ -14952,7 +14873,6 @@ RtlQueryFeatureUsageNotificationSubscriptions(
     _Out_writes_(*SubscriptionCount) PRTL_FEATURE_USAGE_SUBSCRIPTION_DETAILS Subscriptions,
     _Inout_ PSIZE_T SubscriptionCount
 );
-#endif // !_KERNEL_MODE
 
 // private
 NTSYSAPI
@@ -14973,7 +14893,6 @@ RtlUnregisterFeatureConfigurationChangeNotification(
     _In_ RTL_FEATURE_CONFIGURATION_CHANGE_REGISTRATION RegistrationHandle
 );
 
-#ifndef _KERNEL_MODE
 // private
 NTSYSAPI
 NTSTATUS
@@ -14991,7 +14910,6 @@ RtlUnsubscribeFromFeatureUsageNotifications(
     _In_reads_(SubscriptionCount) PRTL_FEATURE_USAGE_SUBSCRIPTION_DETAILS SubscriptionDetails,
     _In_ SIZE_T SubscriptionCount
 );
-#endif // !_KERNEL_MODE
 #endif // NTDDI_VERSION >= NTDDI_WIN10_RS3
 
 // private
@@ -15055,8 +14973,6 @@ RtlCompareExchangePropertyStore(
     _Out_ PULONG_PTR Context
 );
 
-#ifndef _KERNEL_MODE
-
 typedef enum _THREAD_STATE_CHANGE_TYPE THREAD_STATE_CHANGE_TYPE, * PTHREAD_STATE_CHANGE_TYPE;
 
 // rev
@@ -15078,7 +14994,6 @@ RtlWow64ChangeThreadState(
     _In_ HANDLE ThreadHandle,
     _In_ THREAD_STATE_CHANGE_TYPE StateChangeType
 );
-#endif // (NTDDI_VERSION >= NTDDI_WIN11)
 
 #if (NTDDI_VERSION >= NTDDI_WIN10_RS1)
 // rev

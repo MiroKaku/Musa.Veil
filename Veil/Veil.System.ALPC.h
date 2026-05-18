@@ -1,4 +1,4 @@
-/*
+﻿/*
  * PROJECT:   Veil
  * FILE:      Veil.System.ALPC.h
  * PURPOSE:   This file is part of Veil.
@@ -1539,8 +1539,6 @@ ZwAlpcOpenSenderThread(
 // Support functions
 //
 
-#ifndef _KERNEL_MODE
-
 NTSYSAPI
 ULONG
 NTAPI
@@ -1665,8 +1663,6 @@ AlpcGetCompletionListMessageAttributes(
     _In_ PVOID CompletionList,
     _In_ PPORT_MESSAGE Message
 );
-#endif // !_KERNEL_MODE
-
 
 VEIL_END()
 

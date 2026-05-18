@@ -29,8 +29,6 @@ VEIL_BEGIN()
 
 #ifndef _KERNEL_MODE
 
-#include <initguid.h>
-
 //
 // BCD.dll Exported Types
 //
