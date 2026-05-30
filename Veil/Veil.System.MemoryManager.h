@@ -1,4 +1,4 @@
-﻿/*
+/*
  * PROJECT:   Veil
  * FILE:      Veil.System.MemoryManager.h
  * PURPOSE:   This file is part of Veil.
@@ -124,9 +124,9 @@ typedef enum _MEMORY_INFORMATION_CLASS
     MemoryRegionInformationEx,                  // q: MEMORY_REGION_INFORMATION/MEMORY_REGION_INFORMATION_EX
     MemoryPrivilegedBasicInformation,           // q: MEMORY_BASIC_INFORMATION
     MemoryEnclaveImageInformation,              // q: MEMORY_ENCLAVE_IMAGE_INFORMATION // since REDSTONE3
-    MemoryBasicInformationCapped,               // q: 10
+    MemoryBasicInformationCapped,               // q: MEMORY_BASIC_INFORMATION
     MemoryPhysicalContiguityInformation,        // q: MEMORY_PHYSICAL_CONTIGUITY_INFORMATION // since 20H1
-    MemoryBadInformation,                       // q: MEMORY_BAD_INFORMATION // since WIN11
+    MemoryBadInformation,                       // q: MEMORY_BAD_INFORMATION[] // since WIN11
     MemoryBadInformationAllProcesses,           // qs: not implemented // since 22H1
     MemoryImageExtensionInformation,            // q: MEMORY_IMAGE_EXTENSION_INFORMATION // since 24H2
     MaxMemoryInfoClass
@@ -149,7 +149,13 @@ typedef enum _MEMORY_INFORMATION_CLASS
 #define MemoryImageExtensionInformation     ((_MEMORY_INFORMATION_CLASS)0xE)
 #endif // !_KERNEL_MODE
 
-// MEMORY_WORKING_SET_BLOCK->Protection
+/**
+ * Memory protection constants used by MEMORY_WORKING_SET_BLOCK.Protection.
+ *
+ * \remarks These constants define all 5-bit protection combinations reported by
+ * working-set queries (0..31), including cacheability and guard-page variants.
+ * \sa MEMORY_WORKING_SET_BLOCK
+ */
 #define MEMORY_BLOCK_NOT_ACCESSED 0
 #define MEMORY_BLOCK_READONLY 1
 #define MEMORY_BLOCK_EXECUTABLE 2
@@ -234,7 +240,9 @@ typedef union _MEMORY_REGION_INFORMATION_TYPE
     };
 } MEMORY_REGION_INFORMATION_TYPE, * PMEMORY_REGION_INFORMATION_TYPE;
 
-// private
+/**
+ * The MEMORY_REGION_INFORMATION structure contains summary information about a virtual memory region.
+ */
 typedef struct _MEMORY_REGION_INFORMATION
 {
     PVOID AllocationBase;                             // Base address of the allocation.
@@ -244,7 +252,10 @@ typedef struct _MEMORY_REGION_INFORMATION
     SIZE_T CommitSize;                                // The commit charge associated with the allocation.
 } MEMORY_REGION_INFORMATION, * PMEMORY_REGION_INFORMATION;
 
-// private
+/**
+ * The MEMORY_REGION_INFORMATION_EX structure extends MEMORY_REGION_INFORMATION
+ * with partition and NUMA preference metadata.
+ */
 typedef struct _MEMORY_REGION_INFORMATION_EX
 {
     PVOID AllocationBase;                             // Base address of the allocation.
@@ -257,6 +268,10 @@ typedef struct _MEMORY_REGION_INFORMATION_EX
 } MEMORY_REGION_INFORMATION_EX, * PMEMORY_REGION_INFORMATION_EX;
 
 
+/**
+ * The MEMORY_WORKING_SET_EX_LOCATION enumeration describes where a page is located
+ * when returned through extended working-set information.
+ */
 typedef enum _MEMORY_WORKING_SET_EX_LOCATION
 {
     MemoryLocationInvalid,
@@ -333,7 +348,10 @@ typedef struct _MEMORY_SHARED_COMMIT_INFORMATION
     SIZE_T CommitSize;
 } MEMORY_SHARED_COMMIT_INFORMATION, * PMEMORY_SHARED_COMMIT_INFORMATION;
 
-// private
+/**
+ * The MEMORY_IMAGE_INFORMATION structure describes image mapping details
+ * for a region of memory that is backed by an image.
+ */
 typedef struct _MEMORY_IMAGE_INFORMATION
 {
     PVOID ImageBase;
@@ -352,7 +370,10 @@ typedef struct _MEMORY_IMAGE_INFORMATION
     };
 } MEMORY_IMAGE_INFORMATION, * PMEMORY_IMAGE_INFORMATION;
 
-// private
+/**
+ * The MEMORY_ENCLAVE_IMAGE_INFORMATION structure contains extended image
+ * information with enclave identity metadata.
+ */
 typedef struct _MEMORY_ENCLAVE_IMAGE_INFORMATION
 {
     MEMORY_IMAGE_INFORMATION ImageInfo;
@@ -401,8 +422,14 @@ typedef struct _MEMORY_PHYSICAL_CONTIGUITY_INFORMATION
 } MEMORY_PHYSICAL_CONTIGUITY_INFORMATION, * PMEMORY_PHYSICAL_CONTIGUITY_INFORMATION;
 
 // rev
+// MEMORY_BAD_INFORMATION Flags
+#define MEMORY_BAD_INFORMATION_FLAG_SOURCE 0x1
+#define MEMORY_BAD_INFORMATION_FLAG_TYPE 0x2
+
+// rev
 /**
- * The MEMORY_BAD_INFORMATION structure reports a range of memory that has been marked bad or otherwise problematic.
+ * The MEMORY_BAD_INFORMATION structure describes one element in the output
+ * array returned by MemoryBadInformation on builds that use 16-byte records.
  */
 typedef struct _MEMORY_BAD_INFORMATION
 {

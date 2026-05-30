@@ -64,7 +64,7 @@ typedef enum _OBJECT_INFORMATION_CLASS
     ObjectHandleFlagInformation,    // qs: OBJECT_HANDLE_FLAG_INFORMATION
     ObjectSessionInformation,       // s: void // change object session // (requires SeTcbPrivilege)
     ObjectSessionObjectInformation, // s: void // change object session // (requires SeTcbPrivilege)
-    ObjectSetRefTraceInformation,   // since 25H2
+    ObjectSetRefTraceInformation,   // qs: OBJECT_SET_REF_TRACE_INFORMATION // since 25H2
     MaxObjectInfoClass
 } OBJECT_INFORMATION_CLASS;
 #else
@@ -108,7 +108,7 @@ typedef struct _OBJECT_NAME_INFORMATION
 #endif // !_KERNEL_MODE
 
 /**
- * The OBJECT_NAME_INFORMATION structure contains various statistics and properties about an object type.
+ * The OBJECT_TYPE_INFORMATION structure contains various statistics and properties about an object type.
  */
 typedef struct _OBJECT_TYPE_INFORMATION
 {
@@ -137,11 +137,17 @@ typedef struct _OBJECT_TYPE_INFORMATION
     ULONG DefaultNonPagedPoolCharge;
 } OBJECT_TYPE_INFORMATION, * POBJECT_TYPE_INFORMATION;
 
+/**
+ * The OBJECT_TYPES_INFORMATION structure contains the number of object types defined in the system.
+ */
 typedef struct _OBJECT_TYPES_INFORMATION
 {
     ULONG NumberOfTypes;
 } OBJECT_TYPES_INFORMATION, * POBJECT_TYPES_INFORMATION;
 
+/**
+ * The OBJECT_HANDLE_FLAG_INFORMATION structure contains flag information for an object handle.
+ */
 typedef struct _OBJECT_HANDLE_FLAG_INFORMATION
 {
     BOOLEAN Inherit;
@@ -405,6 +411,19 @@ ZwWaitForMultipleObjects(
     _In_opt_ PLARGE_INTEGER Timeout
 );
 
+/**
+ * The NtWaitForMultipleObjects32 routine waits until one or all of the specified 32-bit handles are in the signaled state, an I/O completion routine or APC is queued to the thread, or the time-out interval elapses.
+ * This is the WOW64 variant of NtWaitForMultipleObjects that accepts 32-bit handle values.
+ *
+ * \param Count The number of object handles to wait for in the array pointed to by Handles. The maximum number of object handles is MAXIMUM_WAIT_OBJECTS. This parameter cannot be zero.
+ * \param Handles An array of 32-bit object handle values. The array can contain handles of objects of different types. It may not contain multiple copies of the same handle.
+ * \param WaitType If this parameter is WaitAll, the function returns when the state of all objects in the Handles array is set to signaled.
+ * \param Alertable If this parameter is TRUE and the thread is in the waiting state, the function returns when the system queues an I/O completion routine or APC, and the thread runs the routine or function.
+ * \param Timeout A pointer to an absolute or relative time over which the wait is to occur. Can be null. If a timeout is specified,
+ * and the object has not attained a state of signaled when the timeout expires, then the wait is automatically satisfied.
+ * If an explicit timeout value of zero is specified, then no wait occurs if the wait cannot be satisfied immediately.
+ * \return NTSTATUS Successful or errant status.
+ */
 #if (NTDDI_VERSION >= NTDDI_WS03)
 __kernel_entry NTSYSCALLAPI
 NTSTATUS
@@ -682,7 +701,9 @@ ZwQueryDirectoryObject(
 // Private namespaces
 //
 
-// private
+/**
+ * The BOUNDARY_ENTRY_TYPE enumeration identifies the kind of value stored in an object boundary entry.
+ */
 typedef enum _BOUNDARY_ENTRY_TYPE
 {
     BOUNDARY_ENTRY_TYPE_INVALID,
@@ -691,7 +712,9 @@ typedef enum _BOUNDARY_ENTRY_TYPE
     BOUNDARY_ENTRY_TYPE_IL
 } BOUNDARY_ENTRY_TYPE;
 
-// private
+/**
+ * The OBJECT_BOUNDARY_VALUE union contains the value associated with an object boundary entry.
+ */
 typedef union _OBJECT_BOUNDARY_VALUE
 {
     WCHAR Name[1];
@@ -699,7 +722,9 @@ typedef union _OBJECT_BOUNDARY_VALUE
     PSID IntegrityLabel;
 } OBJECT_BOUNDARY_VALUE, *POBJECT_BOUNDARY_VALUE;
 
-// private
+/**
+ * The OBJECT_BOUNDARY_ENTRY structure describes a single item in a boundary descriptor.
+ */
 typedef struct _OBJECT_BOUNDARY_ENTRY
 {
     BOUNDARY_ENTRY_TYPE Type;
@@ -710,7 +735,9 @@ typedef struct _OBJECT_BOUNDARY_ENTRY
 // rev
 #define OBJECT_BOUNDARY_DESCRIPTOR_VERSION 1
 
-// private
+/**
+ * The OBJECT_BOUNDARY_DESCRIPTOR structure describes the boundary conditions for a private namespace.
+ */
 typedef struct _OBJECT_BOUNDARY_DESCRIPTOR
 {
     ULONG Version;
